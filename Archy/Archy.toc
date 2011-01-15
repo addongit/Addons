@@ -1,0 +1,51 @@
+## Interface: 40000
+## Title: Archy - Archaeology Assistant
+## Version: v1.7b7
+## Notes: Archaeology assistant
+## Author: daihenka
+## X-Category: Archaeology
+## SavedVariables: ArchyDB
+## OptionalDeps: Ace3, LibDataBroker-1.1, LibDBIcon-1.0, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LinkSink-2.0, TomTom, LibAboutPanel, LibQTip-1.0
+## X-WoWIPortal: daihenka
+## X-Curse-Project-ID: archy
+## X-Curse-Project-Name: Archy - Archaeology Assistant
+## X-Curse-Packaged-Version: v1.7b7
+## X-Curse-Project-Name: Archy - Archaeology Assistant
+## X-Curse-Project-ID: archy
+## X-Curse-Repository-ID: wow/archy/mainline
+
+#@no-lib-strip@
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\AceEvent-3.0\AceEvent-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceLocale-3.0\AceLocale-3.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConsole-3.0\AceConsole-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+Libs\AceTimer-3.0\AceTimer-3.0.xml
+Libs\AceHook-3.0\AceHook-3.0.xml
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
+Libs\LibSink-2.0\lib.xml
+Libs\LibSharedMedia-3.0\lib.xml
+Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+Libs\LibAboutPanel\lib.xml
+Libs\LibQTip-1.0\lib.xml
+#@end-no-lib-strip@
+Libs\Astrolabe-1.0\load.xml
+
+Locale\enUS.lua
+Locale\deDE.lua
+Locale\frFR.lua
+Locale\ruRU.lua
+Locale\zhTW.lua
+Locale\esMX.lua
+Locale\esES.lua
+Locale\koKR.lua
+
+Archy.xml
+Archy.lua
+Bindings.xml

@@ -1,0 +1,29 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+	<Button name="PoisonousPoisonBarHandle" parent="UIParent" enableMouse="true" movable="true" clampedToScreen="true" hidden="true">
+		<Size>
+			<AbsDimension x="32" y="32"/>
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<!--<TitleRegion setAllPoints="true"/>-->
+		<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+			<EdgeSize>
+				<AbsValue val="16"/>
+			</EdgeSize>
+			<TileSize>
+				<AbsValue val="16"/>
+			</TileSize>
+			<BackgroundInsets>
+				<AbsInset left="5" top="5" right="5" bottom="5"/>
+			</BackgroundInsets>
+			<Color r="1" g="0" b="0"/>
+		</Backdrop>
+		<Scripts>
+			<OnLoad function="PoisonousPoisonBarHandle_OnLoad"/>
+			<OnClick function="PoisonousPoisonBarHandle_OnClick"/>
+			<OnDragStart function="PoisonousPoisonBarHandle_OnDragStart"/>
+			<OnDragStop function="PoisonousPoisonBarHandle_OnDragStop"/>
+		</Scripts>
+	</Button>
+</Ui>

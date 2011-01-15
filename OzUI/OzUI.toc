@@ -1,0 +1,15 @@
+## Interface: 40000
+## RequiredDeps: ElvUI
+## DefaultState: Enabled
+## Title: |cFF00FFFFOz|rUI
+## Author: Oz
+## Version: 0.9
+## Notes: Frontend to display icons
+
+Config\Config.lua
+Frontends\OzBars.lua
+Frontends\OzIcons.lua
+Frontends\OzSounds.lua
+Backends\OzAuras.lua
+Backends\OzCD.lua
+

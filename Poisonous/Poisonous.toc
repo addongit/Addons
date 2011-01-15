@@ -1,0 +1,11 @@
+## Interface: 40000
+## Title: Poisonous
+## Version: 4.0.3.1
+## Notes: Poison utilities.  Autobuy poisons, warn when they're expiring, and a nice little poison bar.
+## SavedVariablesPerCharacter: Poisonous_Config
+
+Libs\OptionsLib.lua
+Libs\TooltipLib.lua
+
+Poisonous.lua
+Poisonous.xml

@@ -1,0 +1,30 @@
+v1.7b6 - 31-Dec-2010
+* Fixed a bug with the survey nodes table not being initialized
+* Fixed a bug with the Archy being locked and using a portal
+* Changed the default progress bar color to a grayish white.  
+* If you haven't solve the common artifact before, the progress bar will be the orange-brownish color
+* If you can solve the artifact with keystones but haven't attached them yet, the progress bar will be a light green
+* Rare projects now have a unique progress bar background
+* Added the number of times solved for the current artifact to the icon tooltip
+* Added the number of keystones you have in your inventory to the racial crest icon on the artifacts list
+
+v1.7b5 - 30-Dec-2010
+* Fixed a spam bug for users that don't use TomTom
+* Fixed a bug with the Distance Indicator showing when it shouldn't
+* Moved the Artifacts List scale option to the Display Options for Artifacts
+
+v1.7b4 - 30-Dec-2010
+* Massive overhaul of code
+* New UI for both dig site list and artifact list.  Some of the artifact list UI was inspired by Minimal Archaeology.  
+* FishingBuddy-based EasyCast (aka double right to survey) has been added but maybe slightly buggy when dealing with combat and mouse look
+* LibSink support to push announcements through chat or the various scrolling combat text addons
+* Auto fill in keystones for races that you select
+* Various UI display options for customising the fonts, backgrounds and borders
+* Survey Distance Indicator has been given a skin and is docked to the Dig Site list by default.  You can undock it from the Dig Site list and move it around.
+* To help combat the dig site boundaries exceed past the minimap, an arrival distance option has been implemented.  This will hide the dig site boundaries until you are 400 (by default and changeable) yards away from the dig site center.
+* Archy should now play nice with other addons such as Deadly Boss Mods, TukUI, LUIv3, etc.
+* The tainting issues should now be resolved
+* Frame positioning code has been improved
+* Dig Sites should now report the correct zone (or sub zone) they are in, such as Northern Stranglethorn, The Cape of Stranglethorn
+* LDB tooltip can have the dig site list filtered to the current continent and a progress bar display added to the artifacts listed
+* Plus anything else I have forgotten :(

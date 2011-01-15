@@ -1,0 +1,57 @@
+------------------------------------------------------------------------
+r237 | yossa | 2010-12-18 22:56:20 +0000 (Sat, 18 Dec 2010) | 1 line
+Changed paths:
+   A /tags/2.12 (from /trunk:236)
+
+Tagging as 2.12
+------------------------------------------------------------------------
+r236 | yossa | 2010-12-18 22:54:19 +0000 (Sat, 18 Dec 2010) | 3 lines
+Changed paths:
+   M /trunk/Skillet.lua
+   M /trunk/Skillet.toc
+
+Skillet:
+- freeze bugfix
+
+------------------------------------------------------------------------
+r234 | yossa | 2010-12-17 00:02:49 +0000 (Fri, 17 Dec 2010) | 3 lines
+Changed paths:
+   M /trunk/Skillet.lua
+   M /trunk/Skillet.toc
+   M /trunk/SkilletData.lua
+
+Skillet:
+- freeze
+
+------------------------------------------------------------------------
+r232 | yossa | 2010-12-16 00:40:07 +0000 (Thu, 16 Dec 2010) | 4 lines
+Changed paths:
+   M /trunk/SkilletData.lua
+   M /trunk/UI/MainFrame.lua
+
+Skillet:
+- fix freeze
+- show skill-up
+
+------------------------------------------------------------------------
+r231 | yossa | 2010-11-23 23:03:15 +0000 (Tue, 23 Nov 2010) | 3 lines
+Changed paths:
+   M /trunk/.pkgmeta
+
+Skillet:
+- fixed libPeriodicTable packaging
+
+------------------------------------------------------------------------
+r230 | yossa | 2010-11-23 22:55:05 +0000 (Tue, 23 Nov 2010) | 3 lines
+Changed paths:
+   M /trunk/Skillet.lua
+   M /trunk/Skillet.toc
+   M /trunk/UI/MainFrame.lua
+   M /trunk/UI/MainFrame.xml
+   M /trunk/UI/ShoppingList.lua
+   M /trunk/Upgrades.lua
+
+Skillet:
+- standalone/mini queue window
+
+------------------------------------------------------------------------

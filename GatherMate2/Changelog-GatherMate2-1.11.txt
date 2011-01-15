@@ -1,0 +1,12 @@
+tag 1.11
+608df0d224df8b7db533a404ed2b50f519e3edcb
+root <root@db06.curselive.local>
+2011-01-08 17:18:46 +0000
+
+Tagging as 1.11
+
+
+--------------------
+
+Sal Scotto:
+	- added local to a few variables so they dont add to the global namespace

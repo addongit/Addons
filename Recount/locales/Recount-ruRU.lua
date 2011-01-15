@@ -1,0 +1,10 @@
+-- Recount Locale 
+-- Please use the Localization App on WoWAce to Update this 
+-- http://www.wowace.com/projects/recount/localization/
+ 
+local L = LibStub("AceLocale-3.0"):NewLocale("Recount", "ruRU") 
+if not L then return end 
+ 
+--ruRU by Аrgonavt (update and fix by StingerSoft)
+--@localization(locale="ruRU", format="lua_additive_table", handle-unlocalized="comment")@ 
+
