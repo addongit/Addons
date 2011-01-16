@@ -1,0 +1,9 @@
+﻿## Interface: 40000
+## Author: Tukz
+## Version: 1.0.0
+## Title: |cffFF6347Tukui DB Converter|r
+## Notes: Converts TukuiDB to ElvDB.
+## RequiredDeps: ElvUI
+## OptionalDeps: ElvUI_Dps_Layout, ElvUI_Heal_Layout
+
+core.lua
