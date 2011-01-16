@@ -1,0 +1,17 @@
+## Interface: 40000
+## Title: AtlasLootReverse
+## Notes: Does a reverse lookup of AtlasLoot for an item's drop info.
+## Version: 1.11
+## Author: pceric
+## SavedVariables: AtlasLootReverseDB
+## X-Website: http://www.wowinterface.com/downloads/info12834-AtlasLootReverse.html
+## X-Category: Interface Enhancements
+## X-Embeds: Ace3, LibExtraTip
+## Dependencies: AtlasLoot
+## OptionalDeps: Ace3, LibExtraTip
+
+embeds.xml
+
+locales\locale-enUS.lua
+
+AtlasLootReverse.lua
