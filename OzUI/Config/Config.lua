@@ -8,7 +8,7 @@ OzUIConfig["OzBars"] = {
 	["enabled"] = true
 }
 OzUIConfig["OzSounds"] = {
-	["enabled"] = true
+	["enabled"] = false
 }
 OzUIConfig["OzCD"] = {
 	["enabled"] = true

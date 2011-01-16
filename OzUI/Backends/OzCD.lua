@@ -30,6 +30,7 @@ OzCD.config.spells = {
 		[54758] = {type = "inv", slot = {10}},
 		[55004] = {type = "inv", slot = {8}},
 		[55001] = {type = "inv", slot = {15}},
+		[8690] = {blacklist = true}, -- Hearthstone 
 	},
 	["DEATHKNIGHT"] = {
 		[45525] = {blacklist = true}, -- Chains of ice

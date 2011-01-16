@@ -1,5 +1,5 @@
 ## Interface: 40000
-## RequiredDeps: ElvUI
+## RequiredDeps: Tukui
 ## DefaultState: Enabled
 ## Title: |cFF00FFFFOz|rUI
 ## Author: Oz

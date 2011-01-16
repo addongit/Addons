@@ -62,6 +62,33 @@ local auras = {
 		},
 	}
 }
+if (class == "HUNTER") then
+	auras.HUNTER = {
+		["player"] = {
+			["HARMFUL"] = {},
+			["HELPFUL"] = {
+				[53220] = {["frame"] = "Player_Buff"}, -- Improved Steady
+				[82692] = {["frame"] = "Player_Buff"}, -- Focus Fire
+		},
+		},
+		["focus"] = {
+			["PLAYER|HARMFUL"] = {},
+		},
+		["target"] = {
+			["HARMFUL"] = {},
+			["PLAYER|HARMFUL"] = {
+				[1130] = {["frame"] = "Target_Debuff"}, -- Hunter's Mark
+				[88691] = {["frame"] = "Target_Debuff"}, -- Mark of Death
+				[1978] = {["frame"] = "Target_Debuff"}, -- Serpent Sting
+			},
+			["HELPFUL"] = {},
+		},
+		["pet"] = {
+			["HARMFUL"] = {},
+			["HELPFUL"] = {},
+		},
+	}
+end
 if (class == "DEATHKNIGHT") then
 	auras.DEATHKNIGHT = {
 		["player"] = {
