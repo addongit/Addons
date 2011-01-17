@@ -1,4 +1,6 @@
 '''
+Title: addongit
+Version: 1.0
 Author: Robert Jackson (rmjackson 'at' gmail 'dot' com)
 Date: 01.16.2011
 Summary:
