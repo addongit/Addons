@@ -92,7 +92,7 @@ local HealBot_prevUnitThreat={}
 local Healbot_tempUnitThreat=0
 local UnitDebuffStatus={}
 local HealBot_UnitThreatPct={}
-local hbprevThreatPct=-1
+local hbprevThreatPct=-3
 local hbtempThreatPct=-1
 -- local HealBot_resetUnitStatus=nil
 function HealBot_Action_UpdateAggro(unit,status,threatStatus,hbGUID,threatPct)
@@ -108,7 +108,7 @@ function HealBot_Action_UpdateAggro(unit,status,threatStatus,hbGUID,threatPct)
         threatPct=0
         if threatStatus then threatStatus=0 end
     end
-    hbprevThreatPct=HealBot_UnitThreatPct[hbGUID] or -3
+    hbprevThreatPct=HealBot_UnitThreatPct[hbGUID] or -4
     if threatStatus and UnitIsFriend("player",unit) and (Healbot_Config_Skins.ShowAggroBarsPct[Healbot_Config_Skins.Current_Skin]==1 or Healbot_Config_Skins.ShowAggroTextPct[Healbot_Config_Skins.Current_Skin]==1) then
         if not threatPct then
             hbtempThreatPct=HealBot_CalcThreat(unit)
@@ -239,7 +239,7 @@ end
 
 function HealBot_Action_SetThreatPct(hbGUID, threatPct)
     if not threatPct then return end
-    hbprevThreatPct=HealBot_UnitThreatPct[hbGUID] or 0
+    hbprevThreatPct=HealBot_UnitThreatPct[hbGUID] or -2
     HealBot_UnitThreatPct[hbGUID]=threatPct
     if HealBot_UnitThreatPct[hbGUID]~=hbprevThreatPct then HealBot_Action_ResetUnitStatus(unit) end
 end

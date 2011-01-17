@@ -285,6 +285,9 @@ function HealBot_Init_Spells_Defaults(class)
 
         [HEALBOT_THORNS] = {
             CastTime = 0, Mana = 155, Level = 5 },  
+            
+        [HEALBOT_NATURES_GRASP] = {
+            CastTime = 0, Mana = 155, Level = 52 },  
 
         [HEALBOT_INNERVATE] = {
             CastTime = 0, Mana = 155, Level = 28 },  
@@ -358,6 +361,9 @@ function HealBot_Init_Spells_Defaults(class)
             
         [HEALBOT_SHADOW_PROTECTION] = {
             CastTime = 0, Mana = 155, Level = 52},
+            
+        [HEALBOT_LEAP_OF_FAITH] = {
+            CastTime = 0, Mana = 155, Level = 85},
 --    };
 --  end
 

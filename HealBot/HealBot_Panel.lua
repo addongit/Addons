@@ -1883,7 +1883,7 @@ function HealBot_Panel_PanelChanged(showHeaders)
 
     if Healbot_Config_Skins.ShowRaidIcon[Healbot_Config_Skins.Current_Skin]==1 then HealBot_OnEvent_RaidTargetUpdate(nil) end
     
-    HealBot_Update_nonAggro()
+   -- HealBot_Update_nonAggro()
   
 end
 

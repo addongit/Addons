@@ -1,4 +1,4 @@
-HEALBOT_VERSION = "4.0.3.8";
+HEALBOT_VERSION = "4.0.3.9";
 
 -------------
 -- ENGLISH --
@@ -108,6 +108,7 @@ HEALBOT_HORN_OF_WINTER                  = GetSpellInfo(57330) or "Horn of Winter
 
 HEALBOT_MARK_OF_THE_WILD                = GetSpellInfo(1126) or "Mark of the Wild";
 HEALBOT_THORNS                          = GetSpellInfo(467) or "Thorns";
+HEALBOT_NATURES_GRASP                   = GetSpellInfo(16689) or "Nature's Grasp";
 HEALBOT_OMEN_OF_CLARITY                 = GetSpellInfo(16864) or "Omen of Clarity";
 HEALBOT_BARKSKIN                        = GetSpellInfo(22812) or "Barkskin";
 HEALBOT_SURVIVAL_INSTINCTS              = GetSpellInfo(61336) or "Survival Instincts";
@@ -167,6 +168,7 @@ HEALBOT_ILLUMINATED_HEALING             = GetSpellInfo(76669) or "Illuminated He
 HEALBOT_ARDENT_DEFENDER                 = GetSpellInfo(31850) or "Ardent Defender";
 HEALBOT_HOLY_SHIELD                     = GetSpellInfo(20925) or "Holy Shield"
 HEALBOT_GUARDED_BY_THE_LIGHT            = GetSpellInfo(85646) or "Guarded by the Light";
+HEALBOT_GUARDIAN_ANCIENT_KINGS          = GetSpellInfo(86150) or "Guardian of Ancient Kings";
 
 HEALBOT_POWER_WORD_SHIELD               = GetSpellInfo(17) or "Power Word: Shield";
 HEALBOT_POWER_WORD_BARRIER              = GetSpellInfo(62618) or "Power Word: Barrier";
