@@ -84,6 +84,74 @@ local function ForEachPlate(functionToRun, ...)
 	end
 end
 
+local function CreateAuraIcon(parent)
+	local button = CreateFrame("Frame",nil,parent)
+	button:SetWidth(20)
+	button:SetHeight(20)
+	button.bg = button:CreateTexture(nil, "BORDER")
+	button.bg:SetTexture(0,0,0)
+	button.bg:SetAllPoints(button)
+	button.icon = button:CreateTexture(nil, "ARTWORK")
+	button.icon:SetPoint("TOPLEFT",button,"TOPLEFT", noscalemult*2,-noscalemult*2)
+	button.icon:SetPoint("BOTTOMRIGHT",button,"BOTTOMRIGHT",-noscalemult*2,noscalemult*2)
+	button.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+	button.cd = CreateFrame("Cooldown",nil,button)
+	button.cd:SetAllPoints(button)
+	button.cd:SetReverse(true)
+	button.count = button:CreateFontString(nil,"OVERLAY")
+	button.count:SetFont(FONT,7,FONTFLAG)
+	button.count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT")
+	return button
+end
+
+local function UpdateAuraIcon(button, unit, index, filter)
+	local _, _, icon, count, debuffType, duration, expirationTime,_,_,spellID = UnitAura(unit,index,filter)
+	button.icon:SetTexture(icon)
+	button.cd:SetCooldown(expirationTime-duration,duration)
+	button.expirationTime = expirationTime
+	button.duration = duration
+	button.spellID = spellID
+	if count > 1 then 
+		button.count:SetText(count)
+	else
+		button.count:SetText("")
+	end
+	button:Show()
+end
+
+local tab = CLASS_FILTERS[ElvDB.myclass].target
+local function OnAura(frame, unit)
+	if unit ~= frame.unit or not frame.icons then return end
+	if not tab then return end
+	local i = 1
+	for index = 1,40 do
+		if i > 5 then return end
+		local match
+		local name,_,_,_,_,duration,_,caster,_,_,spellid = UnitAura(unit,index,"HARMFUL")
+		for i, tab in pairs(tab) do
+			local id = tab.id
+			if spellid == id then match = true end
+		end
+		match = true
+		if duration and caster == "player" and match == true then
+			if not frame.icons[i] then frame.icons[i] = CreateAuraIcon(frame) end
+			local icon = frame.icons[i]
+			if i == 1 then icon:SetPoint("RIGHT",frame.icons,"RIGHT") end
+			if i ~= 1 and i <= 5 then icon:SetPoint("RIGHT", frame.icons[i-1], "LEFT", -2, 0) end
+			i = i + 1
+			UpdateAuraIcon(icon, unit, index, "HARMFUL")
+		end
+	end
+	for index = i, #frame.icons do frame.icons[index]:Hide() end
+	frame.icons.n = i-1
+end
+
+local function OnCLogEvent(frame, timestamp, event, _,sourceName,_,destGUID,_,_,spellID)
+	if frame.guid == destGUID and UnitName("player") == sourceName and event == "SPELL_AURA_REMOVED" then
+		for _,icon in ipairs(frame.icons) do if icon.spellID == spellID then icon:Hide() end end			
+	end
+end
+
 local goodR, goodG, goodB = unpack(ElvCF["nameplate"].goodcolor)
 local badR, badG, badB = unpack(ElvCF["nameplate"].badcolor)
 local transitionR, transitionG, transitionB = unpack(ElvCF["nameplate"].transitioncolor)
@@ -188,6 +256,16 @@ local function UpdateThreat(frame, elapsed)
 		frame.healthborder_tex3:SetTexture(0.3, 0.3, 0.3)
 		frame.healthborder_tex4:SetTexture(0.3, 0.3, 0.3)
 	end
+	
+	if UnitName("target") == frame.name:GetText() and frame:GetAlpha() == 1 then
+		frame.guid = UnitGUID("target")
+		frame.unit = "target"
+		OnAura(frame, frame.unit)	
+	elseif frame.overlay:IsShown() then
+		frame.guid = UnitGUID("mouseover")
+		frame.unit = "mouseover"
+		OnAura(frame, frame.unit)		
+	end	
 end
 
 local function Colorize(frame)
@@ -331,11 +409,46 @@ local function OnHide(frame)
 	frame.hp:SetStatusBarColor(frame.hp.rcolor, frame.hp.gcolor, frame.hp.bcolor)
 	frame.overlay:Hide()
 	frame.cb:Hide()
+	frame.unit = nil
+	frame.guid = nil
 	frame.hasclass = nil
 	frame.isFriendly = nil
 	frame.hp.rcolor = nil
 	frame.hp.gcolor = nil
 	frame.hp.bcolor = nil
+	if frame.icons then
+		for _,icon in ipairs(frame.icons) do
+			icon:Hide()
+		end
+	end	
+	frame:SetScript("OnUpdate",nil)
+end
+
+local function OnEvent(frame, event, ...)
+	-- UnitID detection
+	if event == "PLAYER_TARGET_CHANGED" and frame:GetAlpha() == 1 then
+		frame.guid = UnitGUID("target")
+		frame.unit = "target"
+		OnAura(frame, frame.unit)
+		return
+	elseif event == "UPDATE_MOUSEOVER_UNIT" and frame.overlay:IsShown() then
+		frame.guid = UnitGUID("mouseover")
+		frame.unit = "mouseover"
+		OnAura(frame, frame.unit)
+		return
+	elseif event == "PLAYER_TARGET_CHANGED" or event == "UPDATE_MOUSEOVER_UNIT" then
+		frame.unit = nil
+	else
+		if event == "COMBAT_LOG_EVENT_UNFILTERED" then 
+			OnCLogEvent(frame, ...)
+		else
+			if UnitName("target") == frame.name:GetText() and frame:GetAlpha() == 1 then
+				frame.unit = "target"
+				frame.guid = UnitGUID("target")
+				OnAura(frame, ...)
+			end
+		end
+	end
 end
 
 local function SkinObjects(frame)
@@ -517,6 +630,20 @@ local function SkinObjects(frame)
 	cIconTex:SetTexture("Interface\\WorldStateFrame\\Icons-Classes")
 	cIconTex:SetSize(iconSize, iconSize)
 	frame.class = cIconTex
+	
+	-- Aura tracking
+	if ElvCF["nameplate"].trackauras == true then
+		frame.icons = CreateFrame("Frame",nil,frame)
+		frame.icons:SetPoint("BOTTOMRIGHT",frame.hp,"TOPRIGHT", 0, FONTSIZE+5)
+		frame.icons:SetWidth(20 + hpWidth)
+		frame.icons:SetHeight(25)
+		frame.icons:SetFrameLevel(frame.hp:GetFrameLevel()+2)
+		frame:RegisterEvent("UNIT_AURA")
+		frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+		frame:RegisterEvent("PLAYER_TARGET_CHANGED")	
+		frame:HookScript("OnEvent",OnEvent)		
+	end
 	
 	--Hide Old Stuff
 	QueueObject(frame, oldlevel)

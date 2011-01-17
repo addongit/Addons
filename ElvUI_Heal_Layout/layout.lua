@@ -1351,6 +1351,7 @@ local function Shared(self, unit)
 		else
 			self.FrameBorder.shadow:SetPoint("BOTTOMLEFT", PowerFrame, "BOTTOMLEFT", ElvDB.Scale(-4), ElvDB.Scale(-4))
 		end
+		self.PowerFrame = PowerFrame
 		
 		-- power
 		local power = CreateFrame('StatusBar', nil, self)
@@ -1702,6 +1703,7 @@ local function Shared(self, unit)
 			AltPowerBar:SetBackdropColor(0, 0, 0)
 			AltPowerBar:HookScript("OnShow", function(self) self:GetParent().FrameBorder.shadow:SetPoint("TOPLEFT", ElvDB.Scale(-4), ElvDB.Scale(12)) end)
 			AltPowerBar:HookScript("OnHide", function(self) self:GetParent().FrameBorder.shadow:SetPoint("TOPLEFT", ElvDB.Scale(-4), ElvDB.Scale(4)) end)
+			AltPowerBar.FrameBackdrop = apb_bg		
 			self.AltPowerBar = AltPowerBar	
 		end
 		
@@ -1935,12 +1937,12 @@ end
 
 -- Player
 local player = oUF:Spawn('player', "ElvHeal_player")
-player:SetPoint("BOTTOMRIGHT", ElvuiActionBarBackground, "TOPLEFT", ElvDB.Scale(-15),ElvDB.Scale(205) + yoffset)
+player:SetPoint("BOTTOMRIGHT", ElvuiActionBarBackground, "TOPLEFT", ElvDB.Scale(-35),ElvDB.Scale(205) + yoffset)
 player:SetSize(player_width, player_height)
 
 -- Target
 local target = oUF:Spawn('target', "ElvHeal_target")
-target:SetPoint("BOTTOMLEFT", ElvuiActionBarBackground, "TOPRIGHT", ElvDB.Scale(15),ElvDB.Scale(205) + yoffset)
+target:SetPoint("BOTTOMLEFT", ElvuiActionBarBackground, "TOPRIGHT", ElvDB.Scale(35),ElvDB.Scale(205) + yoffset)
 target:SetSize(target_width, target_height)
 
 -- Focus
