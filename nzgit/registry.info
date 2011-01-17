@@ -1,0 +1,30 @@
+import _winreg as wreg
+import unicodedata
+
+wow_key_path = 'SOFTWARE\\Wow6432Node\\Blizzard Entertainment\\World of Warcraft'
+key = None
+wow_base = None
+launcher_path = None
+
+def get_reg_handle(key_path):
+  return wreg.OpenKey(wreg.HKEY_LOCAL_MACHINE, key_path)
+
+try:
+	key = get_reg_handle(wow_key_path)
+
+	if key: 
+
+		'''
+		tuple: ( An integer giving the number of sub keys this key has., 
+				An integer giving the number of values this key has.
+				A long integer giving when the key was last modified (if available) as 100's of nanoseconds since Jan 1, 1600. )
+		'''
+		wow_registry_keys = wreg.QueryInfoKey(key)[1]
+
+		if wow_registry_keys > 0:
+			wow_base = wreg.QueryValueEx(key, 'InstallPath')[0].encode('utf-8')
+			launcher_path = wreg.QueryValueEx(key, 'GamePath')[0].encode('utf-8')
+except Exception, e:
+	print str(e)
+else:
+	key.Close()

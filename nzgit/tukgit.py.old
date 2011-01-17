@@ -1,0 +1,173 @@
+'''
+Author: Robert Jackson (rmjackson 'at' gmail 'dot' com)
+Date: 01.14.2011
+Summary:
+  Handles setting up my addons repo and cloning/updating to the local wow install.
+'''
+
+import os
+import sys
+import ConfigParser
+import shutil
+import tempfile
+import _winreg as wreg
+import unicodedata
+
+#config = ConfigParser.RawConfigParser(delimiters=('='))
+config = ConfigParser.ConfigParser()
+config.optionxform = str
+
+wow_key_path = 'SOFTWARE\\Wow6432Node\\Blizzard Entertainment\\World of Warcraft'
+key = None
+launcher_path = None
+wow_base = None
+cfg_wow_base = None
+cfg_addon_base = None
+remote_repo = None
+addon_base = None
+config_base_name = '.nzeer'
+config_file = None
+launch_wow = False
+cfg_launch_wow = None
+
+'''
+def is_expected_git_config(path, remote_repo):
+  print 'Validating .git/config'
+  c = ConfigParser.ConfigParser()
+  c.optionxform = str
+  c.read(os.path.join(path, 'config'))
+  if c.get('%s "%s"' % ('remote', 'origin'), 'url') == remote_repo: 
+    print '.git/config appears to be ours.'
+    return True
+  print '.git/config is of an unknown repo.'
+  return False
+'''
+
+def get_wow_base():
+  return raw_input('Enter the full path to your WoW directory: ')
+
+def get_remote_repo():
+  return raw_input('Enter the full address to the remote repo \n(EX: git://github.com/nzeer/AddOns.git): ')
+
+def rebase_local_addons(addon_path):
+  print 'Rebasing addons'
+  unique = os.path.basename(tempfile.mktemp())
+  shutil.move(addon_path, '%s.%s' % (addon_path, unique))
+  os.makedirs(addon_path)
+  print 'Done.'
+  
+def init_git(addon_path, remote_repo, config_path):
+  print 'Initializing up git repo'
+  os.chdir(addon_path)
+  os.system('git clone %s .' % remote_repo)
+  os.system('attrib +h %s' % config_path)
+  print 'Done.'
+  
+def get_reg_handle(key_path):
+  return wreg.OpenKey(wreg.HKEY_LOCAL_MACHINE, key_path)
+  
+def is_initial_run(config_path, addon_path):
+  git_path = os.path.join(addon_path, '.git/')
+  git_exists = os.path.exists(git_path)
+  config_exists = os.path.exists(config_path)
+  if git_exists and config_exists: return False
+  return True
+  
+def init_wow(launcher_path):
+  launcher_exists = os.path.exists(launcher_path)
+  if launcher_exists: os.system('start %s' % (launcher_path))
+
+# Grabs the WoW install path and launcher path from the registry, and sets defaults.
+# Sets up default for addon directory.
+try:
+  key = get_reg_handle(wow_key_path)
+  if key: 
+    '''tuple: ( An integer giving the number of sub keys this key has., 
+				An integer giving the number of values this key has.
+				A long integer giving when the key was last modified (if available) as 100's of nanoseconds since Jan 1, 1600. )
+    '''
+    try:
+      wow_registry_keys = wreg.QueryInfoKey(key)[1]
+    
+      if wow_registry_keys > 0:
+        wow_base = wreg.QueryValueEx(key, 'InstallPath')[0].encode('utf-8')
+        launcher_path = wreg.QueryValueEx(key, 'GamePath')[0].encode('utf-8')
+        addon_base = 'Interface/AddOns'
+    except Exception, err:
+      print str(e)
+    else:
+      key.Close()
+except Exception, e:
+  print str(e)
+
+try:
+  config.read('./tukgit.cfg')
+  remote_repo = config.get('remote', 'repo')
+except Exception, e:
+  print str(e)
+  # Config not found or cannot be read, grabbing information the hard way.
+  remote_repo = get_remote_repo()
+  
+try:
+  cfg_wow_base = config.get('local', 'wow_directory')
+except Exception, err:
+  pass
+  
+try:
+  cfg_addon_base = config.get('local', 'addon_path')
+except Exception, err:
+  pass
+
+try:
+  cfg_launch_wow = config.getboolean('local', 'launch_wow')
+except Exception, err:
+  pass
+  
+wow_base = cfg_wow_base if cfg_wow_base is not None else wow_base 
+addon_base = cfg_addon_base if cfg_addon_base is not None else addon_base 
+launch_wow = cfg_launch_wow if cfg_launch_wow is not None else launch_wow 
+
+# make sure our path is correctly formed with no trailing slashes incase
+# we need to perform some voodoo  
+addon_path = os.path.normpath(os.path.join(wow_base, addon_base))
+config_path = os.path.join(addon_path, config_base_name)
+#config_file = os.path.join(config_path, 'config')
+
+# is wow installed
+wow_exists = os.path.exists(wow_base)
+
+assert remote_repo is not None
+
+if wow_exists:
+  print 'Using %s' % (wow_base)
+  # is there an addons directory
+  addons_exist = os.path.exists(addon_path)
+  
+  # if the the addons directory doesn't exist
+  # create it and init our repo
+  if not addons_exist:
+    print 'AddOns directory not found.'
+    print 'Creating'
+    os.makedirs(addon_path)
+  # else if its not our repo
+  # rebase addons and init our repo
+  elif is_initial_run(config_path, addon_path):
+    rebase_local_addons(addon_path)
+  # else everything is in place, update.
+  else:
+    os.chdir(addon_path)
+    print 'Updating addons'
+    os.system('git pull')
+    print 'Done.'
+    init_wow(launcher_path)
+    sys.exit('Finished.')
+  
+  # Either the path didnt exist and we've created it
+  # or it was the initial run and we've rebased previous addon collection
+  init_git(addon_path, remote_repo, config_path)
+  init_wow(launcher_path)
+  sys.exit('Finished.')
+else:
+  print '%s does not appear to exist.' % windows_path
+
+sys.exit('Finished.')
