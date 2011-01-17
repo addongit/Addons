@@ -25,6 +25,14 @@ if ElvCF["nameplate"].showhealth ~= true then
 	iconSize = 20
 end
 
+local DebuffColor = { -- Not used currently
+	['Magic']	= {.2, .6, 1},
+	['Curse']	= {.6, 0, 1},
+	['Disease']	= {.6, .4, 0},
+	['Poison']	= {0, .6, 0},
+	['none'] = {0, 0, 0},
+}
+
 local NamePlates = CreateFrame("Frame", nil, UIParent)
 NamePlates:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 SetCVar("bloatthreat", 0) -- stop resizing nameplate according to threat level.
@@ -60,44 +68,48 @@ local function HideObjects(parent)
 	end
 end
 
-local function CheckBlacklist(frame, ...)
-	if PlateBlacklist[frame.name:GetText()] or (ElvDB.level ~= 1 and frame.oldlevel:GetText() == tostring(1)) then
-		frame:SetScript("OnUpdate", function() end)
-		frame.hp:Hide()
-		frame.cb:Hide()
-		frame.overlay:Hide()
-		frame.oldlevel:Hide()
-	end
-end
 
-local function HideDrunkenText(frame, ...)
-	if frame and frame.oldlevel and frame.oldlevel:IsShown() then
-		frame.oldlevel:Hide()
-	end
-end
-
+--Create our Aura Icons
 local function CreateAuraIcon(parent)
 	local button = CreateFrame("Frame",nil,parent)
 	button:SetWidth(20)
 	button:SetHeight(20)
-	button.bg = button:CreateTexture(nil, "BORDER")
-	button.bg:SetTexture(0,0,0)
+	
+	button.bg = button:CreateTexture(nil, "BACKGROUND")
+	button.bg:SetTexture(unpack(ElvCF["media"].backdropcolor))
 	button.bg:SetAllPoints(button)
-	button.icon = button:CreateTexture(nil, "ARTWORK")
-	button.icon:SetPoint("TOPLEFT",button,"TOPLEFT", noscalemult*2,-noscalemult*2)
-	button.icon:SetPoint("BOTTOMRIGHT",button,"BOTTOMRIGHT",-noscalemult*2,noscalemult*2)
+	
+	button.bord = button:CreateTexture(nil, "BORDER")
+	button.bord:SetTexture(unpack(ElvCF["media"].bordercolor))
+	button.bord:SetPoint("TOPLEFT",button,"TOPLEFT", noscalemult,-noscalemult)
+	button.bord:SetPoint("BOTTOMRIGHT",button,"BOTTOMRIGHT",-noscalemult,noscalemult)
+	
+	button.bg2 = button:CreateTexture(nil, "ARTWORK")
+	button.bg2:SetTexture(unpack(ElvCF["media"].backdropcolor))
+	button.bg2:SetPoint("TOPLEFT",button,"TOPLEFT", noscalemult*2,-noscalemult*2)
+	button.bg2:SetPoint("BOTTOMRIGHT",button,"BOTTOMRIGHT",-noscalemult*2,noscalemult*2)	
+	
+	button.icon = button:CreateTexture(nil, "OVERLAY")
+	button.icon:SetPoint("TOPLEFT",button,"TOPLEFT", noscalemult*3,-noscalemult*3)
+	button.icon:SetPoint("BOTTOMRIGHT",button,"BOTTOMRIGHT",-noscalemult*3,noscalemult*3)
 	button.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 	button.cd = CreateFrame("Cooldown",nil,button)
 	button.cd:SetAllPoints(button)
 	button.cd:SetReverse(true)
 	button.count = button:CreateFontString(nil,"OVERLAY")
 	button.count:SetFont(FONT,7,FONTFLAG)
-	button.count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT")
+	button.count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 2)
 	return button
 end
 
+--Update an Aura Icon
 local function UpdateAuraIcon(button, unit, index, filter)
 	local _, _, icon, count, debuffType, duration, expirationTime,_,_,spellID = UnitAura(unit,index,filter)
+	
+	--[[ Leaving debuff coloring here in case i want to use it ever.
+	local c = DebuffColor[debuffType] or DebuffColor.none
+	button.bord:SetTexture(c[1], c[2], c[3])]]
+	
 	button.icon:SetTexture(icon)
 	button.cd:SetCooldown(expirationTime-duration,duration)
 	button.expirationTime = expirationTime
@@ -108,10 +120,11 @@ local function UpdateAuraIcon(button, unit, index, filter)
 	else
 		button.count:SetText("")
 	end
-	button.cd:SetScript("OnUpdate", function(self) if self.timer.enabled == nil and frame.unit == nil then self:GetParent():Hide() self:SetScript("OnUpdate", nil) end end)
+	button.cd:SetScript("OnUpdate", function(self) button.cd.timer.text:SetFont(FONT,8,FONTFLAG) if self.timer.enabled == nil and frame.unit == nil then self:GetParent():Hide() self:SetScript("OnUpdate", nil) end end)
 	button:Show()
 end
 
+--Filter auras on nameplate, and determine if we need to update them or not.
 local tab = CLASS_FILTERS[ElvDB.myclass].target
 local function OnAura(frame, unit)
 	if not frame.icons or not tab or not frame.unit then return end
@@ -120,11 +133,19 @@ local function OnAura(frame, unit)
 		if i > 5 then return end
 		local match
 		local name,_,_,_,_,duration,_,caster,_,_,spellid = UnitAura(frame.unit,index,"HARMFUL")
-		for i, tab in pairs(tab) do
-			local id = tab.id
-			if spellid == id then match = true end
+		
+		if ElvCF["nameplate"].trackauras == true then
+			for i, tab in pairs(tab) do
+				local id = tab.id
+				if spellid == id and caster == "player" then match = true end
+			end
 		end
-		if duration and caster == "player" and match == true then
+		
+		if ElvCF["nameplate"].trackccauras == true then
+			if DebuffWhiteList[name] then match = true end
+		end
+		
+		if duration and match == true then
 			if not frame.icons[i] then frame.icons[i] = CreateAuraIcon(frame) end
 			local icon = frame.icons[i]
 			if i == 1 then icon:SetPoint("RIGHT",frame.icons,"RIGHT") end
@@ -136,12 +157,23 @@ local function OnAura(frame, unit)
 	for index = i, #frame.icons do frame.icons[index]:Hide() end
 end
 
+--Check if an aura has fallen off a nameplate
 local function OnCLogEvent(frame, timestamp, event, _,sourceName,_,destGUID,_,_,spellID)
-	if frame.guid == destGUID and UnitName("player") == sourceName and event == "SPELL_AURA_REMOVED" then
+	if frame.guid == destGUID and event == "SPELL_AURA_REMOVED" then
 		for _,icon in ipairs(frame.icons) do if icon.spellID == spellID then icon:Hide() end end			
 	end
 end
 
+local function OnEvent(frame, event, ...)
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then 
+		OnCLogEvent(frame, ...)
+	else
+		OnAura(frame, ...)
+	end
+end
+
+
+--OnUpdate function for all nameplates, we use this to update threat, health, and anything else that may require rapid updates.
 local goodR, goodG, goodB = unpack(ElvCF["nameplate"].goodcolor)
 local badR, badG, badB = unpack(ElvCF["nameplate"].badcolor)
 local transitionR, transitionG, transitionB = unpack(ElvCF["nameplate"].transitioncolor)
@@ -163,10 +195,10 @@ local function UpdateThreat(frame, elapsed)
 				frame.healthborder_tex4:SetTexture(badR, badG, badB)
 			end
 		else
-			frame.healthborder_tex1:SetTexture(0.3, 0.3, 0.3)
-			frame.healthborder_tex2:SetTexture(0.3, 0.3, 0.3)
-			frame.healthborder_tex3:SetTexture(0.3, 0.3, 0.3)
-			frame.healthborder_tex4:SetTexture(0.3, 0.3, 0.3)
+			frame.healthborder_tex1:SetTexture(unpack(ElvCF["media"].bordercolor))
+			frame.healthborder_tex2:SetTexture(unpack(ElvCF["media"].bordercolor))
+			frame.healthborder_tex3:SetTexture(unpack(ElvCF["media"].bordercolor))
+			frame.healthborder_tex4:SetTexture(unpack(ElvCF["media"].bordercolor))
 		end
 	else
 		if not frame.region:IsShown() then
@@ -235,19 +267,87 @@ local function UpdateThreat(frame, elapsed)
 			frame.healthborder_tex3:SetTexture(1, 0, 0)
 			frame.healthborder_tex4:SetTexture(1, 0, 0)
 		else
-			frame.healthborder_tex1:SetTexture(0.3, 0.3, 0.3)
-			frame.healthborder_tex2:SetTexture(0.3, 0.3, 0.3)
-			frame.healthborder_tex3:SetTexture(0.3, 0.3, 0.3)
-			frame.healthborder_tex4:SetTexture(0.3, 0.3, 0.3)
+			frame.healthborder_tex1:SetTexture(unpack(ElvCF["media"].bordercolor))
+			frame.healthborder_tex2:SetTexture(unpack(ElvCF["media"].bordercolor))
+			frame.healthborder_tex3:SetTexture(unpack(ElvCF["media"].bordercolor))
+			frame.healthborder_tex4:SetTexture(unpack(ElvCF["media"].bordercolor))
 		end
 	elseif (frame.hasclass ~= true and frame.isFriendly ~= true) and ElvCF["nameplate"].enhancethreat == true then
-		frame.healthborder_tex1:SetTexture(0.3, 0.3, 0.3)
-		frame.healthborder_tex2:SetTexture(0.3, 0.3, 0.3)
-		frame.healthborder_tex3:SetTexture(0.3, 0.3, 0.3)
-		frame.healthborder_tex4:SetTexture(0.3, 0.3, 0.3)
+		frame.healthborder_tex1:SetTexture(unpack(ElvCF["media"].bordercolor))
+		frame.healthborder_tex2:SetTexture(unpack(ElvCF["media"].bordercolor))
+		frame.healthborder_tex3:SetTexture(unpack(ElvCF["media"].bordercolor))
+		frame.healthborder_tex4:SetTexture(unpack(ElvCF["media"].bordercolor))
 	end
 end
 
+--Color the castbar depending on if we can interrupt or not, 
+--also resize it as nameplates somehow manage to resize some frames when they reappear after being hidden
+local function UpdateCastbar(frame)
+	frame:ClearAllPoints()
+	frame:SetSize(cbWidth, cbHeight)
+	frame:SetPoint('TOP', frame:GetParent().hp, 'BOTTOM', 0, -8)
+	frame:GetStatusBarTexture():SetHorizTile(true)
+
+	if(not frame.shield:IsShown()) then
+		frame:SetStatusBarColor(0.78, 0.25, 0.25, 1)
+	end
+	
+	local frame = frame:GetParent()
+	frame.castbarbackdrop_tex:ClearAllPoints()
+	frame.castbarbackdrop_tex:SetPoint("TOPLEFT", frame.cb, "TOPLEFT", -noscalemult*3, noscalemult*3)
+	frame.castbarbackdrop_tex:SetPoint("BOTTOMRIGHT", frame.cb, "BOTTOMRIGHT", noscalemult*3, -noscalemult*3)
+end	
+
+--Determine whether or not the cast is Channelled or a Regular cast so we can grab the proper Cast Name
+local function UpdateCastText(frame, curValue)
+	local minValue, maxValue = frame:GetMinMaxValues()
+	
+	if UnitChannelInfo("target") then
+		frame.time:SetFormattedText("%.1f ", curValue)
+		frame.name:SetText(select(1, (UnitChannelInfo("target"))))
+	end
+	
+	if UnitCastingInfo("target") then
+		frame.time:SetFormattedText("%.1f ", maxValue - curValue)
+		frame.name:SetText(select(1, (UnitCastingInfo("target"))))
+	end
+end
+
+--Sometimes castbar likes to randomly resize
+local OnValueChanged = function(self, curValue)
+	UpdateCastText(self, curValue)
+	if self.needFix then
+		UpdateCastbar(self)
+		self.needFix = nil
+	end
+end
+
+--Sometimes castbar likes to randomly resize
+local OnSizeChanged = function(self)
+	self.needFix = true
+end
+
+--We need to reset everything when a nameplate it hidden, this is so theres no left over data when a nameplate gets reshown for a differant mob.
+local function OnHide(frame)
+	frame.hp:SetStatusBarColor(frame.hp.rcolor, frame.hp.gcolor, frame.hp.bcolor)
+	frame.overlay:Hide()
+	frame.cb:Hide()
+	frame.unit = nil
+	frame.guid = nil
+	frame.hasclass = nil
+	frame.isFriendly = nil
+	frame.hp.rcolor = nil
+	frame.hp.gcolor = nil
+	frame.hp.bcolor = nil
+	if frame.icons then
+		for _,icon in ipairs(frame.icons) do
+			icon:Hide()
+		end
+	end	
+	frame:SetScript("OnUpdate",nil)
+end
+
+--Color the nameplate to 'Our' style instead of using blizzards ugly colors.
 local function Colorize(frame)
 	local r,g,b = frame.hp:GetStatusBarColor()
 	if frame.hasclass == true then frame.isFriendly = false return end
@@ -270,33 +370,8 @@ local function Colorize(frame)
 	frame.hp:SetStatusBarColor(r,g,b)
 end
 
-local function OnEvent(frame, event, ...)
-	if event == "COMBAT_LOG_EVENT_UNFILTERED" then 
-		OnCLogEvent(frame, ...)
-	else
-		OnAura(frame, ...)
-	end
-end
-
-local function OnHide(frame)
-	frame.hp:SetStatusBarColor(frame.hp.rcolor, frame.hp.gcolor, frame.hp.bcolor)
-	frame.overlay:Hide()
-	frame.cb:Hide()
-	frame.unit = nil
-	frame.guid = nil
-	frame.hasclass = nil
-	frame.isFriendly = nil
-	frame.hp.rcolor = nil
-	frame.hp.gcolor = nil
-	frame.hp.bcolor = nil
-	if frame.icons then
-		for _,icon in ipairs(frame.icons) do
-			icon:Hide()
-		end
-	end	
-	frame:SetScript("OnUpdate",nil)
-end
-
+--HealthBar OnShow, use this to set variables for the nameplate, also size the healthbar here because it likes to lose it's
+--size settings when it gets reshown
 local function UpdateObjects(frame)
 	local frame = frame:GetParent()
 	
@@ -304,13 +379,22 @@ local function UpdateObjects(frame)
 	local r, g, b = floor(r*100+.5)/100, floor(g*100+.5)/100, floor(b*100+.5)/100
 	local classname = ""
 	
-	
+	--Have to reposition this here so it doesnt resize after being hidden
 	frame.hp:ClearAllPoints()
 	frame.hp:SetSize(hpWidth, hpHeight)	
 	frame.hp:SetPoint('TOP', frame, 'TOP', 0, -noscalemult*3)
 	frame.hp:GetStatusBarTexture():SetHorizTile(true)
+	
+	-- Create Health Backdrop frame
+	if not frame.healthbarbackdrop_tex then
+		frame.healthbarbackdrop_tex = frame.hp:CreateTexture(nil, "BACKGROUND")
+		frame.healthbarbackdrop_tex:SetPoint("CENTER", frame.hp, "CENTER")
+		frame.healthbarbackdrop_tex:SetWidth(hpWidth + noscalemult*6)
+		frame.healthbarbackdrop_tex:SetHeight(hpHeight + noscalemult*6)
+		frame.healthbarbackdrop_tex:SetTexture(unpack(ElvCF["media"].backdropcolor))
+	end
 			
-	--Class Icons
+	--Class Icons, also determines if the current frame is a Enemy Player frame
 	for class, color in pairs(RAID_CLASS_COLORS) do
 		if RAID_CLASS_COLORS[class].r == r and RAID_CLASS_COLORS[class].g == g and RAID_CLASS_COLORS[class].b == b then
 			classname = class
@@ -368,7 +452,7 @@ local function UpdateObjects(frame)
 	frame.overlay:SetAllPoints(frame.hp)
 	
 	-- Aura tracking
-	if ElvCF["nameplate"].trackauras == true then
+	if ElvCF["nameplate"].trackauras == true or ElvCF["nameplate"].trackccauras == true then
 		if frame.icons then return end
 		frame.icons = CreateFrame("Frame",nil,frame)
 		frame.icons:SetPoint("BOTTOMRIGHT",frame.hp,"TOPRIGHT", 0, FONTSIZE+5)
@@ -383,48 +467,7 @@ local function UpdateObjects(frame)
 	HideObjects(frame)
 end
 
-local function UpdateCastbar(frame)
-	frame:ClearAllPoints()
-	frame:SetSize(cbWidth, cbHeight)
-	frame:SetPoint('TOP', frame:GetParent().hp, 'BOTTOM', 0, -8)
-	frame:GetStatusBarTexture():SetHorizTile(true)
-
-	if(not frame.shield:IsShown()) then
-		frame:SetStatusBarColor(0.78, 0.25, 0.25, 1)
-	end
-	
-	local frame = frame:GetParent()
-	frame.castbarbackdrop_tex:ClearAllPoints()
-	frame.castbarbackdrop_tex:SetPoint("TOPLEFT", frame.cb, "TOPLEFT", -noscalemult*3, noscalemult*3)
-	frame.castbarbackdrop_tex:SetPoint("BOTTOMRIGHT", frame.cb, "BOTTOMRIGHT", noscalemult*3, -noscalemult*3)
-end	
-
-local function UpdateCastText(frame, curValue)
-	local minValue, maxValue = frame:GetMinMaxValues()
-	
-	if UnitChannelInfo("target") then
-		frame.time:SetFormattedText("%.1f ", curValue)
-		frame.name:SetText(select(1, (UnitChannelInfo("target"))))
-	end
-	
-	if UnitCastingInfo("target") then
-		frame.time:SetFormattedText("%.1f ", maxValue - curValue)
-		frame.name:SetText(select(1, (UnitCastingInfo("target"))))
-	end
-end
-
-local OnValueChanged = function(self, curValue)
-	UpdateCastText(self, curValue)
-	if self.needFix then
-		UpdateCastbar(self)
-		self.needFix = nil
-	end
-end
-
-local OnSizeChanged = function(self)
-	self.needFix = true
-end
-
+--This is where we create most 'Static' objects for the nameplate, it gets fired when a nameplate is first seen.
 local function SkinObjects(frame)
 	local hp, cb = frame:GetChildren()
 	local threat, hpborder, cbshield, cbborder, cbicon, overlay, oldname, oldlevel, bossicon, raidicon, elite = frame:GetRegions()
@@ -434,43 +477,35 @@ local function SkinObjects(frame)
 	hp:SetFrameLevel(9)
 	cb:SetFrameLevel(9)
 	
-	-- Create Cast Icon Backdrop frame
-	local healthbarbackdrop_tex = hp:CreateTexture(nil, "BACKGROUND")
-	healthbarbackdrop_tex:SetPoint("CENTER")
-	healthbarbackdrop_tex:SetWidth(hpWidth + noscalemult*6)
-	healthbarbackdrop_tex:SetHeight(hpHeight + noscalemult*6)
-	healthbarbackdrop_tex:SetTexture(0.1, 0.1, 0.1)
-	frame.healthbarbackdrop_tex = healthbarbackdrop_tex
-	
 	--Create our fake border.. fuck blizz
 	local healthbarborder_tex1 = hp:CreateTexture(nil, "BORDER")
 	healthbarborder_tex1:SetPoint("TOPLEFT", hp, "TOPLEFT", -noscalemult*2, noscalemult*2)
 	healthbarborder_tex1:SetPoint("TOPRIGHT", hp, "TOPRIGHT", noscalemult*2, noscalemult*2)
 	healthbarborder_tex1:SetHeight(noscalemult)
-	healthbarborder_tex1:SetTexture(0.3, 0.3, 0.3)	
+	healthbarborder_tex1:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	frame.healthborder_tex1 = healthbarborder_tex1
 	
 	local healthbarborder_tex2 = hp:CreateTexture(nil, "BORDER")
 	healthbarborder_tex2:SetPoint("BOTTOMLEFT", hp, "BOTTOMLEFT", -noscalemult*2, -noscalemult*2)
 	healthbarborder_tex2:SetPoint("BOTTOMRIGHT", hp, "BOTTOMRIGHT", noscalemult*2, -noscalemult*2)
 	healthbarborder_tex2:SetHeight(noscalemult)
-	healthbarborder_tex2:SetTexture(0.3, 0.3, 0.3)	
+	healthbarborder_tex2:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	frame.healthborder_tex2 = healthbarborder_tex2
 	
 	local healthbarborder_tex3 = hp:CreateTexture(nil, "BORDER")
 	healthbarborder_tex3:SetPoint("TOPLEFT", hp, "TOPLEFT", -noscalemult*2, noscalemult*2)
 	healthbarborder_tex3:SetPoint("BOTTOMLEFT", hp, "BOTTOMLEFT", noscalemult*2, -noscalemult*2)
 	healthbarborder_tex3:SetWidth(noscalemult)
-	healthbarborder_tex3:SetTexture(0.3, 0.3, 0.3)	
+	healthbarborder_tex3:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	frame.healthborder_tex3 = healthbarborder_tex3
 	
 	local healthbarborder_tex4 = hp:CreateTexture(nil, "BORDER")
 	healthbarborder_tex4:SetPoint("TOPRIGHT", hp, "TOPRIGHT", noscalemult*2, noscalemult*2)
 	healthbarborder_tex4:SetPoint("BOTTOMRIGHT", hp, "BOTTOMRIGHT", -noscalemult*2, -noscalemult*2)
 	healthbarborder_tex4:SetWidth(noscalemult)
-	healthbarborder_tex4:SetTexture(0.3, 0.3, 0.3)	
+	healthbarborder_tex4:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	frame.healthborder_tex4 = healthbarborder_tex4
-	
+
 	hp:SetStatusBarTexture(TEXTURE)
 	frame.hp = hp
 	
@@ -479,12 +514,12 @@ local function SkinObjects(frame)
 	hp.hpbg:SetAllPoints(hp)
 	hp.hpbg:SetTexture(1,1,1,0.25)  
 	
-	--Create Overlay Highlight
+	--Reuse old Overlay Highlight
 	frame.overlay = overlay
 	frame.overlay:SetTexture(1,1,1,0.15)
 	frame.overlay:SetAllPoints(hp)
 	
-	--Create Name
+	--Create Level
 	hp.level = hp:CreateFontString(nil, "OVERLAY")
 	hp.level:SetFont(FONT, FONTSIZE, FONTFLAG)
 	hp.level:SetTextColor(1, 1, 1)
@@ -504,6 +539,7 @@ local function SkinObjects(frame)
 		hp.value:SetShadowOffset(ElvDB.mult, -ElvDB.mult)
 	end
 	
+	--Debug Text for when i'm testing
 	hp.debug = hp:CreateFontString(nil, "OVERLAY")	
 	hp.debug:SetFont(FONT, FONTSIZE, FONTFLAG)
 	hp.debug:SetPoint("CENTER", hp, "CENTER", 0, 50)
@@ -514,7 +550,7 @@ local function SkinObjects(frame)
 	local castbarbackdrop_tex = cb:CreateTexture(nil, "BACKGROUND")
 	castbarbackdrop_tex:SetPoint("TOPLEFT", cb, "TOPLEFT", -noscalemult*3, noscalemult*3)
 	castbarbackdrop_tex:SetPoint("BOTTOMRIGHT", cb, "BOTTOMRIGHT", noscalemult*3, -noscalemult*3)
-	castbarbackdrop_tex:SetTexture(0.1, 0.1, 0.1)
+	castbarbackdrop_tex:SetTexture(unpack(ElvCF["media"].backdropcolor))
 	frame.castbarbackdrop_tex = castbarbackdrop_tex
 	
 	--Create our fake border.. fuck blizz
@@ -522,25 +558,25 @@ local function SkinObjects(frame)
 	castbarborder_tex1:SetPoint("TOPLEFT", cb, "TOPLEFT", -noscalemult*2, noscalemult*2)
 	castbarborder_tex1:SetPoint("TOPRIGHT", cb, "TOPRIGHT", noscalemult*2, noscalemult*2)
 	castbarborder_tex1:SetHeight(noscalemult)
-	castbarborder_tex1:SetTexture(0.3, 0.3, 0.3)	
+	castbarborder_tex1:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	
 	local castbarborder_tex2 = cb:CreateTexture(nil, "BORDER")
 	castbarborder_tex2:SetPoint("BOTTOMLEFT", cb, "BOTTOMLEFT", -noscalemult*2, -noscalemult*2)
 	castbarborder_tex2:SetPoint("BOTTOMRIGHT", cb, "BOTTOMRIGHT", noscalemult*2, -noscalemult*2)
 	castbarborder_tex2:SetHeight(noscalemult)
-	castbarborder_tex2:SetTexture(0.3, 0.3, 0.3)	
+	castbarborder_tex2:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	
 	local castbarborder_tex3 = cb:CreateTexture(nil, "BORDER")
 	castbarborder_tex3:SetPoint("TOPLEFT", cb, "TOPLEFT", -noscalemult*2, noscalemult*2)
 	castbarborder_tex3:SetPoint("BOTTOMLEFT", cb, "BOTTOMLEFT", noscalemult*2, -noscalemult*2)
 	castbarborder_tex3:SetWidth(noscalemult)
-	castbarborder_tex3:SetTexture(0.3, 0.3, 0.3)	
+	castbarborder_tex3:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	
 	local castbarborder_tex4 = cb:CreateTexture(nil, "BORDER")
 	castbarborder_tex4:SetPoint("TOPRIGHT", cb, "TOPRIGHT", noscalemult*2, noscalemult*2)
 	castbarborder_tex4:SetPoint("BOTTOMRIGHT", cb, "BOTTOMRIGHT", -noscalemult*2, -noscalemult*2)
 	castbarborder_tex4:SetWidth(noscalemult)
-	castbarborder_tex4:SetTexture(0.3, 0.3, 0.3)	
+	castbarborder_tex4:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	
 	--Setup CastBar Icon
 	cbicon:ClearAllPoints()
@@ -548,23 +584,24 @@ local function SkinObjects(frame)
 	cbicon:SetSize(iconSize, iconSize)
 	cbicon:SetTexCoord(.07, .93, .07, .93)
 	cbicon:SetDrawLayer("OVERLAY")
-
+	cb.icon = cbicon
+	
 	-- Create Cast Icon Backdrop frame
 	local casticonbackdrop_tex = cb:CreateTexture(nil, "BACKGROUND")
 	casticonbackdrop_tex:SetPoint("TOPLEFT", cbicon, "TOPLEFT", -noscalemult*3, noscalemult*3)
 	casticonbackdrop_tex:SetPoint("BOTTOMRIGHT", cbicon, "BOTTOMRIGHT", noscalemult*3, -noscalemult*3)
-	casticonbackdrop_tex:SetTexture(0.1, 0.1, 0.1)
+	casticonbackdrop_tex:SetTexture(unpack(ElvCF["media"].backdropcolor))
 	
 	local casticonborder_tex = cb:CreateTexture(nil, "BORDER")
 	casticonborder_tex:SetPoint("TOPLEFT", cbicon, "TOPLEFT", -noscalemult*2, noscalemult*2)
 	casticonborder_tex:SetPoint("BOTTOMRIGHT", cbicon, "BOTTOMRIGHT", noscalemult*2, -noscalemult*2)
-	casticonborder_tex:SetTexture(0.3, 0.3, 0.3)	
+	casticonborder_tex:SetTexture(unpack(ElvCF["media"].bordercolor))	
 	
-	--Create Health Backdrop Frame
+	--Create Cast Backdrop Frame
 	local casticonbackdrop2_tex = cb:CreateTexture(nil, "ARTWORK")
 	casticonbackdrop2_tex:SetPoint("TOPLEFT", cbicon, "TOPLEFT", -noscalemult, noscalemult)
 	casticonbackdrop2_tex:SetPoint("BOTTOMRIGHT", cbicon, "BOTTOMRIGHT", noscalemult, -noscalemult)
-	casticonbackdrop2_tex:SetTexture(0.1, 0.1, 0.1)
+	casticonbackdrop2_tex:SetTexture(unpack(ElvCF["media"].backdropcolor))
 	
 	--Create Cast Time Text
 	cb.time = cb:CreateFontString(nil, "ARTWORK")
@@ -580,7 +617,7 @@ local function SkinObjects(frame)
 	cb.name:SetTextColor(1, 1, 1)
 	cb.name:SetShadowOffset(ElvDB.mult, -ElvDB.mult)
 	
-	cb.icon = cbicon
+	--We need the castbar shield to determine if it can be interrupted or not
 	cb.shield = cbshield
 	cb:HookScript('OnShow', UpdateCastbar)
 	cb:HookScript('OnSizeChanged', OnSizeChanged)
@@ -629,19 +666,25 @@ local function SkinObjects(frame)
 	frames[frame] = true
 end
 
-local select = select
-local function HookFrames(...)
-	for index = 1, select('#', ...) do
-		local frame = select(index, ...)
-		local region = frame:GetRegions()
-
-		if(not frames[frame] and not frame:GetName() and region and region:GetObjectType() == 'Texture' and region:GetTexture() == OVERLAY) then
-			SkinObjects(frame)
-			frame.region = region
-		end
+--Create our blacklist for nameplates, so prevent a certain nameplate from ever showing
+local function CheckBlacklist(frame, ...)
+	if PlateBlacklist[frame.name:GetText()] or (ElvDB.level ~= 1 and frame.oldlevel:GetText() == tostring(1)) then
+		frame:SetScript("OnUpdate", function() end)
+		frame.hp:Hide()
+		frame.cb:Hide()
+		frame.overlay:Hide()
+		frame.oldlevel:Hide()
 	end
 end
 
+--When becoming intoxicated blizzard likes to re-show the old level text, this should fix that
+local function HideDrunkenText(frame, ...)
+	if frame and frame.oldlevel and frame.oldlevel:IsShown() then
+		frame.oldlevel:Hide()
+	end
+end
+
+--Scan all visible nameplate for a known unit.
 local function CheckUnit_Guid(frame, ...)
 	if UnitExists("target") and frame:GetAlpha() == 1 and UnitName("target") == frame.name:GetText() then
 		frame.guid = UnitGUID("target")
@@ -658,6 +701,7 @@ local function CheckUnit_Guid(frame, ...)
 	if ElvCF["debug"].enabled == true then frame.hp.debug:SetText(frame.unit or "") end
 end
 
+--Run a function for all visible nameplates, we use this for the blacklist, to check unitguid, and to hide drunken text
 local function ForEachPlate(functionToRun, ...)
 	for frame in pairs(frames) do
 		if frame:IsShown() then
@@ -666,6 +710,21 @@ local function ForEachPlate(functionToRun, ...)
 	end
 end
 
+--Check if the frames default overlay texture matches blizzards nameplates default overlay texture
+local select = select
+local function HookFrames(...)
+	for index = 1, select('#', ...) do
+		local frame = select(index, ...)
+		local region = frame:GetRegions()
+
+		if(not frames[frame] and not frame:GetName() and region and region:GetObjectType() == 'Texture' and region:GetTexture() == OVERLAY) then
+			SkinObjects(frame)
+			frame.region = region
+		end
+	end
+end
+
+--Core right here, scan for any possible nameplate frames that are Children of the WorldFrame
 CreateFrame('Frame'):SetScript('OnUpdate', function(self, elapsed)
 	if(WorldFrame:GetNumChildren() ~= numChildren) then
 		numChildren = WorldFrame:GetNumChildren()
@@ -687,6 +746,7 @@ CreateFrame('Frame'):SetScript('OnUpdate', function(self, elapsed)
 	ForEachPlate(CheckUnit_Guid)
 end)
 
+--Only show nameplates when in combat
 if ElvCF["nameplate"].combat == true then
 	NamePlates:RegisterEvent("PLAYER_REGEN_ENABLED")
 	NamePlates:RegisterEvent("PLAYER_REGEN_DISABLED")
