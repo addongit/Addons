@@ -366,6 +366,32 @@ function AuctionLite:SetHyperlinkTooltips(enabled)
   LinkTooltips = enabled;
 end
 
+-- Show an AL tooltip for the "Buy" or "Sell" frame.
+function AuctionLite:SetAuctionLiteTooltip(widget, shift, link, count)
+  if link ~= nil and self.db.profile.tooltipLocation ~= "e_hide" then
+    self:SetHyperlinkTooltips(false);
+    if self.db.profile.tooltipLocation == "a_cursor" then
+      GameTooltip:SetOwner(widget, "ANCHOR_TOPLEFT", shift);
+    elseif self.db.profile.tooltipLocation == "b_right" then
+      GameTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+      GameTooltip:SetPoint("TOPLEFT", AuctionFrame, "TOPRIGHT", 10, -10);
+    elseif self.db.profile.tooltipLocation == "c_below" then
+      GameTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+      GameTooltip:SetPoint("TOPLEFT", AuctionFrame, "BOTTOMLEFT", 10, -30);
+    elseif self.db.profile.tooltipLocation == "d_corner" then
+      GameTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+      GameTooltip:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -15, 75);
+    else
+      assert(false);
+    end
+    GameTooltip:SetHyperlink(link);
+    if GameTooltip:NumLines() > 0 then
+      self:AddTooltipData(GameTooltip, link, count);
+    end
+    self:SetHyperlinkTooltips(true);
+  end
+end
+
 -- Guild bank buttons don't have an update function for their tooltips.
 -- Add one of our own so that they change when you hit shift!
 function AuctionLite:HookBankTooltips()

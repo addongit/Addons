@@ -47,9 +47,11 @@ end
 function AuctionLite:CancelQuery()
   if Query ~= nil then
     if Query.state == QUERY_STATE_APPROVE then
-      assert(Query.cart ~= nil);
-      Query.cart = nil;
-      self:ShowReceipt(true);
+      assert(Query.found ~= nil);
+      Query.found = nil;
+      if Query.finish ~= nil then
+        Query.finish(true);
+      end
     end
     self:QueryEnd();
   end
@@ -78,7 +80,7 @@ function AuctionLite:QueryUpdate()
     -- Did we get a reasonable query?  We need a name, and if it's a getAll
     -- query, it should be on the first page with no shopping list.
     if name ~= nil and
-       (not Query.getAll or (Query.page == 0 and Query.list == nil)) then
+       (not Query.getAll or (Query.page == 0 and Query.listing == nil)) then
 
       -- Truncate to avoid disconnects.
       name = self:Truncate(name, MAX_QUERY_BYTES);
@@ -102,7 +104,7 @@ function AuctionLite:QueryUpdate()
       OurQuery = false;
 
       -- Wait for our result.
-      Query.state = QUERY_STATE_WAIT;
+      self:QueryWait();
 
       -- If this is the first query, notify the caller (mostly so that
       -- they know whether we're doing getAll or not).
@@ -125,8 +127,17 @@ end
 
 -- Wait for purchase approval.
 function AuctionLite:QueryRequestApproval()
-  assert(Query ~= nil and Query.state == QUERY_STATE_WAIT);
+  assert(Query ~= nil and Query.state == QUERY_STATE_WAIT and
+         Query.found ~= nil);
   Query.state = QUERY_STATE_APPROVE;
+end
+
+-- Wait for incoming data.
+function AuctionLite:QueryWait()
+  assert(Query ~= nil and
+         (Query.state == QUERY_STATE_SEND or
+          Query.state == QUERY_STATE_APPROVE));
+  Query.state = QUERY_STATE_WAIT;
 end
 
 -- Get the next page.
@@ -141,9 +152,7 @@ end
 
 -- Get the current page again.
 function AuctionLite:QueryCurrent()
-  assert(Query ~= nil and
-         (Query.state == QUERY_STATE_WAIT or
-          Query.state == QUERY_STATE_APPROVE));
+  assert(Query ~= nil and Query.state == QUERY_STATE_WAIT);
   Query.state = QUERY_STATE_SEND;
 end
 
@@ -268,115 +277,53 @@ function AuctionLite:AnalyzeData(rawData)
   return results;
 end
 
--- Get the current shopping cart info for approval.
-function AuctionLite:GetCart()
-  if Query ~= nil then
-    return Query.cart;
-  else
-    return nil;
-  end
-end
-
--- Approve purchase of a pending shopping cart.
+-- Approve purchase of a pending item.
 function AuctionLite:QueryApprove()
   assert(Query ~= nil);
   assert(Query.state == QUERY_STATE_APPROVE);
-  assert(Query.cart ~= nil);
+  assert(Query.found ~= nil);
 
   -- Place the request bid or buyout.
-  local i;
-  for _, listing in ipairs(Query.cart) do
-    if not listing.target.purchased then
-      local price;
-      if Query.isBuyout then
-        price = listing.buyout;
-      else
-        price = listing.bid;
-      end
-      if price <= GetMoney() then
-        PlaceAuctionBid("list", listing.index, price);
-        self:IgnoreMessage(ERR_AUCTION_BID_PLACED);
-        if Query.isBuyout then
-          self:IgnoreMessage(ERR_AUCTION_WON_S:format(Query.name));
-        end
-        listing.target.purchased = true;
-      end
+  local price;
+  if Query.isBuyout then
+    price = Query.found.buyout;
+  else
+    price = Query.found.bid;
+  end
+  if price <= GetMoney() then
+    PlaceAuctionBid("list", Query.found.index, price);
+    self:IgnoreMessage(ERR_AUCTION_BID_PLACED);
+    if Query.isBuyout then
+      self:IgnoreMessage(ERR_AUCTION_WON_S:format(Query.name));
     end
+    Query.listing.purchased = true;
   end
 
   -- Clean up.
-  Query.cart = nil;
+  Query.found = nil;
 
-  -- Figure out whether we've found everything on our list.
-  -- If so, we don't need to look any further.
-  local done = true;
-  for _, target in ipairs(Query.list) do
-    if not target.found then
-      done = false;
-      break;
-    end
-  end
-
-  -- If we're done, cleanup.  If not, make the next request.
-  -- Note that we request the same page again, since our purchase may
-  -- have caused some auctions from the next page to move onto this one.
-  if done then
-    self:ShowReceipt();
-    self:QueryEnd();
-  else
-    self:QueryCurrent();
+  -- End the query.
+  local oldQuery = Query;
+  self:QueryEnd();
+  if oldQuery.finish ~= nil then
+    oldQuery.finish();
   end
 end
 
--- Print out a summary of the items purchased.
-function AuctionLite:ShowReceipt(cancelled)
-  local listingsBought = 0;
-  local itemsBought = 0;
+-- Cancel the current purchase and restart the approval process.
+function AuctionLite:RestartApproval()
+  assert(Query ~= nil);
+  assert(Query.state == QUERY_STATE_APPROVE);
+  assert(Query.found ~= nil);
 
-  local listingsNotFound = 0;
-  local itemsNotFound = 0;
+  -- Forget the found item.
+  Query.found = nil;
 
-  local price = 0;
+  -- Tell the "Buy" frame.
+  self:CancelRequestApproval();
 
-  -- Figure out what we bought.
-  local i;
-  for _, target in ipairs(Query.list) do
-    if target.purchased then
-      listingsBought = listingsBought + 1;
-      itemsBought = itemsBought + target.count;
-      if Query.isBuyout then
-        price = price + target.buyout;
-      else
-        price = price + target.bid;
-      end
-    else
-      listingsNotFound = listingsNotFound + 1;
-      itemsNotFound = itemsNotFound + target.count;
-    end
-  end
-
-  -- Print a summary.
-  if not cancelled or listingsBought > 0 then
-    if Query.isBuyout then
-      self:Print(L["Bought %dx %s (%d |4listing:listings; at %s)."]:
-                 format(itemsBought, Query.name, listingsBought,
-                        self:PrintMoney(price)));
-    else
-      self:Print(L["Bid on %dx %s (%d |4listing:listings; at %s)."]:
-                 format(itemsBought, Query.name, listingsBought,
-                        self:PrintMoney(price)));
-    end
-
-    if itemsNotFound > 0 then
-      self:Print(L["Note: %d |4listing:listings; of %d |4item was:items were; not purchased."]:
-                 format(listingsNotFound, itemsNotFound));
-    end
-  end
-
-  -- Notify the buy tab that we're done.
-  if Query.finish ~= nil then
-    Query.finish();
-  end
+  -- Go back to the waiting state.
+  self:QueryWait();
 end
 
 -- We've got new data.
@@ -400,7 +347,7 @@ function AuctionLite:QueryNewData()
   end
 
   -- Handle the new data based on the kind of query.
-  if Query.list == nil then
+  if Query.listing == nil then
     -- This is a search query, not a purchase.
     if seen < Query.total then
       -- Request the next page.
@@ -421,49 +368,44 @@ function AuctionLite:QueryNewData()
     end
   else
     assert(not Query.getAll);
-
-    -- This is a purchase.  We're going to compare the current page
-    -- against our shopping list to create a shopping cart, which is the
-    -- set of items from the current page that we plan to buy.
-    local cart = {};
+    assert(Query.found == nil);
 
     -- See if we've found the auction we're looking for.
-    local i, j;
+    local i;
     for i = 1, Query.batch do
       local listing = Query.data[Query.page * NUM_AUCTION_ITEMS_PER_PAGE + i];
-      for _, target in ipairs(Query.list) do
-        if not target.found and
-           self:MatchListing(Query.name, target, listing) then
-          target.found = true;
-          listing.index = i;
-          listing.target = target;
-          table.insert(cart, listing);
-          break;
-        end
-      end
-      -- As of Patch 4.0.1, we can only buy one item at a time.
-      if table.getn(cart) > 0 then
+      if self:MatchListing(Query.name, Query.listing, listing) then
+        Query.found = listing;
+        Query.found.index = i;
         break;
       end
     end
 
     -- If we found something, request approval.
     -- Otherwise, get the next page or end the query.
-    if table.getn(cart) > 0 then
-      Query.cart = cart;
+    if Query.found ~= nil then
       self:RequestApproval();
       self:QueryRequestApproval();
     elseif seen < Query.total then
       self:QueryNext();
     else
-      self:ShowReceipt();
+      local oldQuery = Query;
       self:QueryEnd();
+      if oldQuery.finish ~= nil then
+        oldQuery.finish();
+      end
     end
   end
 end
 
 -- Handle a completed auction query.
 function AuctionLite:AUCTION_ITEM_LIST_UPDATE()
+  -- If we were waiting for approval of a purchase, and the list of items
+  -- changed from underneath us, we need to find the item again.
+  if Query ~= nil and Query.state == QUERY_STATE_APPROVE then
+    self:RestartApproval();
+  end
+  -- Now handle the data for real.
   if Query ~= nil and Query.state == QUERY_STATE_WAIT then
     Query.batch, Query.total = GetNumAuctionItems("list");
 

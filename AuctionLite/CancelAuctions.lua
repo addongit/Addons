@@ -96,6 +96,13 @@ function AuctionLite:FinishCancel(cancel, cancelBid)
       else
         summary[name] = 1;
       end
+
+      -- Hack: We only want to cancel the first item, since WoW 4.0
+      -- now requires a hardware event for each cancel.  Break here
+      -- and let subsequent calls to cancel take care of the rest.
+      -- It's important that we cancelled the last item in the list
+      -- so that subsequent calls don't fail.
+      break;
     end
   end
 

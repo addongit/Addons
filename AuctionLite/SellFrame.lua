@@ -92,17 +92,25 @@ function AuctionLite:GeneratePrice(value, allowUndercut)
   local bidUndercut = self.db.profile.bidUndercut;
   local buyoutUndercut = self.db.profile.buyoutUndercut;
 
+  local bidUndercutFixed = self.db.profile.bidUndercutFixed;
+  local buyoutUndercutFixed = self.db.profile.buyoutUndercutFixed;
+
   if not allowUndercut then
     buyoutUndercut = 0;
+    buyoutUndercutFixed = 0;
   end
 
   -- Undercut bid and buyout as specified.
-  local generate = function(value, undercut, granularity)
-    return math.floor((value * (1 - undercut)) / granularity) * granularity;
+  local generate = function(value, undercut, undercutFixed, granularity)
+    return math.max(1, math.floor((value * (1 - undercut)) / granularity) *
+                       granularity - undercutFixed);
   end
 
-  local bid    = generate(value, bidUndercut,    granularity);
-  local buyout = generate(value, buyoutUndercut, granularity);
+  local bid =
+    generate(value, bidUndercut, bidUndercutFixed, granularity);
+
+  local buyout =
+    generate(value, buyoutUndercut, buyoutUndercutFixed, granularity);
 
   return bid, buyout;
 end
@@ -588,11 +596,7 @@ function AuctionLite:SellButton_OnEnter(widget)
   local _, _, _, _, _, _, link = self:GetAuctionSellItemInfoAndLink();
   if item ~= nil and link ~= nil then
     local shift = SellButton1Name:GetLeft() - SellButton1Count:GetLeft();
-    self:SetHyperlinkTooltips(false);
-    GameTooltip:SetOwner(widget, "ANCHOR_TOPLEFT", shift);
-    GameTooltip:SetHyperlink(link);
-    self:AddTooltipData(GameTooltip, link, item.count);
-    self:SetHyperlinkTooltips(true);
+    self:SetAuctionLiteTooltip(widget, shift, link, item.count);
   end
 end
 

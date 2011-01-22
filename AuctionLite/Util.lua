@@ -60,6 +60,41 @@ function AuctionLite:PrintMoney(money)
   return result;
 end
 
+-- Parse a string representing an amount of money.
+function AuctionLite:ParseMoney(str)
+  -- Remove colors.
+  str = str:gsub("|c........", "");
+  str = str:gsub("|r", "");
+
+  -- Extract gold, silver, and copper portions.
+  -- This could be a single regexp if Lua regexps worked properly...
+  local _, _, gold = str:find("^ *(%d+)g");
+  str = str:gsub("^ *(%d+)g", "");
+
+  local _, _, silver = str:find("^ *(%d+)s");
+  str = str:gsub("^ *(%d+)s", "");
+
+  local _, _, copper = str:find("^ *(%d+)c");
+  str = str:gsub("^ *(%d+)c", "");
+
+  -- Make sure there's nothing left but whitespace, and compute the result.
+  local money = 0;
+
+  if str:find("^ *$") ~= nil then
+    if gold ~= nil then
+      money = money + gold * 10000
+    end
+    if silver ~= nil then
+      money = money + silver * 100
+    end
+    if copper ~= nil then
+      money = money + copper
+    end
+  end
+
+  return money;
+end
+
 -- Regular expression for parsing links.
 local LinkRegexp = "|c(.*)|H(.*)|h%[(.*)%]";
 

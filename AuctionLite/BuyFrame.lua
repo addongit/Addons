@@ -77,9 +77,6 @@ local MultiScanOriginal = {};
 local MultiScanItems = {};
 local MultiScanData = {};
 
--- Link for context menu.
-local ContextLink = nil;
-
 -- Static popup advertising AL's fast scan.
 StaticPopupDialogs["AL_FAST_SCAN"] = {
   text = L["FAST_SCAN_AD"],
@@ -142,13 +139,8 @@ function AuctionLite:SetDetailLink(link)
 
   DetailSort.sorted = false;
 
-  -- Return to our saved offset.  We have to set the inner scroll bar
-  -- manually, because otherwise the two values will become inconsistent.
-  -- We also set the max values to make sure that the value we're setting
-  -- is not ignored.
-  FauxScrollFrame_SetOffset(BuyScrollFrame, offset);
-  BuyScrollFrameScrollBar:SetMinMaxValues(0, offset * BuyButton1:GetHeight());
-  BuyScrollFrameScrollBar:SetValue(offset * BuyButton1:GetHeight());
+  -- Return to our saved offset.
+  self:SetScrollFrameOffset(offset);
 
   SelectedItems = {};
   LastClick = nil;
@@ -415,18 +407,6 @@ function AuctionLite:CancelItems(onlyUndercut, link)
 
   -- If we found some items to cancel, do it.
   if table.getn(list) > 0 then
-    -- Hack: We only want to cancel the first item.
-    -- Subsequent clicks will get the rest.
-    if table.getn(list) > 1 then
-      if not self.db.profile.cancelNote then
-        StaticPopup_Show("AL_CANCEL_NOTE");
-      end
-
-      local newList = {};
-      table.insert(newList, list[1]);
-      list = newList;
-    end
-
     self:CancelAuctions(list);
   end
 end
@@ -461,78 +441,6 @@ function AuctionLite:CancelComplete()
 
   -- Update the display.
   self:AuctionFrameBuy_Update();
-end
-
--- Create a purchase order based on the current selection.  The first
--- argument indicates whether we're bidding or buying, and the second
--- argument (optional) indicates the actual number of items the user wants.
-function AuctionLite:CreateOrder(isBuyout, requested)
-  if DetailLink ~= nil then
-    -- Create purchase order object to be filled out.
-    local order = { list = {}, price = 0, count = 0,
-                    batch = 1, isBuyout = isBuyout };
-
-    -- Add information about each selected item.
-    local i;
-    for listing, _ in pairs(SelectedItems) do
-      assert(listing.owner ~= UnitName("player"));
-
-      local price;
-      if isBuyout then
-        price = listing.buyout;
-      else
-        price = listing.bid;
-      end
-
-      table.insert(order.list, listing);
-      order.count = order.count + listing.count;
-      order.price = order.price + price;
-    end
-
-    -- If we found any selected items and we have enough money, proceed.
-    if order.price > GetMoney() then
-      self:Print(L["|cffff0000[Error]|r Insufficient funds."]);
-    elseif order.count > 0 then
-      -- If the second argument wasn't specified, the user wants exactly
-      -- the number of items selected.
-      if requested == nil then
-        requested = order.count;
-      end
-
-      -- If we overshot, figure out how much we can resell the excess for.
-      if order.count > requested then
-        order.resell = order.count - requested;
-
-        local price = SummaryDataByLink[DetailLink].price;
-        order.resellPrice = math.floor(order.resell * price);
-
-        order.netPrice = order.price - order.resellPrice;
-      end
-
-      -- Get a historical comparison.
-      local hist = self:GetHistoricalPrice(DetailLink);
-      if hist ~= nil then
-        order.histPrice = math.floor(requested * hist.price);
-      else
-        order.histPrice = 0;
-      end
-
-      local name = self:SplitLink(DetailLink);
-
-      -- Submit the query.  If it goes through, save it here too.
-      local query = {
-        name = name,
-        wait = true,
-        list = order.list,
-        isBuyout = isBuyout,
-        finish = function() AuctionLite:PurchaseComplete() end,
-      };
-
-      if self:StartQuery(query) then
-        PurchaseOrder = order;
-      end
-    end
-  end
 end
 
 -- Called after a search query ends in order to start a mass buyout.
@@ -764,52 +672,249 @@ function AuctionLite:StartMassBuyout()
   end
 end
 
--- The query system needs us to approve purchases.
-function AuctionLite:RequestApproval()
-  -- Just update the display!
-  -- TODO: Process shopping cart here.
-  self:AuctionFrameBuy_Update();
-end
-
--- Notification that a purchase has completed.
-function AuctionLite:PurchaseComplete()
-  -- Update our display according to the purchase.
+-- Create a purchase order based on the current selection.  The first
+-- argument indicates whether we're bidding or buying, and the second
+-- argument (optional) indicates the actual number of items the user wants.
+function AuctionLite:CreateOrder(isBuyout, requested)
   if DetailLink ~= nil then
-    local summary = SummaryDataByLink[DetailLink];
-    local i = table.getn(DetailData);
-    while i > 0 do
-      local listing = DetailData[i];
-      listing.found = nil;
-      if listing.purchased then
-        if PurchaseOrder.isBuyout then
-          -- If we bought an item, remove it.
-          table.remove(DetailData, i);
-          summary.itemsAll = summary.itemsAll - listing.count;
-          summary.listingsAll = summary.listingsAll - 1;
-          -- The selected items map is going to get all screwed up, so
-          -- just nuke it.  (TODO: Do a better job here!)
-          SelectedItems = {};
-        else
-          -- If we bid on an item, update the minimum bid.
-          local increment = math.floor(listing.bid / 100) * 5;
-          listing.purchased = false;
-          listing.bidder = 1;
-          listing.bid = listing.bid + increment;
-          if listing.bid > listing.buyout and listing.buyout > 0 then
-            listing.bid = listing.buyout;
-          end
-        end
+    -- Create purchase order object to be filled out.
+    local order = { list = {}, name = self:SplitLink(DetailLink),
+                    price = 0, spent = 0, count = 0, isBuyout = isBuyout,
+                    itemsBought = 0, listingsBought = 0,
+                    itemsNotFound = 0, listingsNotFound = 0 };
+
+    -- Add information about each selected item.
+    local i;
+    for listing, _ in pairs(SelectedItems) do
+      assert(listing.owner ~= UnitName("player"));
+
+      local price;
+      if isBuyout then
+        price = listing.buyout;
+      else
+        price = listing.bid;
       end
-      i = i - 1;
+
+      table.insert(order.list, listing);
+      order.count = order.count + listing.count;
+      order.price = order.price + price;
     end
 
-    if table.getn(DetailData) == 0 then
-      self:SetDetailLink(nil);
+    -- If we found any selected items and we have enough money, proceed.
+    if order.price > GetMoney() then
+      self:Print(L["|cffff0000[Error]|r Insufficient funds."]);
+    elseif order.count > 0 then
+      -- If the second argument wasn't specified, the user wants exactly
+      -- the number of items selected.
+      if requested == nil then
+        requested = order.count;
+      end
+
+      -- If we overshot, figure out how much we can resell the excess for.
+      if order.count > requested then
+        order.resell = order.count - requested;
+
+        local price = SummaryDataByLink[DetailLink].price;
+        order.resellPrice = math.floor(order.resell * price);
+
+        order.netPrice = order.price - order.resellPrice;
+      end
+
+      -- Get a historical comparison.
+      local hist = self:GetHistoricalPrice(DetailLink);
+      if hist ~= nil then
+        order.histPrice = math.floor(requested * hist.price);
+      else
+        order.histPrice = 0;
+      end
+
+      -- Save the purchase order and start buying.
+      PurchaseOrder = order;
+      self:ContinuePurchase();
+    end
+  end
+end
+
+-- Place an order for the next item in line.
+function AuctionLite:ContinuePurchase()
+  local order = PurchaseOrder;
+  if order ~= nil then
+    assert(order.current == nil);
+
+    local n = table.getn(order.list);
+    if n > 0 then
+      -- Find the first item to purchase in the current detail list.
+      -- TODO: Make this more efficient by just sorting order.list.
+      self:ApplyDetailSort();
+      local index = nil;
+      local i;
+      local displayListing;
+      for _, displayListing in ipairs(DetailData) do
+        local purchaseListing;
+        for i, purchaseListing in ipairs(order.list) do
+          if displayListing == purchaseListing then
+            index = i;
+            break;
+          end
+        end
+        if index ~= nil then
+          break;
+        end
+      end
+
+      -- The purchase items should be a subset of the main listing.
+      assert(index ~= nil);
+
+      order.current = table.remove(order.list, index);
+
+      local query = {
+        name = order.name,
+        wait = true,
+        listing = order.current,
+        isBuyout = order.isBuyout,
+        finish = function(cancelled)
+          AuctionLite:PurchaseComplete(cancelled);
+        end,
+      };
+
+      -- TODO: Make this work.
+      -- self:ScrollToListing(order.current);
+
+      -- TODO: What if this returns false?
+      self:StartQuery(query);
+    else
+      self:EndPurchase();
+    end
+  end
+end
+
+-- Finish a purchase; show the result and clean up.
+function AuctionLite:EndPurchase(cancelled)
+  assert(PurchaseOrder ~= nil);
+  assert(PurchaseOrder.current == nil);
+
+  local order = PurchaseOrder;
+
+  -- Tally up remaining items.
+  local listing;
+  for _, listing in ipairs(order.list) do
+    self:UpdatePurchaseStats(listing);
+  end
+
+  -- Print a summary.
+  if not cancelled or order.listingsBought > 0 then
+    if order.isBuyout then
+      self:Print(L["Bought %dx %s (%d |4listing:listings; at %s)."]:
+                 format(order.itemsBought, order.name, order.listingsBought,
+                        self:PrintMoney(order.spent)));
+    else
+      self:Print(L["Bid on %dx %s (%d |4listing:listings; at %s)."]:
+                 format(order.itemsBought, order.name, order.listingsBought,
+                        self:PrintMoney(order.spent)));
+    end
+
+    if order.itemsNotFound > 0 then
+      self:Print(L["Note: %d |4listing:listings; of %d |4item was:items were; not purchased."]:
+                 format(order.listingsNotFound, order.itemsNotFound));
     end
   end
 
-  -- Clear our purchase order.
   PurchaseOrder = nil;
+end
+
+-- The query system needs us to approve purchases.
+function AuctionLite:RequestApproval()
+  -- Mark ourselves as waiting for approval.
+  if PurchaseOrder ~= nil and PurchaseOrder.current ~= nil then
+    PurchaseOrder.needsApproval = true;
+  end
+
+  -- Update the display.
+  self:AuctionFrameBuy_Update();
+end
+
+-- The query system no longer needs approval.
+function AuctionLite:CancelRequestApproval()
+  -- Mark ourselves as not waiting for approval.
+  if PurchaseOrder ~= nil then
+    PurchaseOrder.needsApproval = nil;
+  end
+
+  -- Update the display.
+  self:AuctionFrameBuy_Update();
+end
+
+-- Update purchase stats for an item.
+function AuctionLite:UpdatePurchaseStats(listing)
+  local order = PurchaseOrder;
+  if order ~= nil then
+    if listing.purchased then
+      order.itemsBought = order.itemsBought + listing.count;
+      order.listingsBought = order.listingsBought + 1;
+      if order.isBuyout then
+        order.spent = order.spent + listing.buyout;
+      else
+        order.spent = order.spent + listing.bid;
+      end
+    else
+      order.itemsNotFound = order.itemsNotFound + listing.count;
+      order.listingsNotFound = order.listingsNotFound + 1;
+    end
+  end
+end
+
+-- Notification that a purchase has completed.
+function AuctionLite:PurchaseComplete(cancelled)
+  local order = PurchaseOrder;
+
+  -- Update the purchase order.
+  if order ~= nil then
+    -- Update our current purchase.
+    if order.current ~= nil then
+      self:UpdatePurchaseStats(order.current);
+      order.current = nil;
+    end
+
+    -- Update our display according to the purchase.
+    -- TODO: Make this more efficient, now that we only buy one item at a time.
+    if DetailLink ~= nil then
+      local summary = SummaryDataByLink[DetailLink];
+      local i = table.getn(DetailData);
+      while i > 0 do
+        local listing = DetailData[i];
+        if listing.purchased then
+          if PurchaseOrder.isBuyout then
+            -- If we bought an item, remove it.
+            table.remove(DetailData, i);
+            summary.itemsAll = summary.itemsAll - listing.count;
+            summary.listingsAll = summary.listingsAll - 1;
+            SelectedItems[listing] = nil;
+          else
+            -- If we bid on an item, update the minimum bid.
+            local increment = math.floor(listing.bid / 100) * 5;
+            listing.purchased = false;
+            listing.bidder = 1;
+            listing.bid = listing.bid + increment;
+            if listing.bid > listing.buyout and listing.buyout > 0 then
+              listing.bid = listing.buyout;
+            end
+          end
+        end
+        i = i - 1;
+      end
+
+      if table.getn(DetailData) == 0 then
+        self:SetDetailLink(nil);
+      end
+    end
+  end
+
+  -- Continue with further purchases if relevant.
+  if not cancelled then
+    self:ContinuePurchase();
+  else
+    self:EndPurchase(true);
+  end
 
   -- Update the display.
   self:AuctionFrameBuy_Update();
@@ -1252,15 +1357,7 @@ function AuctionLite:BuyButton_OnEnter(widget)
   end
 
   -- If we have an item, show the tooltip.
-  if link ~= nil then
-    self:SetHyperlinkTooltips(false);
-    GameTooltip:SetOwner(widget, "ANCHOR_TOPLEFT", shift);
-    GameTooltip:SetHyperlink(link);
-    if GameTooltip:NumLines() > 0 then
-      self:AddTooltipData(GameTooltip, link, count);
-    end
-    self:SetHyperlinkTooltips(true);
-  end
+  self:SetAuctionLiteTooltip(widget, shift, link, count);
 end
 
 -- Mouse has left a row in the scrolling frame.
@@ -1328,7 +1425,7 @@ end
 
 -- Returns to the summary page.
 function AuctionLite:BuySummaryButton_OnClick()
-  if PurchaseOrder ~= nil and self:GetCart() ~= nil then
+  if PurchaseOrder ~= nil then
     self:CancelQuery();
     self:ResetSearch();
   end
@@ -1340,13 +1437,14 @@ end
 
 -- Approve a pending purchase.
 function AuctionLite:BuyApproveButton_OnClick()
-  PurchaseOrder.batch = PurchaseOrder.batch + 1;
+  PurchaseOrder.needsApproval = nil;
   self:QueryApprove();
   self:AuctionFrameBuy_Update();
 end
 
 -- Cancel a pending purchase.
 function AuctionLite:BuyCancelPurchaseButton_OnClick()
+  PurchaseOrder.needsApproval = nil;
   self:CancelQuery();
   self:ResetSearch();
   self:AuctionFrameBuy_Update();
@@ -1361,12 +1459,18 @@ end
 
 -- Bid on the currently-selected item.
 function AuctionLite:BuyBidButton_OnClick()
+  if PurchaseOrder ~= nil then
+    self:CancelQuery();
+  end
   self:CreateOrder(false);
   self:AuctionFrameBuy_Update();
 end
 
 -- Buy out the currently-selected item.
 function AuctionLite:BuyBuyoutButton_OnClick()
+  if PurchaseOrder ~= nil then
+    self:CancelQuery();
+  end
   self:CreateOrder(true);
   self:AuctionFrameBuy_Update();
 end
@@ -1479,6 +1583,42 @@ function AuctionLite:AuctionFrameBuy_OnUpdate()
 
   if StartTime ~= nil then
     self:UpdateProgressSearch();
+  end
+end
+
+-- Adjust the scroll bar to a specified offset.
+function AuctionLite:SetScrollFrameOffset(offset)
+  -- We have to set the inner scroll bar manually, because otherwise the
+  -- two values will become inconsistent.  We also set the max values to
+  -- make sure that the value we're setting is not ignored.
+  FauxScrollFrame_SetOffset(BuyScrollFrame, offset);
+  BuyScrollFrameScrollBar:SetMinMaxValues(0, offset * BuyButton1:GetHeight());
+  BuyScrollFrameScrollBar:SetValue(offset * BuyButton1:GetHeight());
+end
+
+-- Scroll the frame to a particular listing.
+function AuctionLite:ScrollToListing(listing)
+  if DetailLink ~= nil then
+    -- Get the index of the item we're looking for.
+    local i;
+    local current;
+    local found = nil;
+    for i, current in ipairs(DetailData) do
+      if current == listing then
+        found = i;
+        break;
+      end
+    end
+
+    if found ~= nil then
+      local offset = FauxScrollFrame_GetOffset(BuyScrollFrame);
+      local displaySize = BUY_DISPLAY_SIZE - 2;
+
+      if found < offset or found >= displaySize then
+        local newOffset = math.min(0, found - (displaySize / 2));
+        self:SetScrollFrameOffset(newOffset);
+      end
+    end
   end
 end
 
@@ -1603,27 +1743,12 @@ function AuctionLite:AuctionFrameBuy_UpdateExpand()
         L["Historical price for %d:"]:format(order.count - order.resell));
       MoneyFrame_Update(BuyExpand4MoneyFrame, order.histPrice);
     end
-  end
 
-  -- Fill out the text describing the current batch to be purchased,
-  -- assuming we're buying batches.
-  BuyBatchText:SetText("");
-
-  local cart = self:GetCart();
-  if cart ~= nil and order ~= nil then
-    local count = 0;
-    local price = 0;
-
-    local i;
-    for _, listing in ipairs(cart) do
-      count = count + listing.count;
-      price = price + listing.buyout;
-    end
-
-    if count < order.count then
-      BuyBatchText:SetText(L["Batch %d: %d at %s"]:
-                           format(order.batch, count, self:PrintMoney(price)));
-    end
+    local current = order.listingsBought + order.listingsNotFound + 1;
+    local total = current + table.getn(order.list);
+    BuyBatchText:SetText(L["Listing %d of %d"]:format(current, total));
+  else
+    BuyBatchText:SetText("");
   end
 
   -- Show/hide and enable/disable approval buttons.
@@ -1631,7 +1756,7 @@ function AuctionLite:AuctionFrameBuy_UpdateExpand()
     BuyApproveButton:Show();
     BuyCancelPurchaseButton:Show();
 
-    if cart ~= nil then
+    if PurchaseOrder ~= nil and PurchaseOrder.needsApproval then
       BuyApproveButton:Enable();
       BuyCancelPurchaseButton:Enable();
     else
@@ -1743,7 +1868,11 @@ function AuctionLite:AuctionFrameBuy_UpdateDetail()
         button:UnlockHighlight();
       end
 
-      warning:SetAlpha(0);
+      if PurchaseOrder ~= nil and PurchaseOrder.current == item then
+        warning:SetAlpha(0.4);
+      else
+        warning:SetAlpha(0);
+      end
 
       buttonDetail:Show();
       button:Show();
@@ -1947,8 +2076,6 @@ function AuctionLite:ClearBuyFrame(partial)
     MultiScanItems = {};
   end
   MultiScanData = {};
-
-  ContextLink = nil;
 
   if not partial then
     BuyName:SetText("");
