@@ -128,6 +128,24 @@ local SellOptions = {
       step = 0.01,
       order = 2,
     },
+    bidUndercutFixed = {
+      name = L["Bid Undercut (Fixed)"],
+      desc = L["Fixed amount to undercut market value for bid prices (e.g., 1g 2s 3c)."],
+      type = "input",
+      order = 3,
+      handler = AuctionLite,
+      get = "GetFixedBidUndercut",
+      set = "SetFixedBidUndercut",
+    },
+    buyoutUndercutFixed = {
+      name = L["Buyout Undercut (Fixed)"],
+      desc = L["Fixed amount to undercut market value for buyout prices (e.g., 1g 2s 3c)."],
+      type = "input",
+      order = 4,
+      handler = AuctionLite,
+      get = "GetFixedBuyoutUndercut",
+      set = "SetFixedBuyoutUndercut",
+    },
     vendorMultiplier = {
       type = "range",
       desc = L["Amount to multiply by vendor price to get default sell price."],
@@ -135,7 +153,7 @@ local SellOptions = {
       min = 0,
       max = 100,
       step = 0.5,
-      order = 3,
+      order = 5,
     },
     roundPrices = {
       type = "range",
@@ -144,7 +162,7 @@ local SellOptions = {
       min = 0,
       max = 1,
       step = 0.01,
-      order = 4,
+      order = 6,
     },
     defaultStacks = {
       type = "select",
@@ -156,7 +174,7 @@ local SellOptions = {
         b_full = L["Max Stacks"],
         c_excess = L["Max Stacks + Excess"],
       },
-      order = 5,
+      order = 7,
     },
     defaultSize = {
       type = "select",
@@ -168,14 +186,14 @@ local SellOptions = {
         b_stack = L["Selected Stack Size"],
         c_full = L["Full Stack"],
       },
-      order = 6,
+      order = 8,
     },
     printPriceData = {
       type = "toggle",
       desc = L["Print detailed price data when selling an item."],
       name = L["Print Detailed Price Data"],
       width = "double",
-      order = 7,
+      order = 9,
     },
   },
 };
@@ -184,6 +202,14 @@ local YesNoMaybe = {
   a_yes = L["Always"],
   b_maybe = L["If Applicable"],
   c_no = L["Never"],
+};
+
+local TooltipLocations = {
+  a_cursor = L["Mouse Cursor"],
+  b_right = L["Right Side of AH"],
+  c_below = L["Below AH"],
+  d_corner = L["Window Corner"],
+  e_hide = L["Hide Tooltips"],
 };
 
 local TooltipOptions = {
@@ -233,25 +259,39 @@ local TooltipOptions = {
       desc = "",
       order = 6,
     },
+    tooltipLocation = {
+      type = "select",
+      desc = L["Placement of tooltips in \"Buy\" and \"Sell\" tabs."],
+      name = L["Tooltip Location"],
+      style = "dropdown",
+      values = TooltipLocations,
+      order = 7,
+    },
+    blankLocation = {
+      type = "description",
+      name = "",
+      desc = "",
+      order = 8,
+    },
     blank = {
       type = "description",
       name = " ",
       desc = " ",
-      order = 7,
+      order = 9,
     },
     coinTooltips = {
       type = "toggle",
       desc = L["Uses the standard gold/silver/copper icons in tooltips."],
       name = L["Use Coin Icons in Tooltips"],
       width = "double",
-      order = 8,
+      order = 10,
     },
     showStackPrice = {
       type = "toggle",
       desc = L["Show full stack prices in tooltips (shift toggles on the fly)."],
       name = L["Show Full Stack Price"],
       width = "double",
-      order = 9,
+      order = 11,
     },
   },
 };
@@ -346,6 +386,8 @@ local Defaults = {
     duration = 3,
     bidUndercut = 0.25,
     buyoutUndercut = 0.02,
+    bidUndercutFixed = 0,
+    buyoutUndercutFixed = 0,
     vendorMultiplier = 3,
     roundPrices = 0.05,
     minProfit = 10,
@@ -360,6 +402,7 @@ local Defaults = {
     showVendor = "a_yes",
     showAuction = "b_maybe",
     showDisenchant = "b_maybe",
+    tooltipLocation = "a_cursor",
     coinTooltips = true,
     showStackPrice = true,
     storePrices = true,
@@ -426,9 +469,6 @@ StaticPopupDialogs["AL_NEW_FAVORITES_LIST"] = {
     self.editBox:SetFocus();
   end,
 	OnHide = function(self)
-		if ChatFrameEditBox:IsShown() then
-			ChatFrameEditBox:SetFocus();
-		end
 		self.editBox:SetText("");
 	end,
   hasEditBox = 1,
@@ -602,6 +642,30 @@ function AuctionLite:RemoveListItems()
 end
 
 -------------------------------------------------------------------------------
+-- Handlers for fixed undercuts
+-------------------------------------------------------------------------------
+
+-- Get the current fixed bid undercut.
+function AuctionLite:GetFixedBidUndercut()
+  return self:PrintMoney(self.db.profile.bidUndercutFixed);
+end
+
+-- Get the current fixed buyout undercut.
+function AuctionLite:GetFixedBuyoutUndercut()
+  return self:PrintMoney(self.db.profile.buyoutUndercutFixed);
+end
+
+-- Set the fixed bid undercut.
+function AuctionLite:SetFixedBidUndercut(info, value)
+  self.db.profile.bidUndercutFixed = self:ParseMoney(value);
+end
+
+-- Set the fixed buyout undercut.
+function AuctionLite:SetFixedBuyoutUndercut(info, value)
+  self.db.profile.buyoutUndercutFixed = self:ParseMoney(value);
+end
+
+-------------------------------------------------------------------------------
 -- Initialization code
 -------------------------------------------------------------------------------
 
@@ -644,6 +708,11 @@ function AuctionLite:ConvertOptions()
       else
         profile.showVendor = "c_no";
       end
+    end
+    if profile.tooltipLocation == "b_corner" then
+      profile.tooltipLocation = "d_corner";
+    elseif profile.tooltipLocation == "c_hide" then
+      profile.tooltipLocation = "e_hide";
     end
     -- Convert favorites.
     if profile.favorites ~= nil then

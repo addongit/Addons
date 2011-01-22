@@ -240,6 +240,29 @@
 				</Scripts>
 			</CheckButton>
 
+            <CheckButton name="ComburefreshpyroButton" inherits="ChatConfigCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="CombulockButton" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						ComburefreshpyroButtonText:SetText("Pyroblast/Hot Streak report")
+					</OnLoad>
+					<OnShow>
+						if (combureportpyro == true) then self:SetChecked(true)
+						else self:SetChecked(false)
+						end
+					</OnShow>
+					<OnClick>
+						CombustionrefreshPyro()
+					</OnClick>				
+				</Scripts>
+			</CheckButton>
+
 			<CheckButton name="CombuffbButton" inherits="ChatConfigCheckButtonTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="CombulockButton" relativePoint="LEFT">
@@ -268,7 +291,7 @@
           <AbsDimension x="250" y="9" />
         </Size>
         <Anchors>
-		  <Anchor point="TOPLEFT" relativeTo="CombulockButton" relativePoint="TOPLEFT">
+		  <Anchor point="TOPLEFT" relativeTo="ComburefreshpyroButton" relativePoint="TOPLEFT">
             <Offset>
               <AbsDimension x="0" y="-40" />
             </Offset>

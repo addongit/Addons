@@ -1525,7 +1525,6 @@ function AutoBarCategory:Initialize2()
 
 	spellNameList["Grounding Totem"], _, spellIconList["Grounding Totem"] = GetSpellInfo(8177)
 	local spellElementalResistanceTotem = GetSpellInfo(8184)
-	-- local spellSentryTotem = GetSpellInfo(6495)
 	local spellWindfuryTotem = GetSpellInfo(8512)
 	local spellWrathOfAirTotem = GetSpellInfo(3738)
 	AutoBarCategoryList["Spell.Totem.Air"] = AutoBarSpells:new(
@@ -1538,7 +1537,6 @@ function AutoBarCategory:Initialize2()
 
 	local spellFireElementalTotem, spellFireElementalTotemIcon
 	spellFireElementalTotem, _, spellFireElementalTotemIcon = GetSpellInfo(2894)
-	-- local spellFireElementalTotem = GetSpellInfo(2894)
 	local spellFlametongueTotem = GetSpellInfo(8227)
 	local spellMagmaTotem = GetSpellInfo(8190)
 	local spellSearingTotem = GetSpellInfo(3599)
@@ -1689,88 +1687,21 @@ function AutoBarCategory:Initialize2()
 			"PALADIN", spellNameList["Seal of Truth"],
 			})
 
---	local spellTrackHumanoids, spellTrackHumanoidsIcon 
---	spellTrackHumanoids, _, spellTrackHumanoidsIcon = GetSpellInfo(5225)
---	local spellFindFish = GetSpellInfo(43308)
---	local spellFindHerbs = GetSpellInfo(2383)
---	local spellFindMinerals = GetSpellInfo(2580)
---	local spellTrackBeasts = GetSpellInfo(1494)
---	local spellTrackDemons = GetSpellInfo(19878)
---	local spellTrackDragonkin = GetSpellInfo(19879)
---	local spellTrackElementals = GetSpellInfo(19880)
---	local spellTrackGiants = GetSpellInfo(19882)
---	local spellTrackHidden = GetSpellInfo(19885)
---	local spellTrackUndead = GetSpellInfo(19884)
---      local spellTrackHumanoids = GetSpellInfo(19883)
 
-	spellNameList["Track Humanoids"] = GetSpellInfo(19883)
-	spellNameList["Track Beasts"] = GetSpellInfo(1494)
-	spellNameList["Track Demons"] = GetSpellInfo(19878)
-	spellNameList["Track Dragonkin"] = GetSpellInfo(19879)
-	spellNameList["Track Elementals"] = GetSpellInfo(19880)
-	spellNameList["Track Giants"] = GetSpellInfo(19882)
-	spellNameList["Track Hidden"] = GetSpellInfo(19885)
-	spellNameList["Track Undead"] = GetSpellInfo(19884)
-	spellNameList["Find Herbs"] = GetSpellInfo(2383)
-	spellNameList["Find Minerals"] = GetSpellInfo(2580)
-	spellNameList["Find Fish"] = GetSpellInfo(43308)
-
-	AutoBarCategoryList["Spell.Track"] = AutoBarSpells:new(
-			"Spell.Track", spellIconList["Track Humanoids"], {
-			"*", spellNameList["Find Fish"],
-			"*", spellNameList["Find Herbs"],
-			"*", spellNameList["Find Minerals"],
-			"HUNTER", spellNameList["Track Humanoids"],
-			"HUNTER", spellNameList["Track Beasts"],
-			"HUNTER", spellNameList["Track Demons"],
-			"HUNTER", spellNameList["Track Dragonkin"],
-			"HUNTER", spellNameList["Track Elementals"],
-			"HUNTER", spellNameList["Track Giants"],
-			"HUNTER", spellNameList["Track Hidden"],
-			"HUNTER", spellNameList["Track Undead"],
-			"DRUID", spellNameList["Track Humanoids"],
-			})
-
-	
-	--[[
-	local spellLaunchTrap, spellLaunchTrapIcon
-	spellLaunchTrap, _, spellLaunchTrapIcon = GetSpellInfo(77769)
-	local spellExplosiveTrap = GetSpellInfo(13813)
-	local spellTossExplosiveTrap = GetSpellInfo(82939)
-	local spellFreezingTrap = GetSpellInfo(1499)
-	local spellTossFreezingTrap = GetSpellInfo(49361)
-	local spellImmolationTrap = GetSpellInfo(13795)
-	local spellTossImmolationTrap = GetSpellInfo(82945)
-	local spellIceTrap = GetSpellInfo(13809)
-	local spellTossIceTrap = GetSpellInfo(82941)
-        local spellSnakeTrap = GetSpellInfo(34600)
-	local spellTossSnakeTrap = GetSpellInfo(82948)
-	AutoBarCategoryList["Spell.Trap"] = AutoBarSpells:new(
-			"Spell.Trap", spellLaunchTrapIcon, nil, {
-			"HUNTER", spellSnakeTrap, spellTossSnakeTrap,
-			"HUNTER", spellExplosiveTrap, spellTossExplosiveTrap,
-			"HUNTER", spellFreezingTrap, spellTossFreezingTrap,
-			"HUNTER", spellImmolationTrap, spellTossImmolationTrap,
-			"HUNTER", spellIceTrap, spellTossIceTrap,
-			})
---]]
-
-	spellNameList["Snake Trap"], _, spellIconList["Snake Trap"] = GetSpellInfo(34600)
 	spellNameList["Explosive Trap"] = GetSpellInfo(13813)
-	spellNameList["Frost Trap"] = GetSpellInfo(13809)
-	spellNameList["Freezing Trap"] = GetSpellInfo(13809)
-	spellNameList["Immolation Trap"] = GetSpellInfo(13795)
+	spellNameList["Freezing Trap"] = GetSpellInfo(1499)
 	spellNameList["Ice Trap"] = GetSpellInfo(13809)
+	spellNameList["Immolation Trap"] = GetSpellInfo(13795)
+	spellNameList["Snake Trap"], _, spellIconList["Snake Trap"] = GetSpellInfo(34600)
 	spellNameList["Trap Launcher"] = GetSpellInfo(77769)
 
 	AutoBarCategoryList["Spell.Trap"] = AutoBarSpells:new(
 		"Spell.Trap", spellIconList["Snake Trap"], {
 		"HUNTER", spellNameList["Explosive Trap"],
-		"HUNTER", spellNameList["Frost Trap"],
-		"HUNTER", spellNameList["Immolation Trap"],
 		"HUNTER", spellNameList["Freezing Trap"],
-		"HUNTER", spellNameList["Snake Trap"],
 		"HUNTER", spellNameList["Ice Trap"],
+		"HUNTER", spellNameList["Immolation Trap"],
+		"HUNTER", spellNameList["Snake Trap"],
 		"HUNTER", spellNameList["Trap Launcher"],
 	})
 

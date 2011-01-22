@@ -64,13 +64,21 @@ SLASH_GROUPDISBAND1 = '/rd'
 
 -- farm mode
 local farm = false
-local minisize
+local minisize = 250
+local minisize2 = 250
 function SlashCmdList.FARMMODE(msg, editbox)
 	if farm == false then
 		minisize = Minimap:GetWidth()
+		if MinimapMover then
+			minisize2 = MinimapMover:GetWidth()
+			MinimapMover:SetSize(250, 250)
+		end
 		Minimap:SetSize(250, 250)
 		farm = true
 	else
+		if MinimapMover then
+			MinimapMover:SetSize(minisize2, minisize2)
+		end	
 		Minimap:SetSize(minisize, minisize)
 		farm = false
 	end
@@ -84,3 +92,19 @@ SLASH_FARMMODE1 = '/farmmode'
 --	GM toggle command
 SLASH_GM1 = "/gm"
 SlashCmdList["GM"] = function() ToggleHelpFrame() end
+
+-- Print list of commands to chat
+SLASH_UIHELP1 = "/UIHelp"
+SlashCmdList["UIHELP"] = ElvDB.UIHelp
+
+--ReInstall UI
+SLASH_CONFIGURE1 = "/installui"
+SlashCmdList.CONFIGURE = function() StaticPopup_Show("INSTALL_UI") end
+
+-- Command to Toggle showing the UI Movers
+SLASH_MOVEUI1 = '/moveui'
+SlashCmdList.MOVEUI = function() ElvDB.ToggleMovers() end
+
+-- Command to reset the movers
+SLASH_RESETMOVERS1 = '/resetui'
+SlashCmdList.RESETMOVERS = function() ElvDB.ResetMovers() end

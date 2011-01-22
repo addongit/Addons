@@ -53,6 +53,11 @@ function Combustion_OnLoad(CombustionFrame)
     if (combureport == nil) then combureport = true end -- set DPS report on upon very first launch
     if (combureportvalue == nil) then combureportvalue = 0 end -- set DPS report value on upon very first launch
     if (combureportthreshold == nil) then combureportthreshold = false end -- set DPS report threshold on upon very first launch
+    if (combureportpyro == nil) then combureportpyro = true end -- set Pyro report on upon very first launch
+	combupyrogain = 0
+   	combupyrorefresh = 0
+   	combupyrocast = 0
+   	combulbrefresh = 0
 
 end
 
@@ -127,6 +132,19 @@ function Combustionrefresh()
 	else comburefreshmode = false 
          ComburefreshButton:SetChecked(false)
          ChatFrame1:AddMessage("|cff00ffffEarly LB refresh mode disabled|r")
+	end
+end
+
+-------------------------------
+-- pyro refresh function for option panel
+function CombustionrefreshPyro()
+
+	if ComburefreshpyroButton:GetChecked(true) then combureportpyro = true 
+                                                ComburefreshpyroButton:SetChecked(true)
+                                                ChatFrame1:AddMessage("|cff00ffffPyroblast report mode enabled|r")
+	else combureportpyro = false 
+         ComburefreshpyroButton:SetChecked(false)
+         ChatFrame1:AddMessage("|cff00ffffPyroblast refresh mode disabled|r")
 	end
 end
 
@@ -272,6 +290,7 @@ function Combustionreset ()
         combureport = true
         combureportvalue = 0
         combureportthreshold = false
+        combureportpyro = true
         ChatFrame1:AddMessage("|cff00ffffCombustionHelper Savedvariables have been resetted, you can logout now.|r")
 
 end
@@ -461,57 +480,84 @@ function Combustion_OnEvent(self, event, ...)
             
 -------------------------------------------
 -- report event check 
-			if (combureport == true) and (destGUID == UnitGUID("target")) then
-				if (spellId == 44457) and (event == "SPELL_PERIODIC_DAMAGE") then 
-					if (critical == 1) and (combumeta == true) then 
-						combulbdamage = amount/2,03
-					elseif (critical == 1) and (combumeta == false) then 
-						combulbdamage = amount/2
-					else combulbdamage = amount
+				if (combureport == true) and (destGUID == UnitGUID("target")) then
+					if (spellId == 44457) and (event == "SPELL_PERIODIC_DAMAGE") then 
+						if (critical == 1) and (combumeta == true) then 
+							combulbdamage = amount/2,03
+						elseif (critical == 1) and (combumeta == false) then 
+							combulbdamage = amount/2
+						else combulbdamage = amount
+						end
+						LBLabel:SetText(format("%.0f Dmg", combulbdamage))
+					elseif (spellId == 12654) and (event == "SPELL_PERIODIC_DAMAGE") then 
+						combuigndamage = amount
+						IgniteLabel:SetText(format("%.0f Dmg", combuigndamage))
+					elseif ((spellId == 11366) and (event == "SPELL_PERIODIC_DAMAGE")) or ((spellId == 92315) and (event == "SPELL_PERIODIC_DAMAGE")) then 
+						if (critical == 1) and (combumeta == true) then 
+							combupyrodamage = amount/2,03
+						elseif (critical == 1) and (combumeta == false) then 
+							combupyrodamage = amount/2
+						else combupyrodamage = amount
+						end
+						PyroLabel:SetText(format("%.0f Dmg", combupyrodamage))
+					elseif (spellId == 44614) and (event == "SPELL_PERIODIC_DAMAGE") then 
+						if (critical == 1) and (combumeta == true) then 
+							combuffbdamage = amount/2,03
+						elseif (critical == 1) and (combumeta == false) then 
+							combuffbdamage = amount/2
+						else combuffbdamage = amount
+						end
+						FFBLabel:SetText(format("%.0f Dmg", combuffbdamage))
 					end
-					LBLabel:SetText(format("%.0f Dmg", combulbdamage))
-				elseif (spellId == 12654) and (event == "SPELL_PERIODIC_DAMAGE") then 
-					combuigndamage = amount
-					IgniteLabel:SetText(format("%.0f Dmg", combuigndamage))
-				elseif ((spellId == 11366) and (event == "SPELL_PERIODIC_DAMAGE")) or ((spellId == 92315) and (event == "SPELL_PERIODIC_DAMAGE")) then 
-					if (critical == 1) and (combumeta == true) then 
-						combupyrodamage = amount/2,03
-					elseif (critical == 1) and (combumeta == false) then 
-						combupyrodamage = amount/2
-					else combupyrodamage = amount
-					end
-					PyroLabel:SetText(format("%.0f Dmg", combupyrodamage))
-				elseif (spellId == 44614) and (event == "SPELL_PERIODIC_DAMAGE") then 
-					if (critical == 1) and (combumeta == true) then 
-						combuffbdamage = amount/2,03
-					elseif (critical == 1) and (combumeta == false) then 
-						combuffbdamage = amount/2
-					else combuffbdamage = amount
-					end
-					FFBLabel:SetText(format("%.0f Dmg", combuffbdamage))
 				end
-			end
                 
 -------------------------------------------
 -- Living Bomb early refresh 
                 if (comburefreshmode == true) and (spellId == 44457) and (event == "SPELL_AURA_REFRESH")
                     then combulbrefresh = combulbrefresh + 1
                          print(format("|cffff0000 -- You refreshed your Living bomb on |cffffffff%s |cffff0000too early. --|r",destName))
-                end                
+                end
+                
+-------------------------------------------
+-- Pyroblast buff report 
+                if (combureportpyro == true) then
+                	if (spellId == 48108) and (event == "SPELL_AURA_APPLIED")
+	                    then combupyrogain = combupyrogain + 1
+	                elseif (spellId == 48108) and (event == "SPELL_AURA_REFRESH")
+	                    then combupyrorefresh = combupyrorefresh + 1
+	                    	print(format("|cffff0000 -- You wasted an Hot Streak, it got refreshed before getting used. --|r"))
+					elseif ((spellId == 11366) and (event == "SPELL_CAST_SUCCESS")) or ((spellId == 92315) and (event == "SPELL_CAST_SUCCESS"))  
+	                    then combupyrocast = combupyrocast + 1
+	                end
+	            end
+                
 			end
     end
                     
 -------------------------------------------
 -- End of fight report and fight start reset counter 
-    if (event == "PLAYER_REGEN_DISABLED") 
-        then combulbrefresh = 0
-        	 local gem1, gem2, gem3 = GetInventoryItemGems(1)
+    if (event == "PLAYER_REGEN_DISABLED") then 
+    	
+    	local gem1, gem2, gem3 = GetInventoryItemGems(1)
+        
         	 if CombuCritMeta[gem1] or CombuCritMeta[gem2] or CombuCritMeta[gem3] 
         	 	then combumeta = true
         	 else combumeta = false
         	 end  
-    elseif (event == "PLAYER_REGEN_ENABLED") and (combulbrefresh >= 1)
-        then print(format("|cffff0000 -- Earlier Living bomb refresh for this fight : %d --|r",combulbrefresh))
+    
+    elseif (event == "PLAYER_REGEN_ENABLED") then 
+    
+    	if (combulbrefresh >= 1) then
+        	print(format("|cffff0000 -- Earlier Living bomb refresh for this fight : |cffffffff%d |cffff0000--|r",combulbrefresh))
+        	combulbrefresh = 0
+        end
+    
+        if (combureportpyro == true) and (combupyrogain ~= 0) then
+            print(format("|cffff0000 -- Hot Streak gained : |cffffffff%d  |cffff0000-- Hot Streak casted : |cffffffff%d  / %d%% |cffff0000--|r",combupyrogain + combupyrorefresh, combupyrocast, (100*(combupyrocast/(combupyrogain + combupyrorefresh)))))
+            combupyrogain = 0
+        	combupyrorefresh = 0
+        	combupyrocast = 0
+        end
     end
 -------------------------------
 end

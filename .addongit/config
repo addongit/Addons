@@ -1,4 +1,8 @@
 [app]
 update=0
 version=1.2
+<<<<<<< HEAD
 branch=rob
+=======
+branch=master
+>>>>>>> 714ec24a633d37149636c70149927b3bd1ac9424
