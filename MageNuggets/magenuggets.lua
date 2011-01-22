@@ -1,4 +1,4 @@
-﻿--Mage Nuggets 2.074 by B-Buck (Bbuck of Eredar)
+﻿--Mage Nuggets 2.075 by B-Buck (Bbuck of Eredar)
 
 MageNugz = {
   spMonitorToggle = false;
@@ -157,7 +157,7 @@ function MageNuggets_SlashCommandHandler(msg) --Handles the slash commands
     elseif (msg == "ports") then
         MageNuggets_Minimap_OnClick(); 
     else
-    DEFAULT_CHAT_FRAME:AddMessage("|cffffffff------------|cff00BFFF".."Mage".." |cff00FF00".."Nuggets".."|cffffffff 2.074--------------")
+    DEFAULT_CHAT_FRAME:AddMessage("|cffffffff------------|cff00BFFF".."Mage".." |cff00FF00".."Nuggets".."|cffffffff 2.075--------------")
     DEFAULT_CHAT_FRAME:AddMessage("|cffffffff".."/magenuggets".." ".."options (Shows Option Menu)")
     DEFAULT_CHAT_FRAME:AddMessage("|cffffffff".."/magenuggets".." ".."ports (Shows Portal Menu)")
     end
@@ -641,6 +641,7 @@ function MageNuggetsSP_OnUpdate(self, elapsed)
             masteryText = "|cffFFFFFFMstry";
         end
     end
+    local mnRace = UnitRace("player");
     local j = 1;
     local jj = 1;
     local h = 1;
@@ -797,6 +798,9 @@ function MageNuggetsSP_OnUpdate(self, elapsed)
         if(raceEn == "Draenei") then
             spellHit = spellHit + 1;
         end
+        if(mnRace == "Goblin") then
+            hasteRating = (hasteRating*1.01);
+        end 
         if(spellHit >= 17.0) then
             spellHit = "capped";
         else
@@ -841,6 +845,16 @@ function MageNuggets_OnEvent(this, event, ...)
         MageNugCD5_Frame:Hide();
         MageNugCD6_Frame_Bar:SetValue(0);
         MageNugCD6_Frame:Hide();
+        if(mnenglishClass == 'DRUID') then
+            if(talentSpec == "healer") or (talentSpec == "feral")then
+                MageNugMoonkinOptionFrame_CheckButton:SetChecked(1);
+                MNmoonkinToggle();
+            else
+                if(MageNugMoonkinOptionFrame_CheckButton:GetChecked())then
+                    MageNugMoonkinToggle_Frame:Show();
+                end
+            end
+        end
     end
      if (event == "CONFIRM_TALENT_WIPE") then
         MageNugCD1_Frame_Bar:SetValue(0);
@@ -1067,6 +1081,46 @@ function MageNuggets_OnEvent(this, event, ...)
                 MageNugAB_Frame_ABBar:SetValue(abProgMonTime)
             end
             if (MageNugz.polyToggle == true) then
+                if (arg == 2637) then -- hibernate
+                    _, _, _, _, _, _, polyExpTime, unitCaster, _, _, _ = UnitAura("target", polyPigId, nil,"PLAYER|HARMFUL")
+                    if(polyExpTime ~= nil) then
+                        polyTimer = RoundZero(polyExpTime - GetTime());
+                        MageNugPolyFrameText:SetText("|cffFFFFFF".."Hibernate"..":\n|cffFFFFFF "..destName);
+                        MageNugPolyFrameTimerText:SetText(polyTimer);
+                        MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                        MageNugPolyFrame_Bar:SetValue(polyTimer);
+                        MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_nature_sleep");
+                        MageNugPolyFrame:Show();
+                    else
+                        polyTimer = 40;
+                        MageNugPolyFrameText:SetText("|cffFFFFFF".."Hibernate"..":\n|cffFFFFFF "..destName);
+                        MageNugPolyFrameTimerText:SetText(polyTimer);
+                        MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                        MageNugPolyFrame_Bar:SetValue(polyTimer);
+                        MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_nature_sleep");
+                        MageNugPolyFrame:Show();
+                    end
+                end                
+                if (arg == 51514) then -- hex
+                    _, _, _, _, _, _, polyExpTime, unitCaster, _, _, _ = UnitAura("target", polyPigId, nil,"PLAYER|HARMFUL")
+                    if(polyExpTime ~= nil) then
+                        polyTimer = RoundZero(polyExpTime - GetTime());
+                        MageNugPolyFrameText:SetText("|cffFFFFFF".."Hex"..":\n|cffFFFFFF "..destName);
+                        MageNugPolyFrameTimerText:SetText(polyTimer);
+                        MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                        MageNugPolyFrame_Bar:SetValue(polyTimer);
+                        MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_shaman_hex");
+                        MageNugPolyFrame:Show();
+                    else
+                        polyTimer = 60;
+                        MageNugPolyFrameText:SetText("|cffFFFFFF".."Hex"..":\n|cffFFFFFF "..destName);
+                        MageNugPolyFrameTimerText:SetText(polyTimer);
+                        MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                        MageNugPolyFrame_Bar:SetValue(polyTimer);
+                        MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_shaman_hex");
+                        MageNugPolyFrame:Show();
+                    end
+                end                
                 if (arg == 28272) then -- pig
                     _, _, _, _, _, _, polyExpTime, unitCaster, _, _, _ = UnitAura("target", polyPigId, nil,"PLAYER|HARMFUL")
                     if(polyExpTime ~= nil) then
@@ -1368,6 +1422,32 @@ function MageNuggets_OnEvent(this, event, ...)
                     end
                 end
                 if (MageNugz.polyToggle == true) then
+                     if (arg == 2637) then
+                        MageNugPolyFrame:Hide();
+                        polyTimer = 0;
+                        if(combatTextCvar == '1') then
+                            CombatText_AddMessage("Hibernate Broken", CombatText_StandardScroll, 1, 0.20, 1, "sticky", nil);
+                        end
+                        if (MageNugz.consoleTextEnabled == true) then
+                            DEFAULT_CHAT_FRAME:AddMessage("|cffFF0000".."Hibernate Broken On"..":|cffFFFFFF "..destName);
+                        end
+                        if (MageNugz.polySoundToggle == true) then
+                            PlaySoundFile("Interface\\AddOns\\MageNuggets\\Sounds\\"..MageNugz.polySound)
+                        end
+                    end
+                    if (arg == 51514) then
+                        MageNugPolyFrame:Hide();
+                        polyTimer = 0;
+                        if(combatTextCvar == '1') then
+                            CombatText_AddMessage("Hex Broken", CombatText_StandardScroll, 1, 0.20, 1, "sticky", nil);
+                        end
+                        if (MageNugz.consoleTextEnabled == true) then
+                            DEFAULT_CHAT_FRAME:AddMessage("|cffFF0000".."Hex Broken On"..":|cffFFFFFF "..destName);
+                        end
+                        if (MageNugz.polySoundToggle == true) then
+                            PlaySoundFile("Interface\\AddOns\\MageNuggets\\Sounds\\"..MageNugz.polySound)
+                        end
+                    end
                     if (arg == 28272) then
                         MageNugPolyFrame:Hide();
                         polyTimer = 0;
@@ -1591,6 +1671,46 @@ function MageNuggets_OnEvent(this, event, ...)
                 end
             end    
             if (MageNugz.polyToggle == true) then
+                    if (arg == 2637) then -- hibernate
+                        _, _, _, _, _, _, polyExpTime, unitCaster, _, _, _ = UnitAura("target", polyPigId, nil,"PLAYER|HARMFUL")
+                        if (polyExpTime ~= nil) then
+                            polyTimer = RoundZero(polyExpTime - GetTime());
+                            MageNugPolyFrameText:SetText("|cffFFFFFF".."Hibernate"..":\n|cffFFFFFF "..destName);
+                            MageNugPolyFrameTimerText:SetText(polyTimer);
+                            MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                            MageNugPolyFrame_Bar:SetValue(polyTimer);
+                            MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_nature_sleep");
+                            MageNugPolyFrame:Show();
+                        else
+                            polyTimer = 40;
+                            MageNugPolyFrameText:SetText("|cffFFFFFF".."Hibernate"..":\n|cffFFFFFF "..destName);
+                            MageNugPolyFrameTimerText:SetText(polyTimer);
+                            MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                            MageNugPolyFrame_Bar:SetValue(polyTimer);
+                            MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_nature_sleep");
+                            MageNugPolyFrame:Show();
+                        end
+                    end
+                    if (arg == 51514) then -- HEX
+                        _, _, _, _, _, _, polyExpTime, unitCaster, _, _, _ = UnitAura("target", polyPigId, nil,"PLAYER|HARMFUL")
+                        if (polyExpTime ~= nil) then
+                            polyTimer = RoundZero(polyExpTime - GetTime());
+                            MageNugPolyFrameText:SetText("|cffFFFFFF".."HEX"..":\n|cffFFFFFF "..destName);
+                            MageNugPolyFrameTimerText:SetText(polyTimer);
+                            MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                            MageNugPolyFrame_Bar:SetValue(polyTimer);
+                            MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_shaman_hex");
+                            MageNugPolyFrame:Show();
+                        else
+                            polyTimer = 60;
+                            MageNugPolyFrameText:SetText("|cffFFFFFF".."HEX"..":\n|cffFFFFFF "..destName);
+                            MageNugPolyFrameTimerText:SetText(polyTimer);
+                            MageNugPolyFrame_Bar:SetMinMaxValues(0,polyTimer);
+                            MageNugPolyFrame_Bar:SetValue(polyTimer);
+                            MageNugPolyFrameTexture:SetTexture("Interface\\Icons\\spell_shaman_hex");
+                            MageNugPolyFrame:Show();
+                        end
+                    end
                     if (arg == 28272) then -- pig
                         _, _, _, _, _, _, polyExpTime, unitCaster, _, _, _ = UnitAura("target", polyPigId, nil,"PLAYER|HARMFUL")
                         if (polyExpTime ~= nil) then
@@ -1996,6 +2116,8 @@ function MNtalentSpec()
         local _, _, _, _, restoPoints = GetTalentTabInfo(3);
         if(restoPoints > feralPoints) and (restoPoints > balPoints) then
             talentSpec = "healer";
+        elseif(feralPoints > balPoints) and (feralPoints > restoPoints) then
+            talentSpec = "feral";
         else
             talentSpec = "damage";
         end
@@ -2030,7 +2152,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNstarSurge_Frame:Hide();
         end
         if(mnenglishClass == 'WARLOCK') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.074 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
             MageNugz.ssMonitorToggle = false;
             MageNugz.mageProcToggle = false;
             MageNugz.absorbToggle = false;
@@ -2051,7 +2173,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNstarSurge_Frame:Hide();
         end
         if(mnenglishClass == 'SHAMAN')then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.074 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
             MageNugz.mageProcToggle = false;
             MageNugz.absorbToggle = false;
             MageNugz.mirrorImageToggle = false;
@@ -2072,7 +2194,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNSpellSteal_FrameTitleText:SetText("|cffffffffPURGEABLE")
         end
         if(mnenglishClass == 'PRIEST') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.074 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
             MageNugz.ssMonitorToggle = false;
             MageNugz.mageProcToggle = false;
             MageNugz.absorbToggle = false;
@@ -2093,7 +2215,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNstarSurge_Frame:Hide();
         end
         if(mnenglishClass == 'DRUID') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.074 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
             MageNugz.ssMonitorToggle = false;
             MageNugz.absorbToggle = false;
             MageNugz.mirrorImageToggle = false;
@@ -2123,7 +2245,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             end
         end
         if(mnenglishClass == 'MAGE') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.074 ".."loaded! (Use: /magenuggets options)")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! (Use: /magenuggets options)")
             MageNugCD_Frame_Text:SetText(" ");
             MageNugz.moonkinTog = true;
             MageNugMoonkin_Frame:Hide()
@@ -2138,6 +2260,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             end        
         end                
         -----Main Options----- 
+        MageNugMoonkinToggle_FrameText:SetText("|cff00BFFF".."Mage".."|cff00FF00".." Nuggets")
         MageNugCauterizeFrame:Hide();
         if (MageNugz.minimapToggle == nil) then
             MageNugz.minimapToggle = true;
@@ -2159,7 +2282,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
         MNlbCounterFontString:SetText("Disable Living Bomb Counter")
         MNprocMonsFontString:SetText("Disable Mage Proc Monitors")
         MNabCounterFontString:SetText("Disable Arcane Blast Counter")
-        MNPolyFontString:SetText("Disable Poly Monitor")
+        MNPolyFontString:SetText("Disable Poly/Hex/Hibernate Monitor")
         MNcheckboxclearcastString:SetText("Disable Clearcast Monitor")
         MNcheckboxABcastString:SetText("AB Cast Time")
         MN_Slider2FontString:SetText("Spellsteal Monitor Size")

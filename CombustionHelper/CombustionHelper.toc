@@ -8,9 +8,9 @@
 
 ## Dependencies:
 
-## SavedVariables: combulock, combuffb, combuautohide, combuimpact, combuscale, combubeforefade, combuafterfade, combufadeoutspeed, combufadeinspeed, combuwaitfade, combufadealpha, combubartimers, combubarwidth, combured, combugreen, combublue, combuopacity, combucrit, comburefreshmode, combureport,combureportvalue,combureportthreshold
+## SavedVariables: combulock, combuffb, combuautohide, combuimpact, combuscale, combubeforefade, combuafterfade, combufadeoutspeed, combufadeinspeed, combuwaitfade, combufadealpha, combubartimers, combubarwidth, combured, combugreen, combublue, combuopacity, combucrit, comburefreshmode, combureport,combureportvalue,combureportthreshold, combureportpyro
 
-## version: 2.7.3
+## version: 2.7.4
 
 Libs\LibStub\LibStub.lua
 
