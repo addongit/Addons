@@ -1,4 +1,5 @@
--- This will filter everythin NON user config data out of ElvDB
+-- This will filter everythin NON user config data out of DB
+
 local myPlayerRealm = GetCVar("realmName");
 local myPlayerName  = UnitName("player");
 
@@ -25,7 +26,22 @@ ALLOWED_GROUPS = {
 	["debug"]=1,
 }
 
+--List of "Options" that we do not want to show in the config
+local Filter = {
+	["font"]=1,
+	["uffont"]=1,
+	["dmgfont"]=1,
+	["normTex"]=1,
+	["glowTex"]=1,
+	["blank"]=1,
+	["raidicons"]=1,
+	["whisper"]=1,
+	["warning"]=1,
+}
+
 local function Local(o)
+	local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
+	
 	-- general
 	if o == "ElvuiConfigUIgeneral" then o = ElvuiL.option_general end
 	if o == "ElvuiConfigUIgeneralautoscale" then o = ElvuiL.option_general_uiscale end
@@ -253,14 +269,10 @@ local function Local(o)
 	if o == "ElvuiConfigUIactionbarrightbarmouseover" then o = ElvuiL.option_actionbar_rb end
 	if o == "ElvuiConfigUIactionbarhotkey" then o = ElvuiL.option_actionbar_hk end
 	if o == "ElvuiConfigUIactionbarshapeshiftmouseover" then o = ElvuiL.option_actionbar_ssmo end
-	if o == "ElvuiConfigUIactionbarbottomrows" then o = ElvuiL.option_actionbar_rbn2 end
-	if o == "ElvuiConfigUIactionbarrightbars" then o = ElvuiL.option_actionbar_rn end
-	if o == "ElvuiConfigUIactionbarsplitbar" then o = ElvuiL.option_actionbar_splitbar end
 	if o == "ElvuiConfigUIactionbarbottompetbar" then o = ElvuiL.option_actionbar_bottompetbar end
 	if o == "ElvuiConfigUIactionbarbuttonsize" then o = ElvuiL.option_actionbar_buttonsize end
 	if o == "ElvuiConfigUIactionbarbuttonspacing" then o = ElvuiL.option_actionbar_buttonspacing end
 	if o == "ElvuiConfigUIactionbarpetbuttonsize" then o = ElvuiL.option_actionbar_petbuttonsize end
-	if o == "ElvuiConfigUIactionbarpetbuttonspacing" then o = ElvuiL.option_actionbar_petbuttonspacing end
 	if o == "ElvuiConfigUIactionbarswaptopbottombar" then o = ElvuiL.option_actionbar_swaptopbottombar end
 	if o == "ElvuiConfigUIactionbarmacrotext" then o = ElvuiL.option_actionbar_macrotext end
 	if o == "ElvuiConfigUIactionbarverticalstance" then o = ElvuiL.option_actionbar_verticalstance end
@@ -300,13 +312,16 @@ local function Local(o)
 	if o == "ElvuiConfigUIdebugenabled" then o = ElvuiL.option_debug_enabled end
 	if o == "ElvuiConfigUIdebugevents" then o = ElvuiL.option_debug_events end
 	
-	ElvDB.option = o
+	
+	E.option = o
 end
 
 local NewButton = function(text,parent)
+	local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
+	
 	local result = CreateFrame("Button", nil, parent)
 	local label = result:CreateFontString(nil,"OVERLAY",nil)
-	label:SetFont(ElvCF.media.font,ElvCF["general"].fontscale,"OUTLINE")
+	label:SetFont(C.media.font,C["general"].fontscale)
 	label:SetText(text)
 	result:SetWidth(label:GetWidth())
 	result:SetHeight(label:GetHeight())
@@ -319,11 +334,12 @@ local login = CreateFrame("Frame")
 login:RegisterEvent("PLAYER_ENTERING_WORLD")
 login:SetScript("OnEvent", function(self)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-
+	
+	local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
 	if ElvuiConfigAll[myPlayerRealm][myPlayerName] == true then
-		print(ElvL.core_welcome1..ElvDB.version.." (Loaded "..myPlayerName.."'s settings)")
+		print(L.core_welcome1..E.version.." (Loaded "..myPlayerName.."'s settings)")
 	else
-		print(ElvL.core_welcome1..ElvDB.version.." (Loaded default settings)")
+		print(L.core_welcome1..E.version.." (Loaded default settings)")
 	end
 end)
 
@@ -413,13 +429,15 @@ end
 
 local VISIBLE_GROUP = nil
 local function ShowGroup(group)	
+	local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
+	
 	if(VISIBLE_GROUP) then
 		_G["ElvuiConfigUI"..VISIBLE_GROUP]:Hide()
 	end
 	if _G["ElvuiConfigUI"..group] then
 		local o = "ElvuiConfigUI"..group
 		Local(o)
-		_G["ElvuiConfigUITitle"]:SetText(ElvDB.option)
+		_G["ElvuiConfigUITitle"]:SetText(E.option)
 		local height = _G["ElvuiConfigUI"..group]:GetHeight()
 		_G["ElvuiConfigUI"..group]:Show()
 		local scrollamntmax = 305
@@ -458,6 +476,8 @@ local function ShowGroup(group)
 end
 
 local function CreateElvuiConfigUI()
+	local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
+	
 	if ElvuiConfigUI then
 		ShowGroup("general")
 		ElvuiConfigUI:Show()
@@ -477,18 +497,16 @@ local function CreateElvuiConfigUI()
 	ElvuiConfigUITitleBox:SetWidth(570)
 	ElvuiConfigUITitleBox:SetHeight(24)
 	ElvuiConfigUITitleBox:SetPoint("TOPLEFT", -10, 42)
-	ElvDB.SetTemplate(ElvuiConfigUITitleBox)
+	ElvuiConfigUITitleBox:SetTemplate("Default")
 	
 	local title = ElvuiConfigUITitleBox:CreateFontString("ElvuiConfigUITitle", "OVERLAY")
-	title:SetFont(ElvCF.media.font, ElvCF["general"].fontscale)
+	title:SetFont(C.media.font, C["general"].fontscale)
 	title:SetPoint("LEFT", ElvuiConfigUITitleBox, "LEFT",5, 0)
 		
 	local ElvuiConfigUIBG = CreateFrame("Frame","ElvuiConfigUI",ElvuiConfigUI)
 	ElvuiConfigUIBG:SetPoint("TOPLEFT", -10, 10)
 	ElvuiConfigUIBG:SetPoint("BOTTOMRIGHT", 10, -10)
-	ElvDB.SetTemplate(ElvuiConfigUIBG)
-	
-
+	ElvuiConfigUIBG:SetTemplate("Default")
 	
 	-- GROUP SELECTION ( LEFT SIDE )
 	local groups = CreateFrame("ScrollFrame", "ElvuiCatagoryGroup", ElvuiConfigUI)
@@ -496,7 +514,6 @@ local function CreateElvuiConfigUI()
 	groups:SetWidth(150)
 	groups:SetHeight(300)
 
-	
 	local ElvuiConfigCover = CreateFrame("Frame", "ElvuiConfigCover", ElvuiConfigUI)
 	ElvuiConfigCover:SetPoint("TOPLEFT", ElvuiCatagoryGroup, "TOPLEFT")
 	ElvuiConfigCover:SetPoint("BOTTOMRIGHT", ElvuiConfigUI, "BOTTOMRIGHT")
@@ -508,7 +525,7 @@ local function CreateElvuiConfigUI()
 	local groupsBG = CreateFrame("Frame","ElvuiConfigUI",ElvuiConfigUI)
 	groupsBG:SetPoint("TOPLEFT", groups, -10, 10)
 	groupsBG:SetPoint("BOTTOMRIGHT", groups, 10, -10)
-	ElvDB.SetTemplate(groupsBG)
+	groupsBG:SetTemplate("Default")
 		
 	local slider = CreateFrame("Slider", "ElvuiConfigUICatagorySlider", groups)
 	slider:SetPoint("TOPRIGHT", 0, 0)
@@ -518,8 +535,8 @@ local function CreateElvuiConfigUI()
 	slider:SetOrientation("VERTICAL")
 	slider:SetValueStep(20)
 	slider:SetScript("OnValueChanged", function(self,value) groups:SetVerticalScroll(value) end)
-	ElvDB.SetTemplate(slider)
-	local r,g,b,a = unpack(ElvCF["media"].bordercolor)
+	slider:SetTemplate("Default")
+	local r,g,b,a = unpack(C["media"].bordercolor)
 	slider:SetBackdropColor(r,g,b,0.2)
 	local child = CreateFrame("Frame",nil,groups)
 	child:SetPoint("TOPLEFT")
@@ -528,7 +545,7 @@ local function CreateElvuiConfigUI()
 	for group in pairs(ALLOWED_GROUPS) do
 		local o = "ElvuiConfigUI"..group
 		Local(o)
-		local button = NewButton(ElvDB.option, child)
+		local button = NewButton(E.option, child)
 		button:SetHeight(16)
 		button:SetWidth(125)
 		button:SetPoint("TOPLEFT", 5,-(offset))
@@ -567,8 +584,8 @@ local function CreateElvuiConfigUI()
 	slider:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob")
 	slider:SetOrientation("VERTICAL")
 	slider:SetValueStep(20)
-	ElvDB.SetTemplate(slider)
-	local r,g,b,a = unpack(ElvCF["media"].bordercolor)
+	slider:SetTemplate("Default")
+	local r,g,b,a = unpack(C["media"].bordercolor)
 	slider:SetBackdropColor(r,g,b,0.2)
 	slider:SetScript("OnValueChanged", function(self,value) group:SetVerticalScroll(value) end)
 	
@@ -578,24 +595,24 @@ local function CreateElvuiConfigUI()
 		frame:SetWidth(325)
 
 		local offset=5
-		for option,value in pairs(ElvCF[group]) do
+		for option,value in pairs(C[group]) do
 			
 			if type(value) == "boolean" then
 				local button = CreateFrame("CheckButton", "ElvuiConfigUI"..group..option, frame, "InterfaceOptionsCheckButtonTemplate")
 				local o = "ElvuiConfigUI"..group..option
 				Local(o)
-				_G["ElvuiConfigUI"..group..option.."Text"]:SetText(ElvDB.option)
-				_G["ElvuiConfigUI"..group..option.."Text"]:SetFont(ElvCF.media.font, ElvCF["general"].fontscale, "OUTLINE")
+				_G["ElvuiConfigUI"..group..option.."Text"]:SetText(E.option)
+				_G["ElvuiConfigUI"..group..option.."Text"]:SetFont(C.media.font, C["general"].fontscale)
 				button:SetChecked(value)
 				button:SetScript("OnClick", function(self) SetValue(group,option,(self:GetChecked() and true or false)) end)
 				button:SetPoint("TOPLEFT", 5, -(offset))
 				offset = offset+25
-			elseif type(value) == "number" or type(value) == "string" then
+			elseif (type(value) == "number" or type(value) == "string") and not Filter[option] then
 				local label = frame:CreateFontString(nil,"OVERLAY",nil)
-				label:SetFont(ElvCF.media.font,ElvCF["general"].fontscale,"OUTLINE")
+				label:SetFont(C.media.font,C["general"].fontscale)
 				local o = "ElvuiConfigUI"..group..option
 				Local(o)
-				label:SetText(ElvDB.option)
+				label:SetText(E.option)
 				label:SetWidth(420)
 				label:SetHeight(20)
 				label:SetJustifyH("LEFT")
@@ -616,14 +633,14 @@ local function CreateElvuiConfigUI()
 				editbox:SetFontObject(GameFontHighlight)
 				editbox:SetPoint("TOPLEFT", 5, -(offset+20))
 				editbox:SetText(value)
-				ElvDB.SetTemplate(editbox)	
+				editbox:SetTemplate("Default")
 				local okbutton = CreateFrame("Button", nil, frame)
 				okbutton:SetHeight(editbox:GetHeight())
 				okbutton:SetWidth(editbox:GetHeight())
-				ElvDB.SetTemplate(okbutton)
+				okbutton:SetTemplate("Default")
 				okbutton:SetPoint("LEFT", editbox, "RIGHT", 2, 0)
 				local oktext = okbutton:CreateFontString(nil,"OVERLAY",nil)
-				oktext:SetFont(ElvCF.media.font,12,"OUTLINE")
+				oktext:SetFont(C.media.font,12)
 				oktext:SetText("OK")
 				oktext:SetPoint("CENTER")
 				oktext:SetJustifyH("CENTER")
@@ -644,10 +661,10 @@ local function CreateElvuiConfigUI()
 				offset = offset+45
 			elseif type(value) == "table" then
 				local label = frame:CreateFontString(nil,"OVERLAY",nil)
-				label:SetFont(ElvCF.media.font,ElvCF["general"].fontscale,"OUTLINE")
+				label:SetFont(C.media.font,C["general"].fontscale)
 				local o = "ElvuiConfigUI"..group..option
 				Local(o)
-				label:SetText(ElvDB.option)
+				label:SetText(E.option)
 				label:SetWidth(420)
 				label:SetHeight(20)
 				label:SetJustifyH("LEFT")
@@ -657,61 +674,53 @@ local function CreateElvuiConfigUI()
 				local colorbutton = CreateFrame("Button", colorbuttonname, frame)
 				colorbutton:SetHeight(20)
 				colorbutton:SetWidth(50)
-				ElvDB.SetTemplate(colorbutton)
+				colorbutton:SetTemplate("Default")
 				colorbutton:SetBackdropBorderColor(unpack(value))
 				colorbutton:SetPoint("LEFT", label, "RIGHT", 2, 0)
 				local colortext = colorbutton:CreateFontString(nil,"OVERLAY",nil)
-				colortext:SetFont(ElvCF.media.font,ElvCF["general"].fontscale,"OUTLINE")
+				colortext:SetFont(C.media.font,C["general"].fontscale)
 				colortext:SetText("Set Color")
 				colortext:SetPoint("CENTER")
 				colortext:SetJustifyH("CENTER")
 				
-				local oldvalue = value
 				
 				local function round(number, decimal)
 					return (("%%.%df"):format(decimal)):format(number)
 				end	
 				
-				colorbutton:SetScript("OnMouseDown", function(self) 
+				colorbutton:SetScript("OnMouseDown", function(button) 
 					if ColorPickerFrame:IsShown() then return end
-					local newR, newG, newB, newA
-					local fired = 0
-					
-					local r,g,b,a = self:GetBackdropBorderColor();
-					r,g,b,a = round(r, 2),round(g, 2),round(b, 2),round(a, 2)
-					local originalR,originalG,originalB,originalA = r,g,b,a
-					
-					local function ShowColorPicker(r, g, b, a, changedCallback)
+					local oldr, oldg, oldb, olda = unpack(value)
+
+					local function ShowColorPicker(r, g, b, a, changedCallback, sameCallback)
+						HideUIPanel(ColorPickerFrame)
+						ColorPickerFrame.button = button
 						ColorPickerFrame:SetColorRGB(r,g,b)
-						a = tonumber(a)
-						ColorPickerFrame.hasOpacity = (a ~= nil and a ~= 1)
+						ColorPickerFrame.hasOpacity = (a ~= nil and a < 1)
 						ColorPickerFrame.opacity = a
-						ColorPickerFrame.previousValues = {originalR,originalG,originalB,originalA}
-						ColorPickerFrame.func, ColorPickerFrame.opacityFunc, ColorPickerFrame.cancelFunc = changedCallback, changedCallback, changedCallback;
-						ColorPickerFrame:Hide()
-						ColorPickerFrame:Show()
+						ColorPickerFrame.previousValues = {oldr, oldg, oldb, olda}
+						ColorPickerFrame.func, ColorPickerFrame.opacityFunc, ColorPickerFrame.cancelFunc = changedCallback, changedCallback, sameCallback;
+						ShowUIPanel(ColorPickerFrame)
 					end
 										
-					local function myColorCallback(restore)
-						fired = fired + 1
-						if restore ~= nil then
-							-- The user bailed, we extract the old color from the table created by ShowColorPicker.
-							newR, newG, newB, newA = unpack(restore)
-						else
-							-- Something changed
-							newA, newR, newG, newB = OpacitySliderFrame:GetValue(), ColorPickerFrame:GetColorRGB()
-						end
+					local function ColorCallback(restore)
+						-- Something change
+						if restore ~= nil or button ~= ColorPickerFrame.button then return end
+
+						local newA, newR, newG, newB = OpacitySliderFrame:GetValue(), ColorPickerFrame:GetColorRGB()
 						
-						--Kinda a cheesy way to fix setting the value in the wrong place.. oh well
-						if fired > 3 then
-							value = { newR, newG, newB, newA }
-							SetValue(group,option,(value)) 
-							self:SetBackdropBorderColor(newR, newG, newB, newA)
-							fired = 0
-						end
+						value = { newR, newG, newB, newA }
+						SetValue(group,option,(value)) 
+						button:SetBackdropBorderColor(newR, newG, newB, newA)	
+					end
+					
+					local function SameColorCallback()
+						value = { oldr, oldg, oldb, olda }
+						SetValue(group,option,(value))
+						button:SetBackdropBorderColor(oldr, oldg, oldb, olda)
 					end
 										
-					ShowColorPicker(originalR, originalG, originalB, originalA, myColorCallback)
+					ShowColorPicker(oldr, oldg, oldb, olda, ColorCallback, SameColorCallback)
 				end)
 				
 				offset = offset+25
@@ -734,21 +743,21 @@ local function CreateElvuiConfigUI()
 			StaticPopup_Show("RESET_ALL")
 		end
 	end)
-	ElvDB.SetTemplate(reset)
+	reset:SetTemplate("Default")
 	
 	local close = NewButton(ElvuiL.option_button_close, ElvuiConfigUI)
 	close:SetWidth(100)
 	close:SetHeight(20)
 	close:SetPoint("BOTTOMRIGHT", 10, -38)
 	close:SetScript("OnClick", function(self) ElvuiConfigUI:Hide() end)
-	ElvDB.SetTemplate(close)
+	close:SetTemplate("Default")
 	
 	local load = NewButton(ElvuiL.option_button_load, ElvuiConfigUI)
 	load:SetHeight(20)
 	load:SetPoint("LEFT", reset, "RIGHT", 15, 0)
 	load:SetPoint("RIGHT", close, "LEFT", -15, 0)
 	load:SetScript("OnClick", function(self) ReloadUI() end)
-	ElvDB.SetTemplate(load)
+	load:SetTemplate("Default")
 
 	if ElvuiConfigAll then
 		local button = CreateFrame("CheckButton", "ElvuiConfigAllCharacters", ElvuiConfigUITitleBox, "InterfaceOptionsCheckButtonTemplate")
@@ -761,7 +770,7 @@ local function CreateElvuiConfigUI()
 		button:SetPoint("RIGHT", ElvuiConfigUITitleBox, "RIGHT",-3, 0)	
 		
 		local label = ElvuiConfigAllCharacters:CreateFontString(nil,"OVERLAY",nil)
-		label:SetFont(ElvCF.media.font,ElvCF["general"].fontscale,"OUTLINE")
+		label:SetFont(C.media.font,C["general"].fontscale)
 		
 		label:SetText(ElvuiL.option_setsavedsetttings)
 		label:SetPoint("RIGHT", button, "LEFT")

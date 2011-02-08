@@ -1,8 +1,8 @@
 -- credits : Haste
-local ElvCF = ElvCF
-local ElvDB = ElvDB
 
-if not ElvCF["loot"].lootframe == true then return end
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
+
+if not C["loot"].lootframe == true then return end
 
 local L = {
 	fish = "Fishy loot",
@@ -64,9 +64,9 @@ end
 local createSlot = function(id)
 	local iconsize = iconSize-2
 	local frame = CreateFrame("Button", 'ButsuSlot'..id, addon)
-	frame:SetPoint("LEFT", ElvDB.Scale(8), 0)
-	frame:SetPoint("RIGHT", ElvDB.Scale(-8), 0)
-	frame:SetHeight(ElvDB.Scale(iconsize))
+	frame:SetPoint("LEFT", E.Scale(8), 0)
+	frame:SetPoint("RIGHT", E.Scale(-8), 0)
+	frame:SetHeight(E.Scale(iconsize))
 	frame:SetID(id)
 
 	frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -77,25 +77,25 @@ local createSlot = function(id)
 	frame:SetScript("OnUpdate", OnUpdate)
 
 	local iconFrame = CreateFrame("Frame", nil, frame)
-	iconFrame:SetHeight(ElvDB.Scale(iconsize))
-	iconFrame:SetWidth(ElvDB.Scale(iconsize))
+	iconFrame:SetHeight(E.Scale(iconsize))
+	iconFrame:SetWidth(E.Scale(iconsize))
 	iconFrame:ClearAllPoints()
 	iconFrame:SetPoint("RIGHT", frame)
 	
-	ElvDB.SetTemplate(iconFrame)
+	iconFrame:SetTemplate("Default")
 
 	local icon = iconFrame:CreateTexture(nil, "ARTWORK")
 	icon:SetAlpha(.8)
 	icon:SetTexCoord(.07, .93, .07, .93)
-	icon:SetPoint("TOPLEFT", ElvDB.Scale(2), ElvDB.Scale(-2))
-	icon:SetPoint("BOTTOMRIGHT", ElvDB.Scale(-2), ElvDB.Scale(2))
+	icon:SetPoint("TOPLEFT", E.Scale(2), E.Scale(-2))
+	icon:SetPoint("BOTTOMRIGHT", E.Scale(-2), E.Scale(2))
 	frame.icon = icon
 
 	local count = iconFrame:CreateFontString(nil, "OVERLAY")
 	count:ClearAllPoints()
 	count:SetJustifyH"RIGHT"
-	count:SetPoint("BOTTOMRIGHT", iconFrame, ElvDB.Scale(-1), ElvDB.Scale(2))
-	count:SetFont(ElvCF["media"].font, ElvCF["general"].fontscale, "OUTLINE")
+	count:SetPoint("BOTTOMRIGHT", iconFrame, E.Scale(-1), E.Scale(2))
+	count:SetFont(C["media"].font, C["general"].fontscale, "OUTLINE")
 	count:SetShadowOffset(.8, -.8)
 	count:SetShadowColor(0, 0, 0, 1)
 	count:SetText(1)
@@ -107,7 +107,7 @@ local createSlot = function(id)
 	name:SetPoint("LEFT", frame)
 	name:SetPoint("RIGHT", icon, "LEFT")
 	name:SetNonSpaceWrap(true)
-	name:SetFont(ElvCF["media"].font, ElvCF["general"].fontscale, "OUTLINE")
+	name:SetFont(C["media"].font, C["general"].fontscale, "OUTLINE")
 	name:SetShadowOffset(.8, -.8)
 	name:SetShadowColor(0, 0, 0, 1)
 	frame.name = name
@@ -134,15 +134,15 @@ local anchorSlots = function(self)
 			shownSlots = shownSlots + 1
 
 			-- We don't have to worry about the previous slots as they're already hidden.
-			frame:SetPoint("TOP", addon, ElvDB.Scale(4), ElvDB.Scale((-8 + iconsize) - (shownSlots * iconsize)))
+			frame:SetPoint("TOP", addon, E.Scale(4), E.Scale((-8 + iconsize) - (shownSlots * iconsize)))
 		end
 	end
 
-	self:SetHeight(ElvDB.Scale(math.max(shownSlots * iconsize + 16, 20)))
+	self:SetHeight(E.Scale(math.max(shownSlots * iconsize + 16, 20)))
 end
 
-title:SetFont(ElvCF["media"].font, ElvCF["general"].fontscale, "OUTLINE")
-title:SetPoint("BOTTOMLEFT", addon, "TOPLEFT", ElvDB.Scale(4), ElvDB.Scale(4))
+title:SetFont(C["media"].font, C["general"].fontscale, "OUTLINE")
+title:SetPoint("BOTTOMLEFT", addon, "TOPLEFT", E.Scale(4), E.Scale(4))
 
 addon:SetScript("OnMouseDown", function(self) if(IsAltKeyDown()) then self:StartMoving() end end)
 addon:SetScript("OnMouseUp", function(self) self:StopMovingOrSizing() end)
@@ -153,21 +153,26 @@ end)
 addon:SetMovable(true)
 addon:RegisterForClicks"anyup"
 
+local x = CreateFrame("Frame", "LootFrameHolder", UIParent)
+x:SetPoint("TOPLEFT", E.Scale(68), E.Scale(-194))
+x:SetWidth(150)
+x:SetHeight(22)
+
 addon:SetParent(UIParent)
 addon:SetUserPlaced(true)
-addon:SetPoint("TOPLEFT", 0, ElvDB.Scale(-104))
+addon:SetPoint("TOPLEFT", LootFrameHolder, "TOPLEFT", 0, 0)
 addon:SetBackdrop{
-	bgFile = ElvCF["media"].blank, tile = true, tileSize = ElvDB.Scale(16),
-	edgeFile = ElvCF["media"].blank, edgeSize = ElvDB.mult,
-	insets = {left = -ElvDB.mult, right = -ElvDB.mult, top = -ElvDB.mult, bottom = -ElvDB.mult},
+	bgFile = C["media"].blank, tile = true, tileSize = E.Scale(16),
+	edgeFile = C["media"].blank, edgeSize = E.mult,
+	insets = {left = -E.mult, right = -E.mult, top = -E.mult, bottom = -E.mult},
 }
-addon:SetWidth(ElvDB.Scale(256))
-addon:SetHeight(ElvDB.Scale(64))
+addon:SetWidth(E.Scale(256))
+addon:SetHeight(E.Scale(64))
 addon:SetBackdropColor(0.1, 0.1, 0.1, 1)
 
 addon:SetClampedToScreen(true)
-addon:SetClampRectInsets(0, 0, ElvDB.Scale(14), 0)
-addon:SetHitRectInsets(0, 0, ElvDB.Scale(-14), 0)
+addon:SetClampRectInsets(0, 0, E.Scale(14), 0)
+addon:SetHitRectInsets(0, 0, E.Scale(-14), 0)
 addon:SetFrameStrata"FULLSCREEN"
 addon:SetToplevel(true)
 
@@ -196,9 +201,13 @@ addon.LOOT_OPENED = function(self, event, autoloot)
 		y = y / self:GetEffectiveScale()
 
 		self:ClearAllPoints()
-		self:SetPoint("TOPLEFT", nil, "BOTTOMLEFT", ElvDB.Scale(x - 40), ElvDB.Scale(y + 20))
+		self:SetPoint("TOPLEFT", nil, "BOTTOMLEFT", E.Scale(x - 40), E.Scale(y + 20))
 		self:GetCenter()
 		self:Raise()
+	else
+		self:SetUserPlaced(false)
+		self:ClearAllPoints()
+		self:SetPoint("TOPLEFT", LootFrameHolder, "TOPLEFT", 0, 0)	
 	end
 
 	local m, w, t = 0, 0, title:GetStringWidth()
@@ -260,7 +269,7 @@ addon.LOOT_OPENED = function(self, event, autoloot)
 
 	local color = ITEM_QUALITY_COLORS[m]
 	self:SetBackdropBorderColor(color.r, color.g, color.b, .8)
-	self:SetWidth(ElvDB.Scale(math.max(w, t)))
+	self:SetWidth(E.Scale(math.max(w, t)))
 end
 
 addon.LOOT_SLOT_CLEARED = function(self, event, slot)
@@ -310,6 +319,8 @@ addon:RegisterEvent"OPEN_MASTER_LOOT_LIST"
 addon:RegisterEvent"UPDATE_MASTER_LOOT_LIST"
 addon:RegisterEvent"ADDON_LOADED"
 addon:Hide()
+
+E.CreateMover(LootFrameHolder, "LootFrameMover", "Loot Frame")
 
 -- Fuzz
 LootFrame:UnregisterAllEvents()

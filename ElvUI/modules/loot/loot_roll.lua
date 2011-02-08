@@ -2,15 +2,16 @@
 		this is an edited version of teksloot
 		all credits of this mod goes to tekhub
 --]]
-local ElvCF = ElvCF
-local ElvDB = ElvDB
 
-if ElvCF["loot"].rolllootframe ~= true then return end
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
+
+if C["loot"].rolllootframe ~= true then return end
+local pos = "TOP"
 
 local backdrop = {
-	bgFile = ElvCF["media"].blank, tile = true, tileSize = 0,
-	edgeFile = ElvCF["media"].blank, edgeSize = ElvDB.mult,
-	insets = {left = -ElvDB.mult, right = -ElvDB.mult, top = -ElvDB.mult, bottom = -ElvDB.mult},
+	bgFile = C["media"].blank, tile = true, tileSize = 0,
+	edgeFile = C["media"].blank, edgeSize = E.mult,
+	insets = {left = -E.mult, right = -E.mult, top = -E.mult, bottom = -E.mult},
 }
 
 local function ClickRoll(frame)
@@ -65,9 +66,10 @@ end
 
 
 local function StatusUpdate(frame)
+	if not frame.parent.rollid then return end
 	local t = GetLootRollTimeLeft(frame.parent.rollid)
 	local perc = t / frame.parent.time
-	frame.spark:SetPoint("CENTER", frame, "LEFT", ElvDB.Scale(perc * frame:GetWidth()), 0)
+	frame.spark:SetPoint("CENTER", frame, "LEFT", E.Scale(perc * frame:GetWidth()), 0)
 	frame:SetValue(t)
 end
 
@@ -75,8 +77,8 @@ end
 local function CreateRollButton(parent, ntex, ptex, htex, rolltype, tiptext, ...)
 	local f = CreateFrame("Button", nil, parent)
 	f:SetPoint(...)
-	f:SetWidth(ElvDB.Scale(28))
-	f:SetHeight(ElvDB.Scale(28))
+	f:SetWidth(E.Scale(28))
+	f:SetHeight(E.Scale(28))
 	f:SetNormalTexture(ntex)
 	if ptex then f:SetPushedTexture(ptex) end
 	f:SetHighlightTexture(htex)
@@ -88,16 +90,16 @@ local function CreateRollButton(parent, ntex, ptex, htex, rolltype, tiptext, ...
 	f:SetScript("OnClick", ClickRoll)
 	f:SetMotionScriptsWhileDisabled(true)
 	local txt = f:CreateFontString(nil, nil)
-	txt:SetFont(ElvCF["media"].uffont, ElvCF["general"].fontscale, "OUTLINE")
-	txt:SetPoint("CENTER", 0, ElvDB.Scale(rolltype == 2 and 1 or rolltype == 0 and -1.2 or 0))
+	txt:SetFont(C["media"].uffont, C["general"].fontscale, "OUTLINE")
+	txt:SetPoint("CENTER", 0, E.Scale(rolltype == 2 and 1 or rolltype == 0 and -1.2 or 0))
 	return f, txt
 end
 
 
 local function CreateRollFrame()
 	local frame = CreateFrame("Frame", nil, UIParent)
-	frame:SetWidth(ElvDB.Scale(328))
-	frame:SetHeight(ElvDB.Scale(22))
+	frame:SetWidth(E.Scale(328))
+	frame:SetHeight(E.Scale(22))
 	frame:SetBackdrop(backdrop)
 	frame:SetBackdropColor(0.1, 0.1, 0.1, 1)
 	frame:SetScript("OnEvent", OnEvent)
@@ -105,9 +107,9 @@ local function CreateRollFrame()
 	frame:Hide()
 
 	local button = CreateFrame("Button", nil, frame)
-	button:SetPoint("LEFT", ElvDB.Scale(-24), 0)
-	button:SetWidth(ElvDB.Scale(22))
-	button:SetHeight(ElvDB.Scale(22))
+	button:SetPoint("LEFT", E.Scale(-24), 0)
+	button:SetWidth(E.Scale(22))
+	button:SetHeight(E.Scale(22))
 	button:SetScript("OnEnter", SetItemTip)
 	button:SetScript("OnLeave", HideTip2)
 	button:SetScript("OnUpdate", ItemOnUpdate)
@@ -116,15 +118,15 @@ local function CreateRollFrame()
 	frame.button = button
 
 	local buttonborder = CreateFrame("Frame", nil, button)
-	buttonborder:SetWidth(ElvDB.Scale(22))
-	buttonborder:SetHeight(ElvDB.Scale(22))
+	buttonborder:SetWidth(E.Scale(22))
+	buttonborder:SetHeight(E.Scale(22))
 	buttonborder:SetPoint("CENTER", button, "CENTER")
 	buttonborder:SetBackdrop(backdrop)
 	buttonborder:SetBackdropColor(1, 1, 1, 0)
 	
 	local buttonborder2 = CreateFrame("Frame", nil, button)
-	buttonborder2:SetWidth(ElvDB.Scale(24))
-	buttonborder2:SetHeight(ElvDB.Scale(24))
+	buttonborder2:SetWidth(E.Scale(24))
+	buttonborder2:SetHeight(E.Scale(24))
 	buttonborder2:SetFrameLevel(buttonborder:GetFrameLevel()+1)
 	buttonborder2:SetPoint("CENTER", button, "CENTER")
 	buttonborder2:SetBackdrop(backdrop)
@@ -135,49 +137,49 @@ local function CreateRollFrame()
 	frame.buttonborder = buttonborder
 
 	local tfade = frame:CreateTexture(nil, "BORDER")
-	tfade:SetPoint("TOPLEFT", frame, "TOPLEFT", ElvDB.Scale(4), 0)
-	tfade:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", ElvDB.Scale(-4), 0)
+	tfade:SetPoint("TOPLEFT", frame, "TOPLEFT", E.Scale(4), 0)
+	tfade:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", E.Scale(-4), 0)
 	tfade:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
 	tfade:SetBlendMode("ADD")
 	tfade:SetGradientAlpha("VERTICAL", .1, .1, .1, 0, .1, .1, .1, 0)
 
 	local status = CreateFrame("StatusBar", nil, frame)
-	status:SetWidth(ElvDB.Scale(326))
-	status:SetHeight(ElvDB.Scale(20))
+	status:SetWidth(E.Scale(326))
+	status:SetHeight(E.Scale(20))
 	status:SetPoint("CENTER", frame, "CENTER", 0, 0)
 	status:SetScript("OnUpdate", StatusUpdate)
 	status:SetFrameLevel(status:GetFrameLevel()-1)
-	status:SetStatusBarTexture(ElvCF["media"].normTex)
+	status:SetStatusBarTexture(C["media"].normTex)
 	status:SetStatusBarColor(.8, .8, .8, .9)
 	status.parent = frame
 	frame.status = status
 
 	local spark = frame:CreateTexture(nil, "OVERLAY")
-	spark:SetWidth(ElvDB.Scale(14))
-	spark:SetHeight(ElvDB.Scale(25))
+	spark:SetWidth(E.Scale(14))
+	spark:SetHeight(E.Scale(25))
 	spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
 	spark:SetBlendMode("ADD")
 	status.spark = spark
 
-	local need, needtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Dice-Up", "Interface\\Buttons\\UI-GroupLoot-Dice-Highlight", "Interface\\Buttons\\UI-GroupLoot-Dice-Down", 1, NEED, "LEFT", frame.button, "RIGHT", ElvDB.Scale(5), ElvDB.Scale(-1))
-	local greed, greedtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Coin-Up", "Interface\\Buttons\\UI-GroupLoot-Coin-Highlight", "Interface\\Buttons\\UI-GroupLoot-Coin-Down", 2, GREED, "LEFT", need, "RIGHT", 0, ElvDB.Scale(-1))
+	local need, needtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Dice-Up", "Interface\\Buttons\\UI-GroupLoot-Dice-Highlight", "Interface\\Buttons\\UI-GroupLoot-Dice-Down", 1, NEED, "LEFT", frame.button, "RIGHT", E.Scale(5), E.Scale(-1))
+	local greed, greedtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Coin-Up", "Interface\\Buttons\\UI-GroupLoot-Coin-Highlight", "Interface\\Buttons\\UI-GroupLoot-Coin-Down", 2, GREED, "LEFT", need, "RIGHT", 0, E.Scale(-1))
 	local de, detext
-	de, detext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-DE-Up", "Interface\\Buttons\\UI-GroupLoot-DE-Highlight", "Interface\\Buttons\\UI-GroupLoot-DE-Down", 3, ROLL_DISENCHANT, "LEFT", greed, "RIGHT", 0, ElvDB.Scale(-1))
-	local pass, passtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Pass-Up", nil, "Interface\\Buttons\\UI-GroupLoot-Pass-Down", 0, PASS, "LEFT", de or greed, "RIGHT", 0, ElvDB.Scale(2.2))
+	de, detext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-DE-Up", "Interface\\Buttons\\UI-GroupLoot-DE-Highlight", "Interface\\Buttons\\UI-GroupLoot-DE-Down", 3, ROLL_DISENCHANT, "LEFT", greed, "RIGHT", 0, E.Scale(-1))
+	local pass, passtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Pass-Up", nil, "Interface\\Buttons\\UI-GroupLoot-Pass-Down", 0, PASS, "LEFT", de or greed, "RIGHT", 0, E.Scale(2.2))
 	frame.needbutt, frame.greedbutt, frame.disenchantbutt = need, greed, de
 	frame.need, frame.greed, frame.pass, frame.disenchant = needtext, greedtext, passtext, detext
 
 	local bind = frame:CreateFontString()
-	bind:SetPoint("LEFT", pass, "RIGHT", ElvDB.Scale(3), ElvDB.Scale(1))
-	bind:SetFont(ElvCF["media"].uffont, ElvCF["general"].fontscale, "OUTLINE")
+	bind:SetPoint("LEFT", pass, "RIGHT", E.Scale(3), E.Scale(1))
+	bind:SetFont(C["media"].uffont, C["general"].fontscale, "OUTLINE")
 	frame.fsbind = bind
 
 	local loot = frame:CreateFontString(nil, "ARTWORK")
-	loot:SetFont(ElvCF["media"].uffont, ElvCF["general"].fontscale, "OUTLINE")
-	loot:SetPoint("LEFT", bind, "RIGHT", 0, ElvDB.Scale(0.12))
-	loot:SetPoint("RIGHT", frame, "RIGHT", ElvDB.Scale(-5), 0)
-	loot:SetHeight(ElvDB.Scale(10))
-	loot:SetWidth(ElvDB.Scale(200))
+	loot:SetFont(C["media"].uffont, C["general"].fontscale, "OUTLINE")
+	loot:SetPoint("LEFT", bind, "RIGHT", 0, E.Scale(0.12))
+	loot:SetPoint("RIGHT", frame, "RIGHT", E.Scale(-5), 0)
+	loot:SetHeight(E.Scale(10))
+	loot:SetWidth(E.Scale(200))
 	loot:SetJustifyH("LEFT")
 	frame.fsloot = loot
 
@@ -188,12 +190,12 @@ end
 
 
 local anchor = CreateFrame("Button", nil, UIParent)
-anchor:SetWidth(ElvDB.Scale(300)) 
-anchor:SetHeight(ElvDB.Scale(22))
+anchor:SetWidth(E.Scale(300)) 
+anchor:SetHeight(E.Scale(22))
 anchor:SetBackdrop(backdrop)
 anchor:SetBackdropColor(0.25, 0.25, 0.25, 1)
 local label = anchor:CreateFontString(nil, "ARTWORK")
-label:SetFont(ElvCF["media"].uffont, ElvCF["general"].fontscale, "OUTLINE")
+label:SetFont(C["media"].uffont, C["general"].fontscale, "OUTLINE")
 label:SetAllPoints(anchor)
 label:SetText("teksLoot")
 
@@ -212,8 +214,9 @@ anchor:Hide()
 local frames = {}
 
 local f = CreateRollFrame() -- Create one for good measure
-f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, ElvDB.Scale(-4))
+f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, E.Scale(-4))
 table.insert(frames, f)
+
 
 local function GetFrame()
 	for i,f in ipairs(frames) do
@@ -221,7 +224,11 @@ local function GetFrame()
 	end
 
 	local f = CreateRollFrame()
-	f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, ElvDB.Scale(-4))
+	if pos == "TOP" then
+		f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, E.Scale(-4))
+	else
+		f:SetPoint("BOTTOMLEFT", next(frames) and frames[#frames] or anchor, "TOPLEFT", 0, E.Scale(4))
+	end
 	table.insert(frames, f)
 	return f
 end
@@ -328,6 +335,36 @@ local function CHAT_MSG_LOOT(msg)
 	end
 end
 
+function E.PostMoveLootRoll(frame)
+	local point = select(1, frame:GetPoint())
+
+	if string.find(point, "TOP") or point == "CENTER" or point == "LEFT" or point == "RIGHT" then
+		pos = "TOP"
+	elseif string.find(point, "BOTTOM") then
+		pos = "BOTTOM"
+	end
+	
+	local lastframe
+	for i, frame in pairs(frames) do
+		if i ~= 1 then
+			frame:ClearAllPoints()
+			if pos == "TOP" then
+				frame:SetPoint("TOPLEFT", lastframe, "BOTTOMLEFT", 0, E.Scale(-4))
+			else
+				frame:SetPoint("BOTTOMLEFT", lastframe, "TOPLEFT", 0, E.Scale(4))
+			end	
+		else
+			frame:ClearAllPoints()
+			if pos == "TOP" then
+				frame:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, E.Scale(-4))
+			else
+				frame:SetPoint("BOTTOMLEFT", anchor, "TOPLEFT", 0, E.Scale(4))
+			end
+		end
+		lastframe = frame
+	end
+
+end
 
 anchor:RegisterEvent("ADDON_LOADED")
 anchor:SetScript("OnEvent", function(frame, event, addon)
@@ -340,6 +377,15 @@ anchor:SetScript("OnEvent", function(frame, event, addon)
 	UIParent:UnregisterEvent("CANCEL_LOOT_ROLL")
 
 	anchor:SetScript("OnEvent", function(frame, event, ...) if event == "CHAT_MSG_LOOT" then return CHAT_MSG_LOOT(...) else return START_LOOT_ROLL(...) end end)
-
-	anchor:SetPoint("TOP", UIParent, "TOP", 0, ElvDB.Scale(-200))
+	
+	local anchorholder = CreateFrame("Frame", "AnchorHolder", UIParent)
+	anchorholder:SetPoint("TOP", UIParent, "TOP", 0, -200)
+	anchorholder:SetWidth(anchor:GetWidth())
+	anchorholder:SetHeight(anchor:GetHeight())
+	
+	E.CreateMover(AnchorHolder, "LootRollMover", "LootRoll Frame", nil, E.PostMoveLootRoll)
+	
+	anchor:SetPoint("TOP", anchorholder, "TOP", 0, 0)
+	
+	
 end)

@@ -1,4 +1,5 @@
-if ElvCF.auras.raidunitbuffwatch ~= true then return end
+local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
+if C.auras.raidunitbuffwatch ~= true then return end
 if not oUF then return end
 
 --[[------------------------------------------------------------------------------------------------------

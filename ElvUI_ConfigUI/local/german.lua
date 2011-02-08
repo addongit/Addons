@@ -35,8 +35,8 @@
 	ElvuiL.option_nameplates_enhancethreat = "Aktiviere Bedrohungsanzeige, ändert sich automatisch je nach deiner Rolle"
 	ElvuiL.option_nameplates_showhealth = "Zeige Leben auf den Namensplaketten"
  	ElvuiL.option_nameplates_combat = "Zeige gegnerische Namensplaketten nur im Kampf"
- 	ElvuiL.option_nameplates_goodcolor = "Good threat color, varies depending if your a tank or dps/heal"
-	ElvuiL.option_nameplates_badcolor = "Bad threat color, varies depending if your a tank or dps/heal"
+ 	ElvuiL.option_nameplates_goodcolor = "Bedrohung im grünen Bereich, variiert abhängig davon, ob man Tank oder DPS/Heal ist"
+	ElvuiL.option_nameplates_badcolor = "Bedrohung im roten Bereich, variiert abhängig davon, ob man Tank oder DPS/Heal ist"
 	ElvuiL.option_nameplates_transitioncolor = "Bedrohung verlieren/erhalten Farbe"
 
 	-- addon skins
@@ -45,7 +45,7 @@
 	ElvuiL.option_skin_omen = "Omen"
 	ElvuiL.option_skin_recount = "Recount"
 	ElvuiL.option_skin_skada = "Skada"
-	ElvuiL.option_hookdxeright = "Erzwingt die Position von DXEs oberem Leistenanker über dem rechten Chatfenster"
+	ElvuiL.option_hookdxeright = "Erzwingt die Position von DXEs am oberem Leistenanker über dem rechten Chatfenster"
  
 	-- classtimer
 	ElvuiL.option_classtimer = "Klassentimer"
@@ -209,15 +209,10 @@
 	ElvuiL.option_actionbar_rb = "Aktiviere rechte Aktionsleisten bei Mouseover"
 	ElvuiL.option_actionbar_hk = "Zeige Tastenbelegung auf den Buttons"
 	ElvuiL.option_actionbar_ssmo = "Gestaltenwandler- oder Totemleiste nur bei Mouseover anzeigen"
-	ElvuiL.option_actionbar_rbn = "Anzahl der Aktionsleisten unten (1 oder 2)"
-	ElvuiL.option_actionbar_rbn2 = "Anzahl der Aktionsleisten unten (1, 2, oder 3)"
-	ElvuiL.option_actionbar_rn = "Anzahl der Aktionsleisten rechts (1, 2 oder 3)"
-	ElvuiL.option_actionbar_splitbar = "Aktviert die geteilte Leiste um die untere Aktionsleiste"
 	ElvuiL.option_actionbar_bottompetbar = "Setzt die Begleiterleiste unter die Aktionsleiste 1 und schiebt diese nach oben"
 	ElvuiL.option_actionbar_buttonsize = "Größe der Aktionsleisten Buttons"
 	ElvuiL.option_actionbar_buttonspacing = "Abstand der Aktionsleisten Buttons"
 	ElvuiL.option_actionbar_petbuttonsize = "Größe der Begleiter/Haltungs Aktionsleisten Buttons"
-	ElvuiL.option_actionbar_petbuttonspacing = "Abstand der Begleiter/Haltungs Aktionsleisten Buttons"
 	ElvuiL.option_actionbar_swaptopbottombar = "Tausche die untere und obere Aktionsleiste"
 	ElvuiL.option_actionbar_macrotext = "Makrotexte auf den Aktionsleisten Buttons anzeigen"
 	ElvuiL.option_actionbar_verticalstance ="Vertikale Haltungsleiste"
@@ -258,5 +253,5 @@
 	ElvuiL.option_resetchar = "Bist du sicher, dass du die Einstellungen für diesen Charakter auf Standard zurücksetzen willst?"
 	ElvuiL.option_resetall = "Bist du sicher, dass du alle Einstellungen auf Standard zurücksetzen willst?"
 	ElvuiL.option_perchar = "Bist du sicher, dass du die Einstellung für 'Einstellungen pro Charakter' wechseln willst?"
-	ElvuiL.option_makeselection = "Sie müssen erst eine Auswahl treffen bevor Sie mit den Einstellungen fortfahren können."
+	ElvuiL.option_makeselection = "Sie müssen erst eine Auswahl treffen, bevor Sie mit den Einstellungen fortfahren können."
 end

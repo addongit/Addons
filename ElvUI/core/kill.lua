@@ -1,8 +1,5 @@
 -- here we kill all shit stuff on default UI that we don't need!
-local ElvDB = ElvDB
-local ElvCF = ElvCF
-
-local k = ElvDB.Kill
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
 
 local Kill = CreateFrame("Frame")
 Kill:RegisterEvent("ADDON_LOADED")
@@ -17,53 +14,53 @@ Kill:SetScript("OnEvent", function(self, event, addon)
 		end	
 
 
-		if ElvDB.myclass == "DEATHKNIGHT" then
-			k(RuneFrame)
+		if E.myclass == "DEATHKNIGHT" then
+			RuneFrame:Kill()
 		end
 	else
 
 		if addon == "Blizzard_AchievementUI" then
-			if ElvCF.tooltip.enable then
+			if C.tooltip.enable then
 				hooksecurefunc("AchievementFrameCategories_DisplayButton", function(button) button.showTooltipFunc = nil end)
 			end
 		end
 		
 		if addon ~= "ElvUI" then return end
-		k(StreamingIcon)
-		k(Advanced_UseUIScale)
-		k(Advanced_UIScaleSlider)
-		k(PartyMemberBackground)
-		k(TutorialFrameAlertButton)
+		StreamingIcon:Kill()
+		Advanced_UseUIScale:Kill()
+		Advanced_UIScaleSlider:Kill()
+		PartyMemberBackground:Kill()
+		TutorialFrameAlertButton:Kill()
 		
-		k(InterfaceOptionsUnitFramePanelPartyBackground)
+		InterfaceOptionsUnitFramePanelPartyBackground:Kill()
 		
-		if ElvCF.arena.unitframes then
+		if C.arena.unitframes then
 			SetCVar("showArenaEnemyFrames", 0)
-			k(InterfaceOptionsUnitFramePanelArenaEnemyFrames)
-			k(InterfaceOptionsUnitFramePanelArenaEnemyCastBar)
-			k(InterfaceOptionsUnitFramePanelArenaEnemyPets)
+			InterfaceOptionsUnitFramePanelArenaEnemyFrames:Kill()
+			InterfaceOptionsUnitFramePanelArenaEnemyCastBar:Kill()
+			InterfaceOptionsUnitFramePanelArenaEnemyPets:Kill()
 		end
 		
-		if ElvCF.chat.enable then
+		if C.chat.enable then
 			SetCVar("WholeChatWindowClickable", 0)
 			SetCVar("ConversationMode", "inline")
-			k(InterfaceOptionsSocialPanelWholeChatWindowClickable)
-			k(InterfaceOptionsSocialPanelConversationMode)
+			InterfaceOptionsSocialPanelWholeChatWindowClickable:Kill()
+			InterfaceOptionsSocialPanelConversationMode:Kill()
 		end
 		
-		if ElvCF.unitframes.enable then
+		if C.unitframes.enable then
 			InterfaceOptionsFrameCategoriesButton9:SetScale(0.00001)
 			InterfaceOptionsFrameCategoriesButton9:SetAlpha(0)	
 			InterfaceOptionsFrameCategoriesButton9:SetScale(0.00001)
 			InterfaceOptionsFrameCategoriesButton9:SetAlpha(0)
 		end
 		
-		if ElvCF.actionbar.enable then
-			k(InterfaceOptionsActionBarsPanelBottomLeft)
-			k(InterfaceOptionsActionBarsPanelBottomRight)
-			k(InterfaceOptionsActionBarsPanelRight)
-			k(InterfaceOptionsActionBarsPanelRightTwo)
-			k(InterfaceOptionsActionBarsPanelAlwaysShowActionBars)
+		if C.actionbar.enable then
+			InterfaceOptionsActionBarsPanelBottomLeft:Kill()
+			InterfaceOptionsActionBarsPanelBottomRight:Kill()
+			InterfaceOptionsActionBarsPanelRight:Kill()
+			InterfaceOptionsActionBarsPanelRightTwo:Kill()
+			InterfaceOptionsActionBarsPanelAlwaysShowActionBars:Kill()
 		end
 	end
 end)

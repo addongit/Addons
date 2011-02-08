@@ -1,11 +1,11 @@
-local ElvCF = ElvCF
-local ElvDB = ElvDB
-local ElvL = ElvL
+
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
+
 
 --------------------------------------------------------------------
 -- TIME
 --------------------------------------------------------------------
-if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
+if C["datatext"].wowtime and C["datatext"].wowtime > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:EnableMouse(true)
 	Stat:SetFrameStrata("MEDIUM")
@@ -13,50 +13,49 @@ if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
 	
 	local fader = CreateFrame("Frame", "TimeDataText", ElvuiInfoLeft)
 	
-	local Text
-	Text = fader:CreateFontString(nil, "OVERLAY")
-	Text:SetFont(ElvCF.media.font, ElvCF["datatext"].fontsize, "THINOUTLINE")
-	Text:SetShadowOffset(ElvDB.mult, -ElvDB.mult)
-	ElvDB.PP(ElvCF["datatext"].wowtime, Text)
+	local Text = fader:CreateFontString(nil, "OVERLAY")
+	Text:SetFont(C.media.font, C["datatext"].fontsize, "THINOUTLINE")
+	Text:SetShadowOffset(E.mult, -E.mult)
+	E.PP(C["datatext"].wowtime, Text)
 
 	local int = 1
-	ElvDB.SetUpAnimGroup(TimeDataText)
+	E.SetUpAnimGroup(TimeDataText)
 	local function Update(self, t)
 		int = int - t
 		if int < 0 then
-			if ElvCF["datatext"].localtime == true then
+			if C["datatext"].localtime == true then
 				Hr24 = tonumber(date("%H"))
 				Hr = tonumber(date("%I"))
 				Min = date("%M")
-				if ElvCF["datatext"].time24 == true then
-					Text:SetText(Hr24..ElvDB.ValColor..":|r"..Min)
+				if C["datatext"].time24 == true then
+					Text:SetText(Hr24..E.ValColor..":|r"..Min)
 				else
 					if Hr24>=12 then
-						Text:SetText(Hr..ElvDB.ValColor..":|r"..Min..ElvDB.ValColor.." PM")
+						Text:SetText(Hr..E.ValColor..":|r"..Min..E.ValColor.." PM")
 					else
-						Text:SetText(Hr..ElvDB.ValColor..":|r"..Min..ElvDB.ValColor.." AM")
+						Text:SetText(Hr..E.ValColor..":|r"..Min..E.ValColor.." AM")
 					end
 				end
 			else
 				local Hr, Min = GetGameTime()
 				if Min<10 then Min = "0"..Min end
-				if ElvCF["datatext"].time24 == true then
-					Text:SetText(Hr..ElvDB.ValColor..":|r"..Min.." |cffffffff|r")
+				if C["datatext"].time24 == true then
+					Text:SetText(Hr..E.ValColor..":|r"..Min.." |cffffffff|r")
 				else
 					if Hr>=12 then
 						if Hr>12 then Hr = Hr-12 end
-						Text:SetText(Hr..ElvDB.ValColor..":|r"..Min..ElvDB.ValColor.." PM")
+						Text:SetText(Hr..E.ValColor..":|r"..Min..E.ValColor.." PM")
 					else
 						if Hr == 0 then Hr = 12 end
-						Text:SetText(Hr..ElvDB.ValColor..":|r"..Min..ElvDB.ValColor.." AM")
+						Text:SetText(Hr..E.ValColor..":|r"..Min..E.ValColor.." AM")
 					end
 				end
 			end
 			
 			if CalendarGetNumPendingInvites() > 0 then
-				ElvDB.Flash(TimeDataText, 0.53)
+				E.Flash(TimeDataText, 0.53)
 			else
-				ElvDB.StopFlash(TimeDataText)
+				E.StopFlash(TimeDataText)
 			end
 			self:SetAllPoints(Text)
 			int = 1
@@ -64,20 +63,20 @@ if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
 	end
 
 	Stat:SetScript("OnEnter", function(self)
-		OnLoad = function(self) RequestRaidInfo() end,
-		GameTooltip:SetOwner(self, "ANCHOR_TOP", 0, ElvDB.Scale(6));
-		GameTooltip:ClearAllPoints()
-		GameTooltip:SetPoint("BOTTOM", self, "TOP", 0, ElvDB.mult)
+		OnLoad = function(self) RequestRaidInfo() end
+		local anchor, panel, xoff, yoff = E.DataTextTooltipAnchor(Text)
+		GameTooltip:SetOwner(panel, anchor, xoff, yoff)
 		GameTooltip:ClearLines()
 		
 		-- update level everytime we mouseover time
-		ElvDB.level = UnitLevel("player") 
+		E.level = UnitLevel("player") 
 
 		-- show wintergrasp info at 77+ only, can't get wg info under 77.
-		if ElvDB.level >= 77 and ElvDB.level <=84 then
+		if E.level >= 77 and E.level <=84 then
 			local wgtime = GetWintergraspWaitTime() or nil
 			local control = QUEUE_TIME_UNAVAILABLE
-			inInstance, instanceType = IsInInstance()
+			local inInstance, instanceType = IsInInstance()
+			
 			if not ( instanceType == "none" ) then
 				wgtime = QUEUE_TIME_UNAVAILABLE
 			elseif wgtime == nil then
@@ -89,10 +88,11 @@ if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
 				wgtime = (hour>0 and hour..":" or "")..min..":"..sec
 			end
 			GameTooltip:AddDoubleLine(format(PVPBATTLEGROUND_WINTERGRASPTIMER_TOOLTIP, ""),wgtime)
-		elseif ElvDB.level == 85 then
+		elseif E.level == 85 then
 			local _, localizedName, isActive, canQueue, startTime, canEnter = GetWorldPVPAreaInfo(2)
 			local control = QUEUE_TIME_UNAVAILABLE
-			inInstance, instanceType = IsInInstance()
+			local inInstance, instanceType = IsInInstance()
+			
 			if not ( instanceType == "none" ) then
 				startTime = QUEUE_TIME_UNAVAILABLE
 			elseif isActive then
@@ -107,32 +107,32 @@ if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
 		end
 
 		
-		if ElvCF["datatext"].localtime == true then
+		if C["datatext"].localtime == true then
 			local Hr, Min = GetGameTime()
 			if Min<10 then Min = "0"..Min end
-			if ElvCF["datatext"].time24 == true then         
-				GameTooltip:AddDoubleLine(ElvL.datatext_servertime,Hr .. ":" .. Min);
+			if C["datatext"].time24 == true then         
+				GameTooltip:AddDoubleLine(L.datatext_servertime,Hr .. ":" .. Min);
 			else             
 				if Hr>=12 then
 				Hr = Hr-12
 				if Hr == 0 then Hr = 12 end
-					GameTooltip:AddDoubleLine(ElvL.datatext_servertime,Hr .. ":" .. Min.." PM");
+					GameTooltip:AddDoubleLine(L.datatext_servertime,Hr .. ":" .. Min.." PM");
 				else
 					if Hr == 0 then Hr = 12 end
-					GameTooltip:AddDoubleLine(ElvL.datatext_servertime,Hr .. ":" .. Min.." AM");
+					GameTooltip:AddDoubleLine(L.datatext_servertime,Hr .. ":" .. Min.." AM");
 				end
 			end
 		else
 			Hr24 = tonumber(date("%H"))
 			Hr = tonumber(date("%I"))
 			Min = date("%M")
-			if ElvCF["datatext"].time24 == true then
-				GameTooltip:AddDoubleLine(ElvL.datatext_localtime,Hr24 .. ":" .. Min);
+			if C["datatext"].time24 == true then
+				GameTooltip:AddDoubleLine(L.datatext_localtime,Hr24 .. ":" .. Min);
 			else
 				if Hr24>=12 then
-					GameTooltip:AddDoubleLine(ElvL.datatext_localtime,Hr .. ":" .. Min.." PM");
+					GameTooltip:AddDoubleLine(L.datatext_localtime,Hr .. ":" .. Min.." PM");
 				else
-					GameTooltip:AddDoubleLine(ElvL.datatext_localtime,Hr .. ":" .. Min.." AM");
+					GameTooltip:AddDoubleLine(L.datatext_localtime,Hr .. ":" .. Min.." AM");
 				end
 			end
 		end  
@@ -144,7 +144,7 @@ if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
 			local tr,tg,tb,diff
 			if not oneraid then
 				GameTooltip:AddLine(" ")
-				GameTooltip:AddLine(ElvL.datatext_savedraid)
+				GameTooltip:AddLine(L.datatext_savedraid)
 				oneraid = true
 			end
 
@@ -168,21 +168,6 @@ if ElvCF["datatext"].wowtime and ElvCF["datatext"].wowtime > 0 then
 	Stat:RegisterEvent("PLAYER_ENTERING_WORLD")
 	Stat:SetScript("OnUpdate", Update)
 	Stat:RegisterEvent("UPDATE_INSTANCE_INFO")
-	if ElvCF["general"].minimalistic ~= true then
-		Stat:SetScript("OnMouseDown", function() GameTimeFrame:Click() end)
-	else
-		Stat:SetScript("OnMouseDown", function(self, btn) 
-			if btn == "RightButton" then
-				OpenAllBags()
-			elseif btn == "MiddleButton" then
-				if not IsAddOnLoaded("Blizzard_GuildUI") then 
-					LoadAddOn("Blizzard_GuildUI")
-				end 
-				ToggleFrame(GuildFrame)
-			else
-				GameTimeFrame:Click() 
-			end
-		end)
-	end
+	Stat:SetScript("OnMouseDown", function() GameTimeFrame:Click() end)
 	Update(Stat, 10)
 end

@@ -1,25 +1,16 @@
 --------------------------------------------------------------------------
--- Auto-Release when dead in Wintergrasp or Battleground.
+-- Auto-Release when dead in Battleground.
 --------------------------------------------------------------------------
-local ElvCF = ElvCF
-local ElvDB = ElvDB
 
-if ElvCF["others"].pvpautorelease ~= true then return end
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
 
-local WINTERGRASP
-WINTERGRASP = ElvL.mount_wintergrasp
+if C["others"].pvpautorelease ~= true then return end
 
 local autoreleasepvp = CreateFrame("frame")
 autoreleasepvp:RegisterEvent("PLAYER_DEAD")
 autoreleasepvp:SetScript("OnEvent", function(self, event)
 	local soulstone = GetSpellInfo(20707)
-	if (ElvDB.myclass ~= "SHAMAN") and not (soulstone and UnitBuff("player", soulstone)) then
-		if (tostring(GetZoneText()) == WINTERGRASP) then
-			RepopMe()
-		end
-
-		if MiniMapBattlefieldFrame.status == "active" then
-			RepopMe()
-		end
+	if ((E.myclass ~= "SHAMAN") and not (soulstone and UnitBuff("player", soulstone))) and MiniMapBattlefieldFrame.status == "active" then
+		RepopMe()
 	end
 end)

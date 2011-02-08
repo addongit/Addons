@@ -1,3 +1,4 @@
+local E, C, L = unpack(ElvUI) -- Import Functions/Constants, Config, Locales
 if not oUF then return end
 
 local _, ns = ...
@@ -295,7 +296,7 @@ do
 
 	function frame:VARIABLES_LOADED()
 		-- I honestly don't trust the load order of SVs.
-		if ElvCF["unitframes"].positionbychar == true then
+		if C["unitframes"].positionbychar == true then
 			_DB = ElvuiUFpos or {}
 			ElvuiUFpos = _DB
 		else
@@ -315,7 +316,6 @@ do
 
 	function frame:PLAYER_REGEN_DISABLED()
 		if(_LOCK) then
-			print("Anchors hidden due to combat.")
 			for k, bdrop in next, backdropPool do
 				bdrop:Hide()
 			end
@@ -366,15 +366,15 @@ do
 		local name = backdrop:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		name:SetPoint"CENTER"
 		name:SetJustifyH"CENTER"
-		name:SetFont(GameFontNormal:GetFont(), 12)
-		name:SetTextColor(1, 1, 1)
-
+		name:SetFont(GameFontNormal:GetFont(), 12, "THINOUTLINE")
+		name:SetShadowOffset(E.mult, -E.mult)
+		name:SetTextColor(unpack(C["media"].valuecolor))
+		
 		backdrop.name = name
 		backdrop.obj = obj
 		backdrop.header = isHeader
 
-		backdrop:SetBackdropBorderColor(0, .9, 0)
-		backdrop:SetBackdropColor(0, .9, 0)
+		backdrop:SetTemplate("Default", true)
 
 		-- Work around the fact that headers with no units displayed are 0 in height.
 		if(isHeader and math.floor(isHeader:GetHeight()) == 0) then
@@ -384,6 +384,14 @@ do
 
 		backdrop:SetScript("OnDragStart", OnDragStart)
 		backdrop:SetScript("OnDragStop", OnDragStop)
+		backdrop:SetScript("OnEnter", function(self)
+			self.name:SetTextColor(1, 1, 1)
+			self:SetBackdropBorderColor(unpack(C["media"].valuecolor))		
+		end)
+		backdrop:SetScript("OnLeave", function(self)
+			self.name:SetTextColor(unpack(C["media"].valuecolor))
+			self:SetTemplate("Default", true)
+		end)		
 
 		backdropPool[target] = backdrop
 
@@ -392,22 +400,16 @@ do
 end
 
 -- reset data
-local function RESETUF()
-	if ElvCF["unitframes"].positionbychar == true then
+function E.ResetUF()
+	if C["unitframes"].positionbychar == true then
 		ElvuiUFpos = {}
 	else
 		ElvuiData.ufpos = {}
 	end
-	ReloadUI()
 end
-SLASH_RESETUF1 = "/resetuf"
-SlashCmdList["RESETUF"] = RESETUF
 
-SLASH_OUF_MOVABLEFRAMES1 = '/uf'
-SlashCmdList['OUF_MOVABLEFRAMES'] = function(inp)
-	if(InCombatLockdown()) then
-		return print"Frames cannot be moved while in combat. Bailing out."
-	end
+function E.MoveUF()
+	if InCombatLockdown() then return end
 
 	if(not _LOCK) then
 		for k, obj in next, oUF.objects do
@@ -425,4 +427,3 @@ SlashCmdList['OUF_MOVABLEFRAMES'] = function(inp)
 		_LOCK = nil
 	end
 end
--- It's not in your best interest to disconnect me. Someone could get hurt.

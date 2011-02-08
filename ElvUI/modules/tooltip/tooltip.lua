@@ -1,10 +1,8 @@
 -- credits : Aezay (TipTac) and Caellian for some parts of code.
-local ElvCF = ElvCF
-local ElvDB = ElvDB
-local ElvL = ElvL
 
-local db = ElvCF["tooltip"]
-if not db.enable then return end
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
+
+if not C["tooltip"].enable then return end
 
 local ElvuiTooltip = CreateFrame("Frame", nil, UIParent)
 
@@ -17,7 +15,7 @@ TooltipHolder:SetWidth(130)
 TooltipHolder:SetHeight(22)
 TooltipHolder:SetPoint("BOTTOMRIGHT", ElvuiInfoRight, "BOTTOMRIGHT")
 
-ElvDB.CreateMover(TooltipHolder, "TooltipMover", "Tooltip")
+E.CreateMover(TooltipHolder, "TooltipMover", "Tooltip")
 
 local gsub, find, format = string.gsub, string.find, string.format
 
@@ -36,21 +34,21 @@ local NeedBackdropBorderRefresh = false
 
 --Check if our embed right addon is shown
 local function CheckAddOnShown()
-	if ElvDB.ChatRightShown == true then
+	if E.ChatRightShown == true and E.RightChat and E.RightChat == true then
 		return true
-	elseif ElvCF["skin"].embedright == "Omen" and IsAddOnLoaded("Omen") and OmenAnchor then
+	elseif C["skin"].embedright == "Omen" and IsAddOnLoaded("Omen") and OmenAnchor then
 		if OmenAnchor:IsShown() then
 			return true
 		else
 			return false
 		end
-	elseif ElvCF["skin"].embedright == "Recount" and IsAddOnLoaded("Recount") and Recount_MainWindow then
+	elseif C["skin"].embedright == "Recount" and IsAddOnLoaded("Recount") and Recount_MainWindow then
 		if Recount_MainWindow:IsShown() then
 			return true
 		else
 			return false
 		end
-	elseif  ElvCF["skin"].embedright ==  "Skada" and IsAddOnLoaded("Skada") and SkadaBarWindowSkada then
+	elseif  C["skin"].embedright ==  "Skada" and IsAddOnLoaded("Skada") and SkadaBarWindowSkada then
 		if SkadaBarWindowSkada:IsShown() then
 			return true
 		else
@@ -62,7 +60,7 @@ local function CheckAddOnShown()
 end
 
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(self, parent)
-	if db.cursor == true then
+	if C["tooltip"].cursor == true then
 		if IsAddOnLoaded("ElvUI_Heal_Layout") and parent ~= UIParent then 
 			self:SetOwner(parent, "ANCHOR_NONE")	
 		else
@@ -76,24 +74,28 @@ end)
 
 local function SetRightTooltipPos(self)
 	self:ClearAllPoints()
-	if InCombatLockdown() and db.hidecombat == true and (ElvCF["tooltip"].hidecombatraid == true and inInstance and (instanceType == "raid")) then
+	if InCombatLockdown() and C["tooltip"].hidecombat == true and (C["tooltip"].hidecombatraid == true and inInstance and (instanceType == "raid")) then
 		self:Hide()
-	elseif InCombatLockdown() and db.hidecombat == true and ElvCF["tooltip"].hidecombatraid == false then
+	elseif InCombatLockdown() and C["tooltip"].hidecombat == true and C["tooltip"].hidecombatraid == false then
 		self:Hide()
 	else
-		if ElvCF["others"].enablebag == true and StuffingFrameBags and StuffingFrameBags:IsShown() then
-			self:SetPoint("BOTTOMRIGHT", StuffingFrameBags, "TOPRIGHT", -1, ElvDB.Scale(18))	
-		elseif TooltipMover and ElvDB.Movers["TooltipMover"]["moved"] == true then
-			self:SetPoint("BOTTOMRIGHT", TooltipMover, "TOPRIGHT", -1, ElvDB.Scale(18))
+		if C["others"].enablebag == true and StuffingFrameBags and StuffingFrameBags:IsShown() then
+			self:SetPoint("BOTTOMRIGHT", StuffingFrameBags, "TOPRIGHT", -1, E.Scale(18))	
+		elseif TooltipMover and E.Movers["TooltipMover"]["moved"] == true then
+			self:SetPoint("BOTTOMRIGHT", TooltipMover, "TOPRIGHT", -1, E.Scale(18))
 		else
 			if CheckAddOnShown() == true then
-				if ElvCF["chat"].showbackdrop == true and ElvDB.ChatRightShown == true then
-					self:SetPoint("BOTTOMRIGHT", ChatRBackground2, "TOPRIGHT", -1, ElvDB.Scale(42))	
+				if C["chat"].showbackdrop == true and E.ChatRightShown == true then
+					if E.RightChat == true then
+						self:SetPoint("BOTTOMRIGHT", ChatRBackground2, "TOPRIGHT", -1, E.Scale(42))	
+					else
+						self:SetPoint("BOTTOMRIGHT", ChatRBackground2, "TOPRIGHT", -1, E.Scale(18))	
+					end
 				else
-					self:SetPoint("BOTTOMRIGHT", ChatRBackground2, "TOPRIGHT", -1, ElvDB.Scale(18))		
+					self:SetPoint("BOTTOMRIGHT", ChatRBackground2, "TOPRIGHT", -1, E.Scale(18))		
 				end	
 			else
-				self:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -15, ElvDB.Scale(42))	
+				self:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", E.Scale(-3), E.Scale(42))	
 			end
 		end
 	end
@@ -108,12 +110,12 @@ GameTooltip:HookScript("OnUpdate",function(self, ...)
 		self:SetPoint("BOTTOMLEFT","UIParent","BOTTOMLEFT",(x / effScale + (15)),(y / effScale + (7)))		
 	end
 	
-	if self:GetAnchorType() == "ANCHOR_CURSOR" and NeedBackdropBorderRefresh == true and db.cursor ~= true then
+	if self:GetAnchorType() == "ANCHOR_CURSOR" and NeedBackdropBorderRefresh == true and C["tooltip"].cursor ~= true then
 		-- h4x for world object tooltip border showing last border color 
 		-- or showing background sometime ~blue :x
 		NeedBackdropBorderRefresh = false
-		self:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-		self:SetBackdropBorderColor(unpack(ElvCF.media.bordercolor))
+		self:SetBackdropColor(unpack(C.media.backdropfadecolor))
+		self:SetBackdropBorderColor(unpack(C.media.bordercolor))
 	elseif self:GetAnchorType() == "ANCHOR_NONE" then
 		SetRightTooltipPos(self)
 	end
@@ -158,16 +160,16 @@ GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
 
 	if not self.text then
 		self.text = self:CreateFontString(nil, "OVERLAY")
-		self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, ElvDB.Scale(-3))
-		self.text:SetFont(ElvCF["media"].font, ElvCF["general"].fontscale, "THINOUTLINE")
+		self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, E.Scale(-3))
+		self.text:SetFont(C["media"].font, C["general"].fontscale, "THINOUTLINE")
 		self.text:Show()
 		if unit then
 			min, max = UnitHealth(unit), UnitHealthMax(unit)
-			local hp = ElvDB.ShortValue(min).." / "..ElvDB.ShortValue(max)
+			local hp = E.ShortValue(min).." / "..E.ShortValue(max)
 			if UnitIsGhost(unit) then
-				self.text:SetText(ElvL.unitframes_ouf_ghost)
+				self.text:SetText(L.unitframes_ouf_ghost)
 			elseif min == 0 or UnitIsDead(unit) or UnitIsGhost(unit) then
-				self.text:SetText(ElvL.unitframes_ouf_dead)
+				self.text:SetText(L.unitframes_ouf_dead)
 			else
 				self.text:SetText(hp)
 			end
@@ -176,9 +178,9 @@ GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
 		if unit then
 			min, max = UnitHealth(unit), UnitHealthMax(unit)
 			self.text:Show()
-			local hp = ElvDB.ShortValue(min).." / "..ElvDB.ShortValue(max)
+			local hp = E.ShortValue(min).." / "..E.ShortValue(max)
 			if min == 0 or min == 1 then
-				self.text:SetText(ElvL.unitframes_ouf_dead)
+				self.text:SetText(L.unitframes_ouf_dead)
 			else
 				self.text:SetText(hp)
 			end
@@ -190,18 +192,18 @@ end)
 
 local healthBar = GameTooltipStatusBar
 healthBar:ClearAllPoints()
-healthBar:SetHeight(ElvDB.Scale(5))
-healthBar:SetPoint("TOPLEFT", healthBar:GetParent(), "BOTTOMLEFT", ElvDB.Scale(2), ElvDB.Scale(-5))
-healthBar:SetPoint("TOPRIGHT", healthBar:GetParent(), "BOTTOMRIGHT", -ElvDB.Scale(2), ElvDB.Scale(-5))
-healthBar:SetStatusBarTexture(ElvCF.media.normTex)
+healthBar:SetHeight(E.Scale(5))
+healthBar:SetPoint("TOPLEFT", healthBar:GetParent(), "BOTTOMLEFT", E.Scale(2), E.Scale(-5))
+healthBar:SetPoint("TOPRIGHT", healthBar:GetParent(), "BOTTOMRIGHT", -E.Scale(2), E.Scale(-5))
+healthBar:SetStatusBarTexture(C.media.normTex)
 
 
 local healthBarBG = CreateFrame("Frame", "StatusBarBG", healthBar)
 healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
-healthBarBG:SetPoint("TOPLEFT", -ElvDB.Scale(2), ElvDB.Scale(2))
-healthBarBG:SetPoint("BOTTOMRIGHT", ElvDB.Scale(2), -ElvDB.Scale(2))
-ElvDB.SetTemplate(healthBarBG)
-healthBarBG:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
+healthBarBG:SetPoint("TOPLEFT", -E.Scale(2), E.Scale(2))
+healthBarBG:SetPoint("BOTTOMRIGHT", E.Scale(2), -E.Scale(2))
+healthBarBG:SetTemplate("Default")
+healthBarBG:SetBackdropColor(unpack(C.media.backdropfadecolor))
 
 -- Add "Targeted By" line
 local targetedList = {}
@@ -228,7 +230,7 @@ local function AddTargetedBy()
 			GameTooltip:AddLine(" ",nil,nil,nil,1);
 			local line = _G["GameTooltipTextLeft"..GameTooltip:NumLines()];
 			if not line then return end
-			line:SetFormattedText(ElvL.tooltip_whotarget.." (|cffffffff%d|r): %s",(#targetedList + 1) / 3,table.concat(targetedList));
+			line:SetFormattedText(L.tooltip_whotarget.." (|cffffffff%d|r): %s",(#targetedList + 1) / 3,table.concat(targetedList));
 			wipe(targetedList);
 		end
 	end
@@ -248,7 +250,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	if not unit then self:Hide() return end
 	
 	-- for hiding tooltip on unitframes
-	if (self:GetOwner() ~= UIParent and db.hideuf) then self:Hide() return end
+	if (self:GetOwner() ~= UIParent and C["tooltip"].hideuf) then self:Hide() return end
 
 	if self:GetOwner() ~= UIParent and unit then
 		SetRightTooltipPos(self)
@@ -286,7 +288,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 		local offset = 2
 		if guildName then
 			if UnitIsInMyGuild(unit) then
-				_G["GameTooltipTextLeft2"]:SetText("<"..ElvDB.ValColor..guildName.."|r> ["..ElvDB.ValColor..guildRankName.."|r]")
+				_G["GameTooltipTextLeft2"]:SetText("<"..E.ValColor..guildName.."|r> ["..E.ValColor..guildRankName.."|r]")
 			else
 				_G["GameTooltipTextLeft2"]:SetText("<|cff00ff10"..guildName.."|r> [|cff00ff10"..guildRankName.."|r]")
 			end
@@ -324,7 +326,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 		GameTooltip:AddLine(UnitName(unit.."target"), r, g, b)
 	end
 	
-	if ElvCF["tooltip"].whotargetting == true then token = unit AddTargetedBy() end
+	if C["tooltip"].whotargetting == true then token = unit AddTargetedBy() end
 		
 	
 	-- Sometimes this wasn't getting reset, the fact a cleanup isn't performed at this point, now that it was moved to "OnTooltipCleared" is very bad, so this is a fix
@@ -348,9 +350,9 @@ local Colorize = function(self)
 		self:SetBackdropBorderColor(r, g, b)
 		healthBarBG:SetBackdropBorderColor(r, g, b)
 		healthBar:SetStatusBarColor(r, g, b)
-	elseif player and not ElvCF["tooltip"].colorreaction == true then
+	elseif player and not C["tooltip"].colorreaction == true then
 		local class = select(2, UnitClass(unit))
-		local c = ElvDB.colors.class[class]
+		local c = E.colors.class[class]
 		if c then
 			r, g, b = c[1], c[2], c[3]
 		end
@@ -358,7 +360,7 @@ local Colorize = function(self)
 		healthBarBG:SetBackdropBorderColor(r, g, b)
 		healthBar:SetStatusBarColor(r, g, b)
 	elseif reaction then
-		local c = ElvDB.colors.reaction[reaction]
+		local c = E.colors.reaction[reaction]
 		r, g, b = c[1], c[2], c[3]
 		self:SetBackdropBorderColor(r, g, b)
 		healthBarBG:SetBackdropBorderColor(r, g, b)
@@ -370,9 +372,9 @@ local Colorize = function(self)
 			local r, g, b = GetItemQualityColor(quality)
 			self:SetBackdropBorderColor(r, g, b)
 		else
-			self:SetBackdropBorderColor(unpack(ElvCF["media"].bordercolor))
-			healthBarBG:SetBackdropBorderColor(unpack(ElvCF["media"].bordercolor))
-			healthBar:SetStatusBarColor(unpack(ElvCF["media"].bordercolor))
+			self:SetBackdropBorderColor(unpack(C["media"].bordercolor))
+			healthBarBG:SetBackdropBorderColor(unpack(C["media"].bordercolor))
+			healthBar:SetStatusBarColor(unpack(C["media"].bordercolor))
 		end
 	end	
 	-- need this
@@ -380,8 +382,7 @@ local Colorize = function(self)
 end
 
 local SetStyle = function(self)
-	ElvDB.SetNormTexTemplate(self)
-	self:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
+	self:SetTemplate("Default", true)
 	Colorize(self)
 end
 
@@ -391,28 +392,23 @@ ElvuiTooltip:SetScript("OnEvent", function(self)
 		tt:HookScript("OnShow", SetStyle)
 	end
 	
-	ElvDB.SetTemplate(FriendsTooltip)
-	FriendsTooltip:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-	ElvDB.SetTemplate(BNToastFrame)
-	BNToastFrame:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-	ElvDB.SetTemplate(DropDownList1MenuBackdrop)
-	DropDownList1MenuBackdrop:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-	ElvDB.SetTemplate(DropDownList2MenuBackdrop)
-	DropDownList2MenuBackdrop:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-	ElvDB.SetTemplate(DropDownList1Backdrop)
-	DropDownList1Backdrop:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-	ElvDB.SetTemplate(DropDownList2Backdrop)
+	FriendsTooltip:SetTemplate("Default", true)
+	BNToastFrame:SetTemplate("Default", true)
+	DropDownList1MenuBackdrop:SetTemplate("Default", true)
+	DropDownList2MenuBackdrop:SetTemplate("Default", true)
+	DropDownList1Backdrop:SetTemplate("Default", true)
+	DropDownList2Backdrop:SetTemplate("Default", true)
 	
 	BNToastFrame:HookScript("OnShow", function(self)
 		self:ClearAllPoints()
-		self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvDB.Scale(5), ElvDB.Scale(-5))
+		self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", E.Scale(5), E.Scale(-5))
 	end)
 		
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	self:SetScript("OnEvent", nil)
 	
 	-- Hide tooltips in combat for actions, pet actions and shapeshift
-	if db.hidebuttons == true then
+	if C["tooltip"].hidebuttons == true then
 		local CombatHideActionButtonsTooltip = function(self)
 			if not IsShiftKeyDown() then
 				self:Hide()
@@ -429,22 +425,22 @@ end)
 ElvuiTooltip:SetScript("OnUpdate", function(self, elapsed)
 	if(self.elapsed and self.elapsed > 0.1) then
 		if FrameStackTooltip then
-			local noscalemult = ElvDB.mult * ElvCF["general"].uiscale
-			local r, g, b = RAID_CLASS_COLORS[ElvDB.myclass].r, RAID_CLASS_COLORS[ElvDB.myclass].g, RAID_CLASS_COLORS[ElvDB.myclass].b
+			local noscalemult = E.mult * C["general"].uiscale
+			local r, g, b = RAID_CLASS_COLORS[E.myclass].r, RAID_CLASS_COLORS[E.myclass].g, RAID_CLASS_COLORS[E.myclass].b
 			FrameStackTooltip:SetBackdrop({
-			  bgFile = ElvCF["media"].blank, 
-			  edgeFile = ElvCF["media"].blank, 
+			  bgFile = C["media"].blank, 
+			  edgeFile = C["media"].blank, 
 			  tile = false, tileSize = 0, edgeSize = noscalemult, 
 			  insets = { left = -noscalemult, right = -noscalemult, top = -noscalemult, bottom = -noscalemult}
 			})
-			FrameStackTooltip:SetBackdropColor(unpack(ElvCF.media.backdropfadecolor))
-			if ElvCF["general"].classcolortheme == true then
+			FrameStackTooltip:SetBackdropColor(unpack(C.media.backdropfadecolor))
+			if C["general"].classcolortheme == true then
 				FrameStackTooltip:SetBackdropBorderColor(r, g, b)
 			else
-				FrameStackTooltip:SetBackdropBorderColor(unpack(ElvCF["media"].bordercolor))
+				FrameStackTooltip:SetBackdropBorderColor(unpack(C["media"].bordercolor))
 			end	
-			FrameStackTooltip.SetBackdropColor = ElvDB.dummy
-			FrameStackTooltip.SetBackdropBorderColor = ElvDB.dummy
+			FrameStackTooltip.SetBackdropColor = E.dummy
+			FrameStackTooltip.SetBackdropBorderColor = E.dummy
 			self.elapsed = nil
 			self:SetScript("OnUpdate", nil)
 		end

@@ -4,16 +4,14 @@
 
 Mod_AddonSkins = CreateFrame("Frame")
 local Mod_AddonSkins = Mod_AddonSkins
-local ElvDB = ElvDB
-local ElvCF = ElvCF
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
 
-local elvskin = ElvDB.SetTemplate
 local function skinFrame(self, frame)
 	--Unfortionatly theres not a prettier way of doing this
 	if frame:GetParent():GetName() == "Recount_ConfigWindow" then
-		ElvDB.SetTransparentTemplate(frame)
+		frame:SetTemplate("Transparent")
 		frame:SetFrameStrata("BACKGROUND")
-		frame.SetFrameStrata = ElvDB.dummy
+		frame.SetFrameStrata = E.dummy
 	elseif frame:GetName() == "OmenBarList" or 
 	frame:GetName() == "OmenTitle" or 
 	frame:GetName() == "DXEPane" or 
@@ -21,14 +19,14 @@ local function skinFrame(self, frame)
 	frame:GetParent():GetName() == "Recount_MainWindow" or 
 	frame:GetParent():GetName() == "Recount_GraphWindow" or 
 	frame:GetParent():GetName() == "Recount_DetailWindow" then
-		ElvDB.SetTransparentTemplate(frame)
+		frame:SetTemplate("Transparent")
 		if frame:GetParent():GetName() ~= "Recount_GraphWindow" and frame:GetParent():GetName() ~= "Recount_DetailWindow" then
 			frame:SetFrameStrata("MEDIUM")
 		else
 			frame:SetFrameStrata("BACKGROUND")
 		end
 	else
-		elvskin(frame,frame)
+		frame:SetTemplate("Default")
 	end
 end
 local function skinButton(self, button)
@@ -48,17 +46,17 @@ end
 Mod_AddonSkins.SkinFrame = skinFrame
 Mod_AddonSkins.SkinBackgroundFrame = skinFrame
 Mod_AddonSkins.SkinButton = skinButton
-Mod_AddonSkins.normTexture = ElvCF.media.normTex
-Mod_AddonSkins.bgTexture = ElvCF.media.blank
-Mod_AddonSkins.font = ElvCF.media.font
-Mod_AddonSkins.smallFont = ElvCF.media.font
+Mod_AddonSkins.normTexture = C.media.normTex
+Mod_AddonSkins.bgTexture = C.media.blank
+Mod_AddonSkins.font = C.media.font
+Mod_AddonSkins.smallFont = C.media.font
 Mod_AddonSkins.fontSize = 12
-Mod_AddonSkins.buttonSize = ElvDB.Scale(27,27)
-Mod_AddonSkins.buttonSpacing = ElvDB.Scale(ElvDB.petbuttonspacing,ElvDB.petbuttonspacing)
-Mod_AddonSkins.borderWidth = ElvDB.Scale(2,2)
+Mod_AddonSkins.buttonSize = E.Scale(27,27)
+Mod_AddonSkins.buttonSpacing = E.Scale(E.buttonspacing,E.buttonspacing)
+Mod_AddonSkins.borderWidth = E.Scale(2,2)
 Mod_AddonSkins.buttonZoom = {.09,.91,.09,.91}
-Mod_AddonSkins.barSpacing = ElvDB.Scale(1,1)
-Mod_AddonSkins.barHeight = ElvDB.Scale(20,20)
+Mod_AddonSkins.barSpacing = E.Scale(1,1)
+Mod_AddonSkins.barHeight = E.Scale(20,20)
 Mod_AddonSkins.skins = {}
 
 -- Dummy function expected by some skins
@@ -83,11 +81,12 @@ Mod_AddonSkins:SetScript("OnEvent",function(self, event, addon)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		self:SetScript("OnEvent",nil)
 		-- Embed Right
-		if ElvCF["skin"].embedright == "Skada" and IsAddOnLoaded("Skada") then
+		if C["skin"].embedright == "Skada" and IsAddOnLoaded("Skada") then
 			SkadaBarWindowSkada:ClearAllPoints()
 			SkadaBarWindowSkada:SetPoint("TOPRIGHT", ChatRBackground2, "TOPRIGHT", -2, -2)
 			local function AdjustSkadaFrameLevels()
-				SkadaBarWindowSkada:SetFrameLevel(ChatFrame3:GetFrameLevel() + 2)
+				if not E.RightChatWindowID then return end
+				SkadaBarWindowSkada:SetFrameLevel(_G[format("ChatFrame%s", E.RightChatWindowID)]:GetFrameLevel() or 0 + 2)
 				if SkadaBG then
 					SkadaBG:SetFrameStrata("MEDIUM")	
 					SkadaBG:ClearAllPoints()
@@ -101,18 +100,18 @@ Mod_AddonSkins:SetScript("OnEvent",function(self, event, addon)
 			SkadaBarWindowSkada:Hide()
 			SkadaBarWindowSkada:Show()
 		end
-		if ElvCF["skin"].embedright == "Recount" and IsAddOnLoaded("Recount") then
+		if C["skin"].embedright == "Recount" and IsAddOnLoaded("Recount") then
 			Recount.db.profile.FrameStrata = "4-HIGH"
 			Recount_MainWindow:ClearAllPoints()
 			Recount_MainWindow:SetPoint("TOPLEFT", ChatRBackground2,"TOPLEFT", 0, 7)
 			Recount_MainWindow:SetPoint("BOTTOMRIGHT", ChatRBackground2,"BOTTOMRIGHT", 0, 0)
-			Recount.db.profile.MainWindowWidth = (ElvCF["chat"].chatwidth - 4)
+			Recount.db.profile.MainWindowWidth = (C["chat"].chatwidth - 4)
 		elseif IsAddOnLoaded("Recount") then
 			Recount.db.profile.FrameStrata = "4-HIGH"
 		end
-		if ElvCF["skin"].embedright == "Omen" and IsAddOnLoaded("Omen") then
+		if C["skin"].embedright == "Omen" and IsAddOnLoaded("Omen") then
 			Omen.UpdateTitleBar = function() end
-			ElvDB.Kill(OmenTitle)
+			OmenTitle:Kill()
 			if IsAddOnLoaded("Omen") then
 				OmenBarList:SetFrameStrata("HIGH")
 			end
@@ -120,10 +119,10 @@ Mod_AddonSkins:SetScript("OnEvent",function(self, event, addon)
 			OmenBarList:SetAllPoints(ChatRBackground2)
 		end
 		
-		if ElvCF["chat"].showbackdrop == true and IsAddOnLoaded("DXE") and DXEAlertsTopStackAnchor and ElvCF["skin"].hookdxeright == true and ElvCF["chat"].rightchat == true then
+		if C["chat"].showbackdrop == true and IsAddOnLoaded("DXE") and DXEAlertsTopStackAnchor and C["skin"].hookdxeright == true and E.RightChat == true then
 			DXEAlertsTopStackAnchor:ClearAllPoints()
 			DXEAlertsTopStackAnchor:SetPoint("BOTTOM", ChatRBackground2, "TOP", 13, 18)			
-		elseif IsAddOnLoaded("DXE") and DXEAlertsTopStackAnchor and ElvCF["skin"].hookdxeright == true then
+		elseif IsAddOnLoaded("DXE") and DXEAlertsTopStackAnchor and C["skin"].hookdxeright == true then
 			DXEAlertsTopStackAnchor:ClearAllPoints()
 			DXEAlertsTopStackAnchor:SetPoint("BOTTOM", ChatRBackground2, "TOP", 13, -5)
 		end

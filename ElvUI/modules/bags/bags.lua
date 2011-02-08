@@ -5,23 +5,23 @@
 	
 	All credits of this bags script is by Stuffing and his author Hungtar.
 --]]
-local ElvDB = ElvDB
-local ElvCF = ElvCF
-local ElvL = ElvL
+local E, C, L = unpack(select(2, ...)) -- Import Functions/Constants, Config, Locales
 
-if not ElvCF["others"].enablebag == true then return end
+
+
+if not C["others"].enablebag == true then return end
 
 StackSplitFrame:SetFrameStrata("TOOLTIP")
 
 local bags_BACKPACK = {0, 1, 2, 3, 4}
 local bags_BANK = {-1, 5, 6, 7, 8, 9, 10, 11}
-local BAGSFONT = ElvCF["media"].font
+local BAGSFONT = C["media"].font
 local ST_NORMAL = 1
 local ST_SOULBAG = 2
 local ST_SPECIAL = 3
 local ST_QUIVER = 4
 local bag_bars = 0
-local hide_soulbag = ElvCF["others"].soulbag
+local hide_soulbag = C["others"].soulbag
 
 -- hide bags options in default interface
 InterfaceOptionsDisplayPanelShowFreeBagSpace:Hide()
@@ -34,7 +34,7 @@ Stuffing:SetScript("OnEvent", function(self, event, ...)
 end)
 
 -- stub for localization.
-local L = setmetatable({}, {
+local Loc = setmetatable({}, {
 	__index = function (t, v)
 		t[v] = v
 		return v
@@ -43,7 +43,7 @@ local L = setmetatable({}, {
 
 
 local function Print (x)
-	DEFAULT_CHAT_FRAME:AddMessage("|cffFF6347Elvui:|r " .. x)
+	DEFAULT_CHAT_FRAME:AddMessage("|cff1784d1Elvui:|r " .. x)
 end
 
 local function Stuffing_Sort(args)
@@ -68,42 +68,42 @@ local function MoveChar()
 	if StuffingFrameBank and StuffingFrameBank:IsShown() then		
 		if PlayerTalentFrame and PlayerTalentFrame:IsShown() then
 			PlayerTalentFrame:ClearAllPoints()
-			PlayerTalentFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)
+			PlayerTalentFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)
 		end
 		
 		if AchievementFrame and AchievementFrame:IsShown() then
 			AchievementFrame:ClearAllPoints()
-			AchievementFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)		
+			AchievementFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)		
 		end
 		
 		if QuestLogFrame and QuestLogFrame:IsShown() then
 			QuestLogFrame:ClearAllPoints()
-			QuestLogFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)			
+			QuestLogFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)			
 		end
 		
 		if FriendsFrame and FriendsFrame:IsShown() and not (CharacterFrame:IsShown() or (PVPFrame and PVPFrame:IsShown()) or (GuildFrame and GuildFrame:IsShown()) or (LFDParentFrame and LFDParentFrame:IsShown())) then
 			FriendsFrame:ClearAllPoints()
-			FriendsFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)				
+			FriendsFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)				
 		end
 		
 		if PVPFrame and PVPFrame:IsShown() and not (CharacterFrame:IsShown() or (FriendsFrame and FriendsFrame:IsShown()) or (GuildFrame and GuildFrame:IsShown()) or (LFDParentFrame and LFDParentFrame:IsShown())) then
 			PVPFrame:ClearAllPoints()
-			PVPFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)				
+			PVPFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)				
 		end
 		
 		if GuildFrame and GuildFrame:IsShown() and not (CharacterFrame:IsShown() or (FriendsFrame and FriendsFrame:IsShown()) or (PVPFrame and PVPFrame:IsShown()) or (LFDParentFrame and LFDParentFrame:IsShown())) then
 			GuildFrame:ClearAllPoints()
-			GuildFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)		
+			GuildFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)		
 		end
 		
 		if LFDParentFrame and LFDParentFrame:IsShown() and not (CharacterFrame:IsShown() or (FriendsFrame and FriendsFrame:IsShown()) or (PVPFrame and PVPFrame:IsShown()) or (GuildFrame and GuildFrame:IsShown())) then
 			LFDParentFrame:ClearAllPoints()
-			LFDParentFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)				
+			LFDParentFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)				
 		end
 		
 		if CharacterFrame:IsShown() then
 			CharacterFrame:ClearAllPoints()
-			CharacterFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", ElvCF["chat"].chatwidth+30, -116)
+			CharacterFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", C["chat"].chatwidth+30, -116)
 		end
 		DressUpFrame:ClearAllPoints()
 		DressUpFrame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", 15, 0)
@@ -183,7 +183,7 @@ function Stuffing:SlotUpdate(b)
 
 	-- set all slot color to default Elvui on update
 	if not b.frame.lock then
-		b.frame:SetBackdropBorderColor(unpack(ElvCF.media.bordercolor))
+		b.frame:SetBackdropBorderColor(unpack(C.media.bordercolor))
 	end
 	
 	if b.Cooldown then
@@ -352,18 +352,15 @@ end
 
 
 -- from OneBag
-local BAGTYPE_QUIVER = 0x0001 + 0x0002 
-local BAGTYPE_SOUL = 0x004
 local BAGTYPE_PROFESSION = 0x0008 + 0x0010 + 0x0020 + 0x0040 + 0x0080 + 0x0200 + 0x0400
+local BAGTYPE_FISHING = 32768
 
 function Stuffing:BagType(bag)
 	local bagType = select(2, GetContainerNumFreeSlots(bag))
-
-	if bit.band(bagType, BAGTYPE_QUIVER) > 0 then
-		return ST_QUIVER
-	elseif bit.band(bagType, BAGTYPE_SOUL) > 0 then
-		return ST_SOULBAG
-	elseif bit.band(bagType, BAGTYPE_PROFESSION) > 0 then
+	
+	if bit.band(bagType, BAGTYPE_FISHING) > 0 then
+		return ST_FISHBAG
+	elseif bit.band(bagType, BAGTYPE_PROFESSION) > 0 then		
 		return ST_SPECIAL
 	end
 
@@ -457,9 +454,9 @@ function Stuffing:CreateBagFrame(w)
 	
 	-- close button
 	f.b_close = CreateFrame("Button", "Stuffing_CloseButton" .. w, f, "UIPanelCloseButton")
-	f.b_close:SetWidth(ElvDB.Scale(32))
-	f.b_close:SetHeight(ElvDB.Scale(32))
-	f.b_close:SetPoint("TOPRIGHT", ElvDB.Scale(-3), ElvDB.Scale(-3))
+	f.b_close:SetWidth(E.Scale(32))
+	f.b_close:SetHeight(E.Scale(32))
+	f.b_close:SetPoint("TOPRIGHT", E.Scale(-3), E.Scale(-3))
 	f.b_close:SetScript("OnClick", function(self, btn)
 		if self:GetParent():GetName() == "StuffingFrameBags" and btn == "RightButton" then
 			if Stuffing_DDMenu.initialize ~= Stuffing.Menu then
@@ -476,7 +473,7 @@ function Stuffing:CreateBagFrame(w)
 
 	-- create the bags frame
 	local fb = CreateFrame ("Frame", n .. "BagsFrame", f)
-	fb:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 0, ElvDB.Scale(2))
+	fb:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 0, E.Scale(2))
 	fb:SetFrameStrata("DIALOG")
 	f.bags_frame = fb
 
@@ -523,8 +520,8 @@ function Stuffing:InitBags()
 	local editbox = CreateFrame("EditBox", nil, f)
 	editbox:Hide()
 	editbox:SetAutoFocus(true)
-	editbox:SetHeight(ElvDB.Scale(32))
-	ElvDB.SetNormTexTemplate(editbox)
+	editbox:SetHeight(E.Scale(32))
+	editbox:SetTemplate("Default", true)
 
 	local resetAndClear = function (self)
 		self:GetParent().detail:Show()
@@ -544,19 +541,19 @@ function Stuffing:InitBags()
 	editbox:SetScript("OnEditFocusLost", editbox.Hide)
 	editbox:SetScript("OnEditFocusGained", editbox.HighlightText)
 	editbox:SetScript("OnTextChanged", updateSearch)
-	editbox:SetText(ElvL.bags_search)
+	editbox:SetText(L.bags_search)
 
 
 	local detail = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
-	detail:SetPoint("TOPLEFT", f, ElvDB.Scale(12), ElvDB.Scale(-10))
-	detail:SetPoint("RIGHT", ElvDB.Scale(-(16 + 24)), 0)
+	detail:SetPoint("TOPLEFT", f, E.Scale(12), E.Scale(-10))
+	detail:SetPoint("RIGHT", E.Scale(-(16 + 24)), 0)
 	detail:SetJustifyH("LEFT")
 	detail:SetText("|cff9999ff" .. "Search")
 	editbox:SetAllPoints(detail)
 
 	local gold = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
 	gold:SetJustifyH("RIGHT")
-	gold:SetPoint("RIGHT", f.b_close, "LEFT", ElvDB.Scale(-3), 0)
+	gold:SetPoint("RIGHT", f.b_close, "LEFT", E.Scale(-3), 0)
 
 	f:SetScript("OnEvent", function (self, e)
 		self.gold:SetText (GetCoinTextureString(GetMoney(), 12))
@@ -599,7 +596,7 @@ function Stuffing:InitBags()
 	local tooltip_show = function (self)
 		GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
 		GameTooltip:ClearLines()
-		GameTooltip:SetText(ElvL.bags_rightclick_search)
+		GameTooltip:SetText(L.bags_rightclick_search)
 	end
 
 	button:SetScript("OnEnter", tooltip_show)
@@ -624,32 +621,32 @@ function Stuffing:Layout(lb)
 
 	if lb then
 		bs = bags_BANK
-		cols = (floor(ElvCF["chat"].chatwidth/370 * 10))
+		cols = (floor(C["chat"].chatwidth/370 * 10))
 		f = self.bankFrame
 	else
 		bs = bags_BACKPACK
-		cols = (floor(ElvCF["chat"].chatwidth/370 * 10))
+		cols = (floor(C["chat"].chatwidth/370 * 10))
 		f = self.frame
 
-		f.gold:SetText (GetCoinTextureString(GetMoney(), ElvCF["general"].fontscale))
-		f.editbox:SetFont(BAGSFONT, ElvCF["general"].fontscale)
-		f.detail:SetFont(BAGSFONT, ElvCF["general"].fontscale)
-		f.gold:SetFont(BAGSFONT, ElvCF["general"].fontscale)
+		f.gold:SetText (GetCoinTextureString(GetMoney(), C["general"].fontscale))
+		f.editbox:SetFont(BAGSFONT, C["general"].fontscale)
+		f.detail:SetFont(BAGSFONT, C["general"].fontscale)
+		f.gold:SetFont(BAGSFONT, C["general"].fontscale)
 
 		f.detail:ClearAllPoints()
-		f.detail:SetPoint("TOPLEFT", f, ElvDB.Scale(12), ElvDB.Scale(-10))
-		f.detail:SetPoint("RIGHT", ElvDB.Scale(-(16 + 24)), 0)
+		f.detail:SetPoint("TOPLEFT", f, E.Scale(12), E.Scale(-10))
+		f.detail:SetPoint("RIGHT", E.Scale(-(16 + 24)), 0)
 	end
 
 	f:SetClampedToScreen(1)
 	f:SetBackdrop({
-		bgFile = ElvCF["media"].blank,
-		edgeFile = ElvCF["media"].blank,
-		edgeSize = ElvDB.mult,
-		insets = {left = -ElvDB.mult, right = -ElvDB.mult, top = -ElvDB.mult, bottom = -ElvDB.mult}
+		bgFile = C["media"].blank,
+		edgeFile = C["media"].blank,
+		edgeSize = E.mult,
+		insets = {left = -E.mult, right = -E.mult, top = -E.mult, bottom = -E.mult}
 	})
-	f:SetBackdropColor(unpack(ElvCF["media"].backdropfadecolor))
-	f:SetBackdropBorderColor(unpack(ElvCF["media"].bordercolor))
+	f:SetBackdropColor(unpack(C["media"].backdropfadecolor))
+	f:SetBackdropBorderColor(unpack(C["media"].bordercolor))
 
 
 	-- bag frame stuff
@@ -657,13 +654,13 @@ function Stuffing:Layout(lb)
 	if bag_bars == 1 then
 		fb:SetClampedToScreen(1)
 		fb:SetBackdrop({
-			bgFile = ElvCF["media"].blank,
-			edgeFile = ElvCF["media"].blank,
-			edgeSize = ElvDB.mult,
-			insets = {left = -ElvDB.mult, right = -ElvDB.mult, top = -ElvDB.mult, bottom = -ElvDB.mult}
+			bgFile = C["media"].blank,
+			edgeFile = C["media"].blank,
+			edgeSize = E.mult,
+			insets = {left = -E.mult, right = -E.mult, top = -E.mult, bottom = -E.mult}
 		})
-		fb:SetBackdropColor(unpack(ElvCF["media"].backdropfadecolor))
-		fb:SetBackdropBorderColor(unpack(ElvCF["media"].bordercolor))
+		fb:SetBackdropColor(unpack(C["media"].backdropfadecolor))
+		fb:SetBackdropBorderColor(unpack(C["media"].bordercolor))
 
 		local bsize = 30
 		if lb then bsize = 37 end
@@ -672,8 +669,8 @@ function Stuffing:Layout(lb)
 		w = w + ((#bs - 1) * bsize)
 		w = w + (12 * (#bs - 2))
 
-		fb:SetHeight(ElvDB.Scale(2 * 12 + bsize))
-		fb:SetWidth(ElvDB.Scale(w))
+		fb:SetHeight(E.Scale(2 * 12 + bsize))
+		fb:SetWidth(E.Scale(w))
 		fb:Show()
 	else
 		fb:Hide()
@@ -695,7 +692,7 @@ function Stuffing:Layout(lb)
 			xoff = xoff + (idx * 4)
 
 			b.frame:ClearAllPoints()
-			b.frame:SetPoint("LEFT", fb, "LEFT", ElvDB.Scale(xoff), 0)
+			b.frame:SetPoint("LEFT", fb, "LEFT", E.Scale(xoff), 0)
 			b.frame:Show()
 
 
@@ -723,8 +720,8 @@ function Stuffing:Layout(lb)
 		rows = rows + 1
 	end
 
-	f:SetWidth(ElvDB.Scale(ElvCF["chat"].chatwidth))
-	f:SetHeight(ElvDB.Scale(rows * 31 + (rows - 1) * 4 + off + 12 * 2))
+	f:SetWidth(E.Scale(C["chat"].chatwidth))
+	f:SetHeight(E.Scale(rows * 31 + (rows - 1) * 4 + off + 12 * 2))
 
 	local bf = CreateFrame("Frame", "BagHolderFrame", f)
 	bf:SetWidth((31 + 2.5) * cols)
@@ -763,15 +760,15 @@ function Stuffing:Layout(lb)
 					
 					
 					b.frame:ClearAllPoints()
-					b.frame:SetPoint("TOPLEFT", bf, "TOPLEFT", ElvDB.Scale(xoff), ElvDB.Scale(yoff))
-					b.frame:SetHeight(ElvDB.Scale(31))
-					b.frame:SetWidth(ElvDB.Scale(31))
+					b.frame:SetPoint("TOPLEFT", bf, "TOPLEFT", E.Scale(xoff), E.Scale(yoff))
+					b.frame:SetHeight(E.Scale(31))
+					b.frame:SetWidth(E.Scale(31))
 					b.frame:SetPushedTexture("")
 					b.frame:SetNormalTexture("")
 					b.frame:Show()
-					ElvDB.SetNormTexTemplate(b.frame)
-					--b.frame:SetBackdropColor(unpack(ElvCF["media"].backdropfadecolor))
-					ElvDB.StyleButton(b.frame)
+					b.frame:SetTemplate("Default", true)
+					--b.frame:SetBackdropColor(unpack(C["media"].backdropfadecolor))
+					b.frame:StyleButton()
 					local clink = GetContainerItemLink
 					if (clink and b.rarity and b.rarity > 1) then
 						b.frame:SetBackdropBorderColor(GetItemQualityColor(b.rarity))
@@ -793,8 +790,8 @@ function Stuffing:Layout(lb)
 
 					local iconTex = _G[b.frame:GetName() .. "IconTexture"]
 					iconTex:SetTexCoord(.08, .92, .08, .92)
-					iconTex:SetPoint("TOPLEFT", b.frame, ElvDB.Scale(2), ElvDB.Scale(-2))
-					iconTex:SetPoint("BOTTOMRIGHT", b.frame, ElvDB.Scale(-2), ElvDB.Scale(2))
+					iconTex:SetPoint("TOPLEFT", b.frame, E.Scale(2), E.Scale(-2))
+					iconTex:SetPoint("BOTTOMRIGHT", b.frame, E.Scale(-2), E.Scale(2))
 
 					iconTex:Show()
 					b.iconTex = iconTex
@@ -850,14 +847,14 @@ function Stuffing:SetBagsForSorting(c)
 			end
 		else
 			if tonumber(s) == nil then
-				Print(string.format(L["Error: don't know what \"%s\" means."], s))
+				Print(string.format(Loc["Error: don't know what \"%s\" means."], s))
 			end
 
 			table.insert(self.sortBags, tonumber(s))
 		end
 	end
 
-	local bids = ElvL.bags_bids
+	local bids = L.bags_bids
 	for _, i in ipairs(self.sortBags) do
 		bids = bids .. i .. " "
 	end
@@ -886,7 +883,7 @@ local function StuffingSlashCmd(Cmd)
 		if Stuffing.bankFrame and Stuffing.bankFrame:IsShown() then
 			local cnt, full = GetNumBankSlots()
 			if full then
-				Print(ElvL.bags_noslots)
+				Print(L.bags_noslots)
 				return
 			end
 
@@ -895,15 +892,15 @@ local function StuffingSlashCmd(Cmd)
 				return
 			end
 
-			Print(string.format(ElvL.bags_costs, GetBankSlotCost() / 10000))
-			Print(ElvL.bags_buyslots)
+			Print(string.format(L.bags_costs, GetBankSlotCost() / 10000))
+			Print(L.bags_buyslots)
 		else
-			Print(ElvL.bags_openbank)
+			Print(L.bags_openbank)
 		end
 	else
-		Print("sort - " .. ElvL.bags_sort)
-		Print("stack - " .. ElvL.bags_stack)
-		Print("purchase - " .. ElvL.bags_buybankslot)
+		Print("sort - " .. L.bags_sort)
+		Print("stack - " .. L.bags_stack)
+		Print("purchase - " .. L.bags_buybankslot)
 	end
 end
 
@@ -947,11 +944,11 @@ function Stuffing:PLAYER_ENTERING_WORLD()
 	-- this is just a reskin of Blizzard key bag to fit Elvui
 
 	local keybackdrop = CreateFrame("Frame", nil, ContainerFrame1)
-	keybackdrop:SetPoint("TOPLEFT", ElvDB.Scale(9), ElvDB.Scale(-40))
+	keybackdrop:SetPoint("TOPLEFT", E.Scale(9), E.Scale(-40))
 	keybackdrop:SetPoint("BOTTOMLEFT", 0, 0)
-	keybackdrop:SetSize(ElvDB.Scale(179),ElvDB.Scale(215))
-	ElvDB.SetTemplate(keybackdrop)
-	keybackdrop:SetBackdropColor(unpack(ElvCF["media"].backdropfadecolor))
+	keybackdrop:SetSize(E.Scale(179),E.Scale(215))
+	keybackdrop:SetTemplate("Default")
+	keybackdrop:SetBackdropColor(unpack(C["media"].backdropfadecolor))
 	ContainerFrame1CloseButton:Hide()
 	ContainerFrame1Portrait:Hide()
 	ContainerFrame1Name:Hide()
@@ -965,17 +962,17 @@ function Stuffing:PLAYER_ENTERING_WORLD()
 		slot:SetPushedTexture("")
 		slot:SetNormalTexture("")
 		t:SetTexCoord(.08, .92, .08, .92)
-		t:SetPoint("TOPLEFT", slot, ElvDB.Scale(2), ElvDB.Scale(-2))
-		t:SetPoint("BOTTOMRIGHT", slot, ElvDB.Scale(-2), ElvDB.Scale(2))
-		ElvDB.SetNormTexTemplate(slot)
+		t:SetPoint("TOPLEFT", slot, E.Scale(2), E.Scale(-2))
+		t:SetPoint("BOTTOMRIGHT", slot, E.Scale(-2), E.Scale(2))
+		slot:SetTemplate("Default", true)
 		
-		ElvDB.StyleButton(slot, false)
+		slot:StyleButton()
 	end
 
 
 	ContainerFrame1:HookScript("OnShow", function(self)
 		ContainerFrame1:ClearAllPoints()
-		ContainerFrame1:SetPoint("TOPRIGHT", StuffingFrameBags, "TOPLEFT", ElvDB.Scale(2), ElvDB.Scale(40))
+		ContainerFrame1:SetPoint("TOPRIGHT", StuffingFrameBags, "TOPLEFT", E.Scale(2), E.Scale(40))
 	end)
 	ContainerFrame1:SetParent(StuffingFrameBags)
 end
@@ -1174,7 +1171,7 @@ function Stuffing:SortOnUpdate(e)
 	if (not changed and not blocked) or self.itmax > 250 then
 		self:SetScript("OnUpdate", nil)
 		self.sortList = nil
-		Print (ElvL.bags_sortingbags)
+		Print (L.bags_sortingbags)
 	end
 end
 
@@ -1197,7 +1194,7 @@ function Stuffing:SortBags()
 	if (UnitAffectingCombat("player")) then return end;
 	local bs = self.sortBags
 	if #bs < 1 then
-		Print (ElvL.bags_nothingsort)
+		Print (L.bags_nothingsort)
 		return
 	end
 
@@ -1280,7 +1277,7 @@ function Stuffing:SortBags()
 
 	-- kick off moving of stuff, if needed.
 	if st == nil or next(st, nil) == nil then
-		Print(ElvL.bags_sortingbags)
+		Print(L.bags_sortingbags)
 		self:SetScript("OnUpdate", nil)
 	else
 		self.sortList = st
@@ -1359,7 +1356,7 @@ function Stuffing:Restack()
 		self:SetScript("OnUpdate", Stuffing.RestackOnUpdate)
 	else
 		self:SetScript("OnUpdate", nil)
-		Print (ElvL.bags_stackend)
+		Print (L.bags_stackend)
 	end
 end
 
@@ -1377,7 +1374,7 @@ function Stuffing.Menu(self, level)
 	end
 
 	wipe(info)
-	info.text = ElvL.bags_sortmenu
+	info.text = L.bags_sortmenu
 	info.notCheckable = 1
 	info.func = function()
 		Stuffing_Sort("d")
@@ -1385,7 +1382,7 @@ function Stuffing.Menu(self, level)
 	UIDropDownMenu_AddButton(info, level)
 	
 	wipe(info)
-	info.text = ElvL.bags_sortspecial
+	info.text = L.bags_sortspecial
 	info.notCheckable = 1
 	info.func = function()
 		Stuffing_Sort("c/p")
@@ -1393,7 +1390,7 @@ function Stuffing.Menu(self, level)
 	UIDropDownMenu_AddButton(info, level)
 
 	wipe(info)
-	info.text = ElvL.bags_stackmenu
+	info.text = L.bags_stackmenu
 	info.notCheckable = 1
 	info.func = function()
 		Stuffing:SetBagsForSorting("d")
@@ -1402,7 +1399,7 @@ function Stuffing.Menu(self, level)
 	UIDropDownMenu_AddButton(info, level)
 	
 	wipe(info)
-	info.text = ElvL.bags_stackspecial
+	info.text = L.bags_stackspecial
 	info.notCheckable = 1
 	info.func = function()
 		Stuffing:SetBagsForSorting("c/p")
@@ -1411,7 +1408,7 @@ function Stuffing.Menu(self, level)
 	UIDropDownMenu_AddButton(info, level)
 
 	wipe(info)
-	info.text = ElvL.bags_showbags
+	info.text = L.bags_showbags
 	info.checked = function()
 		return bag_bars == 1
 	end
