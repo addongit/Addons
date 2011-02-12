@@ -1,0 +1,343 @@
+### SHAMAN's FRIEND ### 
+
+Author: Glyph @ EU-Sylvanas
+Version 1.16+ updates by Stassart (Trelis @ Proudmoore)
+
+This addon is designed specially for the Shaman class. It contains a lot of useful functions no matter which spec you are.
+
+Here are a few of the functions:
+ - Remind/alert for Elemental Shields and Weapon Enchants when fading or missing in combat (with sound support)
+ - Show total Windfury damage with options to include advanced info: Crits, misses and which hand the procs come from. 
+   If it procced of Stormstrike, the data from both hits are summed together and adds to the damage.
+ - Show a message when Lightning Overload procs, optionally together with total damage and number of crits.
+ - Separate frame allowing for easy Earth Shield tracking and recast
+ - Show buffs removed by Purge and/or broadcast it to the chat window
+ - Show spell interrupted by Wind Shear and/or broadcast it to the chat window
+ - Show when your Grounding Totem aborbs a spell and/or broadcast it to the chat window
+ - Show when one of your T5 bonuses procs
+ - Can print messages in MSBT, SCT, Parrot and a few other places.
+ - Announce to your group whenever you cast Bloodlust/Heroism, Mana Tide, or Feral Spirits
+ - Uses spellID when avaible, this reduces the amount of localization needed
+
+Of course you can choose for yourself which functions you want.
+It is built on Ace3 for increased effiency and perfomance, with low memory footprint.
+ 
+"/sf" or "/shamanfriend" to show the GUI.
+
+### Known problems ### 
+ - The time setting for the duration to display messages is not working fail safe (best is to leave it to default)
+ 
+### ChangeLog ###
+Version 2.19
+ - Updated Windfury reporting for extra swing.
+ - Added option to output to /say for more alerts.
+ - No longer gives external alerts about CC breaking if there is still CC on the target (Still gives the shaman the warning).
+ - Track damage to hex targets to determine what broke the hex since SPELL_AURA_BROKEN event does not fire for hex.
+ - Do not announce if Bind Elemental fails on a banished target.
+ - Do not announce CC applied on a target that was already CC'd.
+ - Option to not announce CC break if tank breaks after X time
+   (default=10 seconds, if set to 0 will not announce tank CC breaks)
+
+Version 2.18
+ - Using Curse packager. If version 2.17 worked fine for you, no reason to upgrade. This is to hopefully fix
+   any issues people are having installing this addon as it now is packaged like the vast majority of other
+   addons on Curse.
+
+Version 2.17
+ - BUGFIX: Fixed issue not detecting offhand weapon imbue fades (it would still alert entering/leaving combat).
+
+Version 2.16
+ - Added alert option for dispells.
+ - For Windfury damage, if the "miss" option is enabled, now also reports 1 proc kills.
+
+Version 2.15
+ - Fix to fulmination so that if you lose your lightning shield stacks with 9 stacks the message goes away (like if you die).
+ - Added /sf version command to display version.
+
+Version 2.14
+ - Fix to Fulmination damage (2.13 was reporting as Fulmination whenever earth shock was used when enabled).
+
+Version 2.13
+ - Moved Maelstrom Weapon to alerts (need to re-enable it in options if you had it turned on)
+ - Added Lava Surge and Fulmination support.
+ - Now detects Lava Burst overloads and Fulmination for the "Lightning Overload" burst damage reporting if enabled.
+
+Version 2.12
+ - Removed 3.0 GetSpellName, this hopefully fixed the tracker for those it wasn't working for.
+ - Added "Button Only" option for Earth Shield tracker.
+
+Version 2.11
+ - Added support for Bind Elemental.
+ - Can now announce to party in battlegrounds.
+ - Removed pre-4.0 support.
+
+Version 2.10
+ - Fixed GameTooltip for Cataclysm beta build 4.0.1.12984 change.
+
+Version 2.09
+ - Added support for Cataclysm beta.
+
+Version 2.08b
+ - Added CallBackHandler library.
+
+Version 2.08
+ - BUGFIX: Updated embeds for Libstub.
+
+Version 2.07
+ - Earth Shield tracker reverted to also use the combatlog in addition to events
+   (So as long as either events or the combatlog are being received by the client it should work.)
+ - Updated Ace3 libraries to 960 release.
+
+Version 2.06
+ - Updated to latest Ace3 libraries
+
+Version 2.05
+ - BUGFIX: Fixes false Earth Shield faded messages.
+
+Version 2.04
+ - Shields no longer use the combatlog and now are entirely event based.
+
+Version 2.03
+ - Option to disable the tooltip on the Earth Shield tracker button.
+ - Spell names no longer require localization for functionality.
+ - Loops removed for UnitBuff (probably a non-noticable performance gain).
+ - ConfigMode support.
+ - BUGFIX: Red highlight on the ES button when you switch ES targets in combat
+   is removed if you return ES to its original target.
+ - BUGFIX: ES tracker updates when combat ends even if "After combat" alert is
+   disabled.
+
+Version 2.02
+ - Updated Ace3 libraries for 3.3.
+ - Added support for Maelstrom Weapon.
+ - Report damage for chain lightning overload.
+
+Version 2.01
+ - Added the ability to toggle announcements in Battlegrounds, Arena,
+   5-man instances, raids, and world.
+ - Updated Russian language file to fix Feral Spirits (thanks Microgod).
+ - BUGFIX: Earth Shield no longer issues faded alerts if someone
+   else's earth shield is removed from the last person your earth shield
+   was on.
+
+Version 2.0
+ - Added Hex support
+ - Renamed Earth Shock to Interrupt in spell configuration
+ - Updated from Ace2 to Ace3 libraries (Major code changes)
+ - Now uses Blizzard's AddOn Configuration UI
+ - Updated TOC to 3.2
+
+Version 1.17
+ - Ability to lock ES tracker (requested by mezla101)
+ - Fixed ES name in Russian (fix from GM Hell)
+ - Can now set a Feral Spirit Message (request from John Nealey aka Mordon)
+ - Fixed WF stats (reported by storm4)
+
+Version 1.16
+ - Dual spec and respec support
+ - Option to disable alerts while in a vehicle
+ - Do not issue alerts while dead
+ - Updated TOC to 3.1
+
+Version 1.15b
+ - Fixed so that Earth Shield uses it's own sound now
+
+Version 1.15
+ - Added the ruRU localization (finally, thanks antalex13)
+ - Moved the readme/changelog to it's own file.
+ - Only show Bloodlust/Heroism and Mana Tide messages if it is you casting them.
+ - Fixed the Earth Shield trackers time (Blizzard changes the return values)
+ - Added option to show an alert when Earth Shield fades from your target
+
+Version 1.14
+ - Fixed Earth Shield Tracker (If it used to have a tooltip I think i've removed it.  At least it is working now.)
+
+Version 1.13
+ - Updated CheckShield function for 3.0 compatibility
+ - Added new WotLK spell ranks
+
+Version 1.12b3
+ - Bugfix
+
+Version 1.12b2
+ - Bugfix
+
+Version 1.12b
+ - Fix raid/party messages for purge, heroism and mana tide to be smart. "raid" goes to "party" when not in a raid, and no error is displayed during solo play (thanks oscarucb)
+ - Set Bloodlust/Heroism default text appropriately for Alliance Shammys (thanks oscarucb)
+ - Fix earthshield icon to properly disappear when the UI is hidden (thanks oscarucb)
+ - Updated embedded SinkLib to hopefully fix some issues with scrolling text
+ - Some various bugfixes
+
+Version 1.12
+ - Fixed Purge Announce for patch 2.4.3 (thanks syeren)
+ - Fixed so that message output "raid" goes to "party" if not in a raid (thanks oscarucb)
+ - Fixed so that message output doesn't display an error anymore when not in a group (thanks oscarucb)
+ - Fixed so that "Ground self only" works even if the grounding totem has a raid icon on it (thanks oscarucb)
+ - Lowered priority on Earth Shield frame, should now be hidden when using alt+z (thanks oscarucb)
+
+Version 1.11c
+ - Fixed SCT support
+ - Fixed errors with localization
+ - Hopefully fixed Earth Shield
+ 
+Version 1.11b
+ - Bugfixed Chain Lightning Overload
+ - Bugfix for Lightning Overload and resists, had to much hit rating to notice before :)
+ - Dirty fix for Weapon Enchants
+ - TOC update
+
+Version 1.11
+ - Rewrote close to all parsing code because of the 2.4 patch
+ - Windfury now counts damage from stormstrike as well
+ - Windfury can show which hand the proc comes from
+ - Lightning Overload now works with Chain Lightning as well
+ - Lightning Overload made a lot more reliable (should be close to perfect)
+ - Now uses spellID on most places, which means  be a bit faster and a bit more reliable and work in most languages without localization
+ - Reordered some of the options for easier configuration
+ - Updated German localization (thanks blackburni)
+ 
+Version 1.10d
+ - Bugfixes for Earth Shield tracker, might still be a few problems left
+ - Earth Shield tracker should know work on yourself as well
+
+Version 1.10c
+ - Bugfixes :s
+
+Version 1.10
+ - Added a sepparate Earth Shield tracker frame with ability to recast it
+ - Fixed a bug with Resto set bonus
+
+Version 1.9
+ - Added possibility to show a message when Bloodlust/Heroism is cast
+ - Added possibility to show a message when Mana Tide is cast
+ - Made the UI to show only by typing /sf or /shamanfriend, use /sfcl if you still wan't the command line options
+ - Fixed Earth Shield tracking
+ 
+Version 1.8b
+ - Fixed a bug with set bonus message not being displayed
+ - Updated TOC to 20300
+ - Removed Frost Shock DR as Blizzard changed it
+
+Version 1.8
+ - LO Alternate shouldn't get a false positive 
+ when changing between targets with same name any more
+ - Added option to add target name to the messages broadcasted to chat
+ - Fixed possible problems with having LO alternate on and remove TLC procs off
+ - Fixed a bug with scrolling text settings
+
+Version 1.7
+ - Updated TOC to 20200 patch
+ - Fixed the custom frame positioning to work with 2.2 
+  If you lose the frame, just reset the options, or type 
+  /script ShamanFriend.db.profile.display.x = nil; ShamanFriend.db.profile.display.y = nil and then /rl in the console
+ - Added a small attempt to an Earth Shield tracker, please tell me if it works :)
+ 
+Version 1.6
+ - Added resto 4-piece T5-bonus
+ - Fixed a typo which broke the T5 Enhance option
+ - Now also alerts when a weapon enchant runs out of time
+ - Bugfixes
+ 
+Version 1.5b
+ - Bugfix
+ - Updated SinkLib, should fix a few problems with scrolling text
+
+Version 1.5
+ - Added coice to select an alternative way to detect LO procs.
+   This one should work better in raids where targets have large hitboxes, 
+   but doesn't work well when you change target often.
+ - Added option to select the duration of messages
+ - Added SinkLib
+ - Some optimizations
+ 
+Version 1.4
+ - Updated German translation (thanks Taalas)
+ - Updated some of the options
+ - Added option to attempt to turn off Lightning Capacitator
+ - Added option to turn on text when you get a proc from the T5 set bonus
+ - Added option to broadcast grounded things to the chat
+
+Version 1.3
+ - Updated TOC to 20100
+ - Added option to add a font effect to the custom frame
+ - Updated Korean localization (thanks Sayclub)
+ - You can now select which chat to print the message in
+
+Version 1.2
+ - Fixed Grounding Totem message to work in PvP
+ - Added Earth Shock message
+ - Some minor bugfixes
+
+Version 1.1
+ - Reworked the options, some of them may reset
+ - Added option to broadcast the Purged buffs to chat.
+ - Added Ground Totem message
+ - Fixed bug with LO and spell reflect
+
+Version 1.0
+ - Updated embedded libraries
+ - Added a Waterfall GUI use "/sf ui" or "/shamanfriend ui" to show it. You can still use the old commands if you prefer them.
+ - Added damage for Lightning Overload
+ - Slightly increased the width of the custom frame
+ 
+Version 0.11b
+ - Improved method to detect Lightning Overload
+
+Version 0.11
+ - Added options to view a message when Lightning Overload proc, currently only working on Lightning Bolt due to some limitations in the lua functions
+
+Version 0.10b
+ - Dispelled Diseases and Poisons incorrectly showed up as purged
+
+Version 0.10
+ - Removed Chronos embedded library (fresh install recommended)
+ - Frost Shock messages didn't show up as localized
+ - New method to detect Purge, was incompatible with newer versions of ParserLib, this one is also more efficient
+
+Version 0.9
+ - Minor code optimization
+ - Now only loads for Shaman characters
+ - Updated Korean localization (thanks Sayclub)
+ - Added German localization (thanks Bhim)
+
+Version 0.8
+ - Added option to select which font to use in the Custom Frame
+ - Slightly tweaked the options, some of them may reset
+
+Version 0.7c
+ - Bugfixes again :)
+
+Version 0.7b
+ - Bugfixes
+
+Version 0.7
+ - Frost Shock Diminishing Return information added
+ - SCT support added
+ - MSBT support added (thanks Sayclub)
+
+Version 0.6
+ - Localization support added
+ - Korean Localization added  (thanks Sayclub)
+ - Some minor code improvements
+
+Version 0.5
+ - Added custom frame to show the messages in
+ - Bugfixes
+	
+Version 0.4
+ - Added Purge helper, shows the name of buff removed
+ - Rearranged options
+	
+Version 0.3b
+ - Bugfixes
+	
+Version 0.3
+ - Added Windfury counter
+
+Version 0.2
+ - Added configuration
+ - Added Sound support
+
+Version 0.1
+ - Addon created
