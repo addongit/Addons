@@ -124,6 +124,10 @@ L:SetGeneralLocalization({
 	name = "바네사 밴클리프"
 })
 
+L:SetTimerLocalization({
+	achievementGauntlet	= "불같은 밴클리프 복수자"
+})
+
 ------------------
 --  Grim Batol  --
 ---------------------
@@ -136,11 +140,11 @@ L:SetGeneralLocalization({
 })
 
 L:SetOptionLocalization{
-	PingCharge	= "Ping the minimap when General Umbriss is about to blitz you"
+	PingBlitz	= "장군 움브리스가 당신을 향해 대공세를 시전할 경우 미니맵에 알리기"
 }
 
 L:SetMiscLocalization{
-	Blitz		= "sets his eyes on |cFFFF0000(%S+)"
+	Blitz		= "보면서 |cFFFF0000(%S+)를 시전합니다!"
 }
 
 --------------------------

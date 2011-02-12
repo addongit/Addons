@@ -1,7 +1,7 @@
-local mod	= DBM:NewMod("AscendantCouncil", "DBM-BastionTwilight", 3)
+local mod	= DBM:NewMod("AscendantCouncil", "DBM-BastionTwilight")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision(("$Revision: 4937 $"):sub(12, -3))
+mod:SetRevision(("$Revision: 5080 $"):sub(12, -3))
 mod:SetCreatureID(43686, 43687, 43688, 43689, 43735)
 mod:SetZone()
 mod:SetUsedIcons(4, 5, 6, 7, 8)
@@ -94,7 +94,7 @@ local specWarnGrounded		= mod:NewSpecialWarning("SpecWarnGrounded")
 local specWarnLightningRod	= mod:NewSpecialWarningYou(83099)
 local specWarnStaticOverload= mod:NewSpecialWarningYou(92067)--Heroic
 --All
-local specWarnBossLow		= mod:NewSpecialWarning("specWarnBossLow")
+--local specWarnBossLow		= mod:NewSpecialWarning("specWarnBossLow")
 
 
 local soundGlaciate			= mod:NewSound(82746, nil, mod:IsTank())
@@ -195,7 +195,6 @@ function mod:SPELL_AURA_APPLIED(args)
 	elseif args:IsSpellID(82665) then
 		warnHeartIce:Show(args.destName)
 		timerHeartIce:Start(args.destName)
-		timerHeartIceCD:Start()
 		if args:IsPlayer() then
 			specWarnHeartIce:Show()
 		end
@@ -205,7 +204,6 @@ function mod:SPELL_AURA_APPLIED(args)
 	elseif args:IsSpellID(82660) then
 		warnBurningBlood:Show(args.destName)
 		timerBurningBlood:Start(args.destName)
-		timerBurningBloodCD:Start()
 		if args:IsPlayer() then
 			specWarnBurningBlood:Show()
 		end
@@ -277,7 +275,71 @@ function mod:SPELL_AURA_APPLIED(args)
 	end
 end
 
-mod.SPELL_AURA_REFRESH = mod.SPELL_AURA_APPLIED
+function mod:SPELL_AURA_REFRESH(args)
+	if args:IsSpellID(82772, 92503, 92504, 92505) then--Some spellids drycoded
+		timerFrozen:Start(args.destName)
+		frozenTargets[#frozenTargets + 1] = args.destName
+		self:Unschedule(showFrozenWarning)
+		self:Schedule(0.3, showFrozenWarning)
+	elseif args:IsSpellID(83099) then
+		lightningRodTargets[#lightningRodTargets + 1] = args.destName
+		if args:IsPlayer() then
+			specWarnLightningRod:Show()
+			if self.Options.RangeFrame then
+				DBM.RangeCheck:Show(10)
+			end
+		end
+		if self.Options.LightningRodIcon then
+			self:SetIcon(args.destName, lightningRodIcon)
+			lightningRodIcon = lightningRodIcon - 1
+		end
+		self:Unschedule(showLightningRodWarning)
+		if (mod:IsDifficulty("normal25") and #lightningRodTargets >= 3) or (mod:IsDifficulty("normal10") and #lightningRodTargets >= 1) then
+			showLightningRodWarning()
+		else
+			self:Schedule(0.3, showLightningRodWarning)
+		end
+	elseif args:IsSpellID(82762) and args:IsPlayer() then
+		specWarnWaterLogged:Show()
+	elseif args:IsSpellID(84948, 92486, 92487, 92488) then
+		gravityCrushTargets[#gravityCrushTargets + 1] = args.destName
+		timerGravityCrushCD:Start()
+		if self.Options.GravityCrushIcon then
+			self:SetIcon(args.destName, gravityCrushIcon)
+			gravityCrushIcon = gravityCrushIcon - 1
+		end
+		self:Unschedule(showGravityCrushWarning)
+		if (mod:IsDifficulty("normal25") and #gravityCrushTargets >= 3) or (mod:IsDifficulty("normal10") and #gravityCrushTargets >= 1) then
+			showGravityCrushWarning()
+		else
+			self:Schedule(0.3, showGravityCrushWarning)
+		end
+	elseif args:IsSpellID(92307) then
+		warnFrostBeacon:Show(args.destName)
+		if args:IsPlayer() then
+			specWarnFrostBeacon:Show()
+		end
+		if self.Options.FrostBeaconIcon then
+			self:SetIcon(args.destName, 8)
+		end
+	elseif args:IsSpellID(92067) then
+		warnStaticOverload:Show(args.destName)
+		if args:IsPlayer() then
+			specWarnStaticOverload:Show()
+		end
+		if self.Options.StaticOverloadIcon then
+			self:SetIcon(args.destName, 4)
+		end
+	elseif args:IsSpellID(92075) then
+		warnGravityCore:Show(args.destName)
+		if args:IsPlayer() then
+			specWarnGravityCore:Show()
+		end
+		if self.Options.GravityCoreIcon then
+			self:SetIcon(args.destName, 5)
+		end
+	end
+end
 
 function mod:SPELL_AURA_REMOVED(args)
 	if args:IsSpellID(82772, 92503, 92504, 92505) then
@@ -320,7 +382,7 @@ function mod:SPELL_AURA_REMOVED(args)
 			self:SetIcon(args.destName, 0)
 		end
 	elseif args:IsSpellID(82631, 92512, 92513, 92514) then	-- Shield Removed
-		if UnitCastingInfo("target") and self:GetUnitCreatureId("target") == 43686 then
+		if self:GetUnitCreatureId("target") == 43686 then
 			specWarnRisingFlames:Show()
 		end
 	end
@@ -371,6 +433,10 @@ function mod:SPELL_CAST_SUCCESS(args)
 	if args:IsSpellID(82636) then
 		warnRisingFlames:Show()
 		timerRisingFlames:Start()
+	elseif args:IsSpellID(82665) then
+		timerHeartIceCD:Start()
+	elseif args:IsSpellID(82660) then
+		timerBurningBloodCD:Start()
 	end
 end
 
@@ -414,6 +480,6 @@ function mod:UNIT_HEALTH(uId)
 	local cid = self:GetUnitCreatureId(uId)
 	if (cid == 43686 or cid == 43687 or cid == 43688 or cid == 43689) and not warnedLowHP[cid] and UnitHealth(uId)/UnitHealthMax(uId) <= 0.30 then
 		warnedLowHP[cid] = true
-		specWarnBossLow:Show(UnitName(uId))
+--		specWarnBossLow:Show(UnitName(uId))
 	end
 end

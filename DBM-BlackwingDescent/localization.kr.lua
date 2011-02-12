@@ -12,6 +12,8 @@ L:SetGeneralLocalization({
 })
 
 L:SetWarningLocalization({
+	SpecWarnInferno	= "곧 이글거리는 지옥불(4초 뒤)",
+	WarnPhase2Soon	= "곧 2 단계"
 })
 
 L:SetTimerLocalization({
@@ -19,10 +21,14 @@ L:SetTimerLocalization({
 
 L:SetMiscLocalization({
 	Slump			= "%s|1이;가; 집게를 드러내며 앞으로 몸을 기울입니다!",
-	HeadExposed		= "%s|1이;가; 창에 꽂혀 머리가 노출되었습니다!"
+	HeadExposed		= "%s|1이;가; 창에 꽂혀 머리가 노출되었습니다!",
+	YellPhase2		= "이런 곤란한 데가! 이러다간 내 용암" --"Inconceivable! You may actually defeat my lava worm! Perhaps I can help... tip the scales."
 })
 
 L:SetOptionLocalization({
+	SpecWarnInferno	= "$spell:92190의 사전 특수 경고 보기(~4초)",
+	WarnPhase2Soon	= "2 단계 사전 경고 보기",
+	RangeFrame		= "2 단계 거리 프레임 보기 (8m)"
 })
 
 -------------------------------
@@ -38,7 +44,7 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-	timerShadowConductorCast	= "비전 역류",
+	timerArcaneBlowbackCast		= "비전 역류",
 	timerShadowConductorCast	= "암흑 전도체"
 })
 
@@ -115,13 +121,15 @@ L:SetTimerLocalization({
 })
 
 L:SetMiscLocalization({
+	HealthInfo	= "체력 정보"
 })
 
 L:SetOptionLocalization({
 	WarnPhase2Soon	= "2 단계 사전 경고 보기",
 	RangeFrame		= "거리 프레임 보기(6 m)",
 	WarnBreak		= DBM_CORE_AUTO_ANNOUNCE_OPTIONS.spell:format(82881, GetSpellInfo(82881) or "알 수 없음"),
-	SetIconOnSlime	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(82935)	
+	SetIconOnSlime	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(82935),
+	InfoFrame		= "체력 정보 보기"
 })
 
 -----------------
@@ -191,12 +199,15 @@ L:SetOptionLocalization({
 	OnySwipeTimer		= "오닉시아의 $spell:77827 쿨다운 타이머 보기",
 	NefSwipeTimer		= "네파리안의 $spell:77827 쿨다운 타이머 보기",
 	OnyBreathTimer		= "오닉시아의 $spell:94124 쿨다운 타이머 보기",
-	NefBreathTimer		= "네파리안의 $spell:94124 쿨다운 타이머 보기"
+	NefBreathTimer		= "네파리안의 $spell:94124 쿨다운 타이머 보기",
+	YellOnCinder		= "$spell:79339 외치기",
+	RangeFrame			= "$spell:79339를 받을 경우 거리 프레임(10m) 보기",
+	SetIconOnCinder		= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79339)
 })
 
 L:SetMiscLocalization({
 	NefAoe				= "전기가", -- "The air crackles with electricity!" check
 	YellPhase2			= "저주받을 필멸자들!",
-	ShadowblazeCast		= "살을 재로",	
-	ChromaticPrototype	= "오색 실험체"
+	YellPhase3			= "품위있는", -- "I have tried to be an accommodating host, but you simply will not die! Time to throw all pretense aside and just... KILL YOU ALL!",
+	YellCinder			= "나에게 폭발하는 잿더미!"
 })
