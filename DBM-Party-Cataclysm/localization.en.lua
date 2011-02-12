@@ -123,6 +123,10 @@ L:SetGeneralLocalization({
 	name = "Vanessa VanCleef"
 })
 
+L:SetTimerLocalization({
+	achievementGauntlet	= "Gauntlet"
+})
+
 ------------------
 --  Grim Batol  --
 ---------------------
@@ -135,7 +139,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetOptionLocalization{
-	PingCharge	= "Ping the minimap when General Umbriss is about to blitz you"
+	PingBlitz	= "Ping the minimap when General Umbriss is about to blitz you"
 }
 
 L:SetMiscLocalization{
@@ -208,7 +212,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetTimerLocalization({
-	achievementGauntlet	= "Speed of Light"
+	achievementGauntlet	= "Gauntlet"
 })
 
 L:SetMiscLocalization({

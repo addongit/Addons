@@ -12,6 +12,8 @@ L:SetGeneralLocalization({
 })
 
 L:SetWarningLocalization({
+	SpecWarnInferno	= "Появляется Пыляющее костяное создание! (~4сек)",
+	WarnPhase2Soon	= "Скоро 2-ая фаза"
 })
 
 L:SetTimerLocalization({
@@ -19,10 +21,14 @@ L:SetTimerLocalization({
 
 L:SetMiscLocalization({
 	Slump			= "%s внезапно падает, выставляя клешки!",
-	HeadExposed		= "%s насаживается на пику, обнажая голову!"
+	HeadExposed		= "%s насаживается на пику, обнажая голову!",
+	YellPhase2		= "Inconceivable! You may actually defeat my lava worm! Perhaps I can help... tip the scales."
 })
 
 L:SetOptionLocalization({
+	SpecWarnInferno	= "Предупреждать заранее о $spell:92190 (~4сек)",
+	WarnPhase2Soon	= "Предупреждать заранее о переходе во вторую фазу",
+	RangeFrame		= "Показывать окно проверки дистанции на второй фазе (8м)"
 })
 
 -------------------------------
@@ -38,20 +44,24 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-})
-
-L:SetMiscLocalization({
-	Magmatron	= "Магматрон",
-	Electron	= "Электрон",
-	Toxitron	= "Токситрон",
-	Arcanotron	= "Чаротрон"
+	timerArcaneBlowbackCast		= "Чародейская обратная вспышка",
+	timerShadowConductorCast	= "Проводник тьмы"
 })
 
 L:SetOptionLocalization({
-	AcquiringTargetIcon		= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79501),
-	ConductorIcon			= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79888),
-	BombTargetIcon			= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(80094),
-	ShadowConductorIcon	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(92053)
+	timerShadowConductorCast	= "Показывать таймер применения $spell:92053",
+	timerArcaneBlowbackCast		= "Показывать таймер применения $spell:91879",
+	AcquiringTargetIcon			= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79501),
+	ConductorIcon				= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79888),
+	BombTargetIcon				= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(80094),
+	ShadowConductorIcon			= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(92053)
+})
+
+L:SetMiscLocalization({
+	Magmatron		= "Магматрон",
+	Electron		= "Электрон",
+	Toxitron		= "Токситрон",
+	Arcanotron		= "Чаротрон"
 })
 
 ----------------
@@ -65,7 +75,7 @@ L:SetGeneralLocalization({
 
 L:SetWarningLocalization({
 	WarnPhase			= "%s фаза",
-	WarnRemainingAdds	= "Осталось %d аберрации"
+	WarnRemainingAdds	= "Осталось аберраций: %d"
 })
 
 L:SetTimerLocalization({
@@ -76,7 +86,7 @@ L:SetMiscLocalization({
 	YellRed			= "красный|r пузырек в котел!",--Partial matchs, no need for full strings unless you really want em, mod checks for both.
 	YellBlue		= "синий|r пузырек в котел!",
 	YellGreen		= "зеленый|r пузырек в котел!",
-	YellDark		= "магию на котле!",--guesswork, this isn't confirmed but if it's consistent with other strings is probably right.
+	YellDark		= "магию на котле!",
 	Red		     	= "Огненная",
 	Blue			= "Ледяная",
 	Green			= "Кислотная",
@@ -84,10 +94,10 @@ L:SetMiscLocalization({
 })
 
 L:SetOptionLocalization({
-	WarnPhase			= "Показывать предупреждения о том какая фаза наступает",
-	WarnRemainingAdds	= "Показывать предупреждения о том сколько осталось аберрации",
-	TimerPhase			= "Показать таймер до следующей фазы",
-	RangeFrame			= "В ходе синей фазы, показать окно проверки дистанции (6)",
+	WarnPhase			= "Предупреждать о переходе фаз",
+	WarnRemainingAdds	= "Предупреждать об оставшемся количестве аберраций",
+	TimerPhase			= "Показывать таймер до следующей фазы",
+	RangeFrame			= "В ходе синей фазы, показывать окно проверки дистанции (6м)",
 	FlashFreezeIcon		= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(92979),
 	BitingChillIcon		= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(77760),
 	ConsumingFlamesIcon	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(77786)
@@ -111,12 +121,15 @@ L:SetTimerLocalization({
 })
 
 L:SetMiscLocalization({
+	HealthInfo	= "Инфо о здоровье"
 })
 
 L:SetOptionLocalization({
 	WarnPhase2Soon	= "Показывать предупреждение о начале 2-ой фазы",
-	WarnBreak	= DBM_CORE_AUTO_ANNOUNCE_OPTIONS.spell:format(82881, GetSpellInfo(82881) or "unknown"),
-	RangeFrame		= "Окно проверки дистанции (6)"
+	RangeFrame		= "Показывать окно проверки дистанции (6м)",
+	WarnBreak		= DBM_CORE_AUTO_ANNOUNCE_OPTIONS.spell:format(82881, GetSpellInfo(82881) or "unknown"),
+	SetIconOnSlime	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(82935),
+	InfoFrame		= "Показывать информационное окно со здоровьем (<10к хп)"
 })
 
 -----------------
@@ -141,7 +154,8 @@ L:SetTimerLocalization({
 
 L:SetMiscLocalization({
 	AncientDwarvenShield	= "Древний дворфийский щит",
-	Airphase		= "Да, беги! С каждым шагом твое сердце бьется все быстрее. Эти громкие, оглушительные удары... Тебе некуда бежать!"
+	Soundlevel				= "Уровень звука",
+	Airphase				= "Да, беги! С каждым шагом твое сердце бьется все быстрее. Эти громкие, оглушительные удары... Тебе некуда бежать!"
 })
 
 L:SetOptionLocalization({
@@ -150,6 +164,7 @@ L:SetOptionLocalization({
 	WarnShieldsLeft		= "Показывать предупреждение когда используется Древний дворфийский щит",
 	TimerAirphase		= "Показывать таймер до следующей воздушной фазы",
 	TimerGroundphase	= "Показывать таймер до следующей наземной фазы",
+	InfoFrame			= "Показывать информационное окно для уровня звуков",
 	TrackingIcon	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(78092)
 })
 
@@ -184,12 +199,15 @@ L:SetOptionLocalization({
 	OnySwipeTimer		= "Показывать таймер перезарядки для $spell:77827 Ониксии",
 	NefSwipeTimer		= "Показывать таймер перезарядки для $spell:77827 Нефариана",
 	OnyBreathTimer		= "Показывать таймер перезарядки для $spell:94124 Ониксии",
-	NefBreathTimer		= "Показывать таймер перезарядки для $spell:94124 Нефариана"
+	NefBreathTimer		= "Показывать таймер перезарядки для $spell:94124 Нефариана",
+	YellOnCinder		= "Кричать, когда на вас $spell:79339",
+	RangeFrame			= "Показывать окно проверки дистанции (10м) когда на вас $spell:79339",
+	SetIconOnCinder		= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79339)
 })
 
 L:SetMiscLocalization({
 	NefAoe				= "В воздухе трещат электрические разряды!",
 	YellPhase2			= "Дерзкие смертные! Неуважение к чужой собственности нужно пресекать самым жестоким образом!",
-	ShadowblazeCast		= "И плоть превратится в прах!",
-	ChromaticPrototype	= "Хроматический прообраз"
+	YellPhase3			= "Я пытался следовать законам гостеприимства, но вы все никак не умрете! Придется отбросить условности и просто... УБИТЬ ВАС ВСЕХ!",
+	YellCinder			= "На МНЕ - Взрывчатая субстанция!"
 })

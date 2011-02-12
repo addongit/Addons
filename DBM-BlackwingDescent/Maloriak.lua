@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Maloriak", "DBM-BlackwingDescent", 3)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision(("$Revision: 5002 $"):sub(12, -3))
+mod:SetRevision(("$Revision: 5071 $"):sub(12, -3))
 mod:SetCreatureID(41378)
 mod:SetZone()
 mod:SetUsedIcons(1, 2, 3, 4, 6, 7, 8)
@@ -30,7 +30,7 @@ local warnDebilitatingSlime		= mod:NewSpellAnnounce(77615, 2)
 local warnEngulfingDarkness		= mod:NewCastAnnounce(92754, 3)--Heroic Ability
 local warnPhase2				= mod:NewPhaseAnnounce(2)
  
-local timerPhase				= mod:NewTimer(50, "TimerPhase")
+local timerPhase				= mod:NewTimer(50, "TimerPhase", 89250)--Just some random cauldron icon not actual spellid
 local timerBitingChill			= mod:NewBuffActiveTimer(10, 77760)
 local timerFlashFreeze			= mod:NewNextTimer(15, 77699)--Seems consisting so using "next" for now.
 local timerArcaneStorm			= mod:NewBuffActiveTimer(6, 77896)
@@ -44,6 +44,7 @@ local specWarnConsumingFlames	= mod:NewSpecialWarningYou(77786)
 local specWarnSludge			= mod:NewSpecialWarningMove(92987)
 local specWarnArcaneStorm		= mod:NewSpecialWarningInterrupt(77896)
 local specWarnEngulfingDarkness	= mod:NewSpecialWarningSpell(92754, mod:IsTank())--Heroic Ability
+local specWarnFlashFreeze		= mod:NewSpecialWarningTarget(77699)--On Heroic it has a lot more health.
 local specWarnRemedy			= mod:NewSpecialWarningDispel(77912, false)
 local specWarnAdds				= mod:NewSpecialWarningSpell(77569, false)
 
@@ -78,7 +79,9 @@ end
 
 function mod:OnCombatStart(delay)
 	if mod:IsDifficulty("normal10") then
-		berserkTimer:Start(-delay)--he only berserks on 10 man normal, and only part of the time. apparently doesn't berserk on heroic or 25s. wtf?
+		berserkTimer:Start(-delay)--6 min berserk on 10 man normal
+	elseif mod:IsDifficulty("heroic25") then
+		berserkTimer:Start(840-delay)--14 minute berserk on 25 heroic, wtf? did blizz get them backwards?
 	end
 	adds = 18
 	AddsInterrupted = false
@@ -97,6 +100,9 @@ end
 function mod:SPELL_AURA_APPLIED(args)
 	if args:IsSpellID(77699, 92978, 92979, 92980) then
 		warnFlashFreeze:Show(args.destName)
+		if mod:IsDifficulty("heroic10") or mod:IsDifficulty("heroic25") then
+			specWarnFlashFreeze:Show(args.destName)
+		end
 		if self.Options.FlashFreezeIcon then
 			self:SetIcon(args.destName, 8)
 		end
@@ -111,7 +117,7 @@ function mod:SPELL_AURA_APPLIED(args)
 		end
 		self:Unschedule(showBitingChillWarning)
 		self:Schedule(0.3, showBitingChillWarning)
-	elseif args:IsSpellID(77912, 92965, 92966, 92967) then
+	elseif args:IsSpellID(77912, 92965, 92966, 92967) and not args:IsDestTypePlayer() then
 		warnRemedy:Show()
 		specWarnRemedy:Show(args.destName)
 	elseif args:IsSpellID(77896) then
@@ -133,7 +139,7 @@ function mod:SPELL_AURA_APPLIED(args)
 		spamSlime = GetTime()
 		warnDebilitatingSlime:Show()
 		timerDebilitatingSlime:Start()
-	elseif args:IsSpellID(92987, 92988) and GetTime() - spamSludge >= 4 then
+	elseif args:IsSpellID(92987, 92988) and GetTime() - spamSludge >= 4 and args:IsPlayer() then
 		spamSludge = GetTime()
 		specWarnSludge:Show()
 	end

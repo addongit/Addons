@@ -125,6 +125,10 @@ L:SetGeneralLocalization({
 	name = "凡妮莎·范克里夫"
 })
 
+L:SetTimerLocalization({
+	achievementGauntlet	= "充滿活力"
+})
+
 ------------------
 --  Grim Batol  --
 ---------------------
@@ -137,7 +141,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetOptionLocalization{
-	PingCharge	= "當昂布里斯將軍即將閃擊你時點擊小地圖"
+	PingBlitz	= "當昂布里斯將軍即將閃擊你時點擊小地圖"
 }
 
 L:SetMiscLocalization{

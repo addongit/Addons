@@ -42,10 +42,10 @@
 --  Globals/Default Options  --
 -------------------------------
 DBM = {
-	Revision = ("$Revision: 4987 $"):sub(12, -3),
-	Version = "4.70",
-	DisplayVersion = "4.71 alpha", -- the string that is shown as version
-	ReleaseRevision = 4833 -- the revision of the latest stable version that is available (for /dbm ver2)
+	Revision = ("$Revision: 5085 $"):sub(12, -3),
+	Version = "4.72",
+	DisplayVersion = "4.72", -- the string that is shown as version
+	ReleaseRevision = 5085 -- the revision of the latest stable version that is available (for /dbm ver2)
 }
 
 DBM_SavedOptions = {}
@@ -3124,6 +3124,7 @@ do
 		elseif self.timer <= 2 then
 			frame:SetAlpha(self.timer/2)
 		elseif self.timer <= 0 then
+			LowHealthFrame:Hide()
 			frame:Hide()
 		end
 	end)

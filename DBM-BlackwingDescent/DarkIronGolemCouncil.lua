@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("DarkIronGolemCouncil", "DBM-BlackwingDescent", 2)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision(("$Revision: 4995 $"):sub(12, -3))
+mod:SetRevision(("$Revision: 5078 $"):sub(12, -3))
 mod:SetCreatureID(42180, 42178, 42179, 42166)
 mod:SetZone()
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
@@ -37,6 +37,7 @@ local warnActivated				= mod:NewTargetAnnounce(78740, 3)
 
 --Magmatron
 local specWarnBarrier			= mod:NewSpecialWarningCast(79582)
+local specWarnAcquiringTarget	= mod:NewSpecialWarningYou(92037)
 local specWarnEncasingShadows	= mod:NewSpecialWarningTarget(92023, false)--Heroic Ability
 --Electron
 local specWarnUnstableShield	= mod:NewSpecialWarningCast(79900)
@@ -86,7 +87,7 @@ mod:AddBoolOption("ShadowConductorIcon")
 local fixateIcon = 6
 
 local bossActivate = function(boss)
-	if boss == L.Magmatron then
+	if boss == L.Magmatron or boss == 42178 then
 		if mod:IsDifficulty("heroic10") or mod:IsDifficulty("heroic25") then
 			timerAcquiringTarget:Start(20)--These appear same on heroic and non heroic but will leave like this for now to await 25 man heroic confirmation.
 			timerIncinerationCD:Start(10)
@@ -95,14 +96,14 @@ local bossActivate = function(boss)
 			timerIncinerationCD:Start(10)
 		end
 		DBM.BossHealth:AddBoss(42178, L.Magmatron)
-	elseif boss == L.Electron then
+	elseif boss == L.Electron or boss == 42179 then
 		if mod:IsDifficulty("heroic10") or mod:IsDifficulty("heroic25") then
 			timerLightningConductorCD:Start(15)--Probably also has a variation if it's like normal. Needs more logs to verify.
 		else
 			timerLightningConductorCD:Start(11)--11-15 variation confirmed for normal, only boss ability with an actual variation on timer. Strange.
 		end
 		DBM.BossHealth:AddBoss(42179, L.Electron)
-	elseif boss == L.Toxitron then
+	elseif boss == L.Toxitron or boss == 42180 then
 		if mod:IsDifficulty("heroic10") or mod:IsDifficulty("heroic25") then
 			timerChemicalBomb:Start(25)
 			timerPoisonProtocolCD:Start(15)
@@ -111,7 +112,7 @@ local bossActivate = function(boss)
 			timerPoisonProtocolCD:Start(21)
 		end
 		DBM.BossHealth:AddBoss(42180, L.Toxitron)
-	elseif boss == L.Arcanotron then
+	elseif boss == L.Arcanotron or boss == 42166 then
 		if mod:IsDifficulty("heroic10") or mod:IsDifficulty("heroic25") then
 			timerGeneratorCD:Start(15)--These appear same on heroic and non heroic but will leave like this for now to await 25 man heroic confirmation.
 		else
@@ -147,11 +148,18 @@ function mod:OnCombatStart(delay)
 	else
 		timerNextActivate:Start(-delay)
 	end
+	DBM.BossHealth:Clear()
+--[[	for i=1, GetNumRaidMembers() do
+		local cid = self:GetUnitCreatureId("raid"..i)
+		if cid == 42166 or cid == 42178 or cid == 42179 or cid == 42180 then
+			bossActivate(cid, delay)
+			break;
+		end
+	end--]]
 end
 
---Most of spelids for 25 man, and heroics are drycoded in this mod.
 function mod:SPELL_AURA_APPLIED(args)
-	if args:IsSpellID(78740, 95016, 95017, 95018) then
+	if args:IsSpellID(78740, 95016, 95017, 95018) then--This also fires on combat start and provides most accurate combat start timers for the first activated golem
 		warnActivated:Show(args.destName)
 		bossActivate(args.destName)
 		if mod:IsDifficulty("heroic10") or mod:IsDifficulty("heroic25") then
@@ -166,6 +174,9 @@ function mod:SPELL_AURA_APPLIED(args)
 			timerAcquiringTarget:Start(27)
 		else
 			timerAcquiringTarget:Start()
+		end
+		if args:IsPlayer() then
+			specWarnAcquiringTarget:Show()
 		end
 		if self.Options.AcquiringTargetIcon then
 			self:SetIcon(args.destName, 8, 6)
@@ -214,6 +225,7 @@ function mod:SPELL_AURA_APPLIED(args)
 	elseif args:IsSpellID(92053) then
 		specWarnShadowConductor:Show(args.destName)
 		timerShadowConductor:Show(args.destName)
+		timerLightningConductor:Cancel()
 		if self.Options.ShadowConductorIcon then
 			self:SetIcon(args.destName, 8)
 		end

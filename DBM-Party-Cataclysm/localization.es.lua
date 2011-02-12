@@ -125,6 +125,10 @@ L:SetGeneralLocalization({
 	name = "Vanessa VanCleef"
 })
 
+L:SetTimerLocalization({
+	achievementGauntlet	= "Vigorosa venganza VanCleef"
+})
+
 ------------------
 --  Grim Batol  --
 ---------------------
@@ -135,6 +139,14 @@ L = DBM:GetModLocalization("GeneralUmbriss")
 L:SetGeneralLocalization({
 	name = "General Umbriss"
 })
+
+L:SetOptionLocalization{
+	PingBlitz	= "Marcar en el minimapa cuando el General Umbriss vaya a atacarte con Ataque relámpago"
+}
+
+L:SetMiscLocalization{
+	Blitz		= "fija la mirada |cFFFF0000(%S+)"
+}
 
 --------------------------
 -- Forgemaster Throngus --
@@ -155,7 +167,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetMiscLocalization{
-	ValionaYell	= "Dragon, you will do as I command! Catch me!",	-- translate -- Yell when Valiona is incoming
+	ValionaYell	= "¡Dragón, harás lo que te ordeno! ¡Cógeme!",
 	Valiona		= "Valiona"	
 }
 
@@ -206,7 +218,7 @@ L:SetTimerLocalization({
 })
 
 L:SetMiscLocalization({
-	Brann		= "Right, let's go! Just need to input the final entry sequence into the door mechanism... and..."--translate
+	Brann		= "¡Bien, vamos! Tan solo me falta introducir la secuencia final en el mecanismo de la puerta... y..."
 })
 
 ------------
@@ -301,7 +313,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetOptionLocalization{
-	RangeFrame	= "Mostrar distáncia (6 yardas)"
+	RangeFrame	= "Mostrar distancia (6 yardas)"
 }
 
 ----------

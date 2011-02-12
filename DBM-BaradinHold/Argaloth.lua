@@ -1,7 +1,7 @@
-local mod	= DBM:NewMod("Argaloth", "DBM-BaradinHold", 1)
+local mod	= DBM:NewMod("Argaloth", "DBM-BaradinHold")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision(("$Revision: 4978 $"):sub(12, -3))
+mod:SetRevision(("$Revision: 5071 $"):sub(12, -3))
 mod:SetCreatureID(47120)
 mod:SetZone()
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
@@ -113,7 +113,7 @@ function mod:SPELL_CAST_START(args)
 end
 
 function mod:SPELL_DAMAGE(args)
-	if args:IsSpellID(89000, 95177) and GetTime() - lastFlames > 3 then -- Flames on ground from Firestorm
+	if args:IsSpellID(89000, 95177) and GetTime() - lastFlames > 3 and args:IsPlayer() then -- Flames on ground from Firestorm
 		specWarnFirestorm:Show()
 		lastFlames = GetTime()
 	end

@@ -1,0 +1,24 @@
+## Interface: 40000
+## Title: Shaman's Friend |cff7fff7f -Ace3-|r
+## Notes: Windfury Counter and Helper for Elemental Shields, Weapon Enchants, Purge, Grounding Totem, Lightning Overload etc.
+## Version: 2.19
+## Author: Stassart
+## OptionalDeps: AceAddon-3.0, AceEvent-3.0, AceDB-3.0, AceLocale-3.0, AceConsole-3.0, AceConfig-3.0, AceGUI-3.0, AceTimer-3.0
+## X-Category: Shaman
+## X-eMail: shamanfriend (a) stassart o org
+## X-Website: http://wow.curse.com/downloads/wow-addons/details/shaman-friend.aspx
+## LoadOnDemand: 0
+## SavedVariables: ShamanFriendDB
+## X-Embeds: Ace3
+## X-Curse-Packaged-Version: r14
+## X-Curse-Project-Name: Shaman Friend
+## X-Curse-Project-ID: shaman-friend
+## X-Curse-Repository-ID: wow/shaman-friend/mainline
+
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
+Locale\Locale.xml
+
+ShamanFriend.lua

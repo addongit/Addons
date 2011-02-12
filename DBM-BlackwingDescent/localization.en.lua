@@ -10,6 +10,8 @@ L:SetGeneralLocalization({
 })
 
 L:SetWarningLocalization({
+	SpecWarnInferno	= "Blazing Bone Construct Soon (~4s)",
+	WarnPhase2Soon	= "Phase 2 soon"
 })
 
 L:SetTimerLocalization({
@@ -17,10 +19,14 @@ L:SetTimerLocalization({
 
 L:SetMiscLocalization({
 	Slump			= "%s slumps forward, exposing his pincers!",
-	HeadExposed		= "%s becomes impaled on the spike, exposing his head!"
+	HeadExposed		= "%s becomes impaled on the spike, exposing his head!",
+	YellPhase2		= "Inconceivable! You may actually defeat my lava worm! Perhaps I can help... tip the scales."
 })
 
 L:SetOptionLocalization({
+	SpecWarnInferno	= "Show pre-special warning for $spell:92190 (~4s)",
+	WarnPhase2Soon	= "Show a prewarning for Phase 2",
+	RangeFrame		= "Show range frame in Phase 2 (8)"
 })
 
 -------------------------------
@@ -36,7 +42,7 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-	timerShadowConductorCast	= "Arcane Blowback",
+	timerArcaneBlowbackCast		= "Arcane Blowback",
 	timerShadowConductorCast	= "Shadow Conductor"
 })
 
@@ -113,13 +119,15 @@ L:SetTimerLocalization({
 })
 
 L:SetMiscLocalization({
+	HealthInfo	= "Health Info"
 })
 
 L:SetOptionLocalization({
 	WarnPhase2Soon	= "Show a prewarning for Phase 2",
 	RangeFrame		= "Show range frame (6)",
 	WarnBreak		= DBM_CORE_AUTO_ANNOUNCE_OPTIONS.spell:format(82881, GetSpellInfo(82881) or "unknown"),
-	SetIconOnSlime	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(82935)
+	SetIconOnSlime	= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(82935),
+	InfoFrame	= "Show info frame for health (<10k hp)"
 })
 
 -----------------
@@ -189,12 +197,15 @@ L:SetOptionLocalization({
 	OnySwipeTimer		= "Show timer for Onyxia's $spell:77827 cooldown",
 	NefSwipeTimer		= "Show timer for Nefarian's $spell:77827 cooldown",
 	OnyBreathTimer		= "Show timer for Onyxia's $spell:94124 cooldown",
-	NefBreathTimer		= "Show timer for Nefarian's $spell:94124 cooldown"
+	NefBreathTimer		= "Show timer for Nefarian's $spell:94124 cooldown",
+	YellOnCinder		= "Yell on $spell:79339",
+	RangeFrame			= "Show range frame (10) when you have $spell:79339",
+	SetIconOnCinder		= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79339)
 })
 
 L:SetMiscLocalization({
 	NefAoe				= "The air crackles with electricity!",
 	YellPhase2			= "Curse you, mortals! Such a callous disregard for one's possessions must be met with extreme force!",
-	ShadowblazeCast		= "Flesh turns to ash!",
-	ChromaticPrototype	= "Chromatic Prototype"
+	YellPhase3			= "I have tried to be an accommodating host, but you simply will not die! Time to throw all pretense aside and just... KILL YOU ALL!",
+	YellCinder			= "Explosive Cinders on me!"
 })

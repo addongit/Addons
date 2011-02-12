@@ -12,17 +12,23 @@ L:SetGeneralLocalization({
 })
 
 L:SetWarningLocalization({
+	SpecWarnInferno			= "熾熱的煉獄 即將到來 (~4秒)",
+	WarnPhase2Soon			= "第2階段 即將到來"
 })
 
 L:SetTimerLocalization({
 })
 
 L:SetMiscLocalization({
-	Slump				= "%s slumps forward, exposing his pincers!",
-	HeadExposed			= "%s becomes impaled on the spike, exposing his head!"
+	Slump				= "%s往前撲倒，露出他的鉗子!",
+	HeadExposed			= "%s被釘在尖刺上，露出了他的頭!",
+	YellPhase2			= "Inconceivable! You may actually defeat my lava worm! Perhaps I can help... tip the scales."
 })
 
 L:SetOptionLocalization({
+	SpecWarnInferno			= "為$spell:92190顯示預先特別警告 (~4秒)",
+	WarnPhase2Soon			= "為第2階段顯示預先警告",
+	RangeFrame			= "第2階段時顯示距離框 (8碼)"
 })
 
 -------------------------------
@@ -194,11 +200,14 @@ L:SetOptionLocalization({
 	OnySwipeTimer			= "為奧妮克希亞的$spell:77827的冷卻時間顯示計時器",
 	NefSwipeTimer			= "為奈法利安的$spell:77827的冷卻時間顯示計時器",
 	OnyBreathTimer			= "為奧妮克希亞的$spell:94124的冷卻時間顯示計時器",
-	NefBreathTimer			= "為奈法利安的$spell:94124的冷卻時間顯示計時器"
+	NefBreathTimer			= "為奈法利安的$spell:94124的冷卻時間顯示計時器",
+	YellOnCinder			= "中了$spell:79339時大喊",
+	RangeFrame			= "當你中了$spell:79339時顯示距離框 (10碼)",
+	SetIconOnCinder			= DBM_CORE_AUTO_ICONS_OPTION_TEXT:format(79339)
 })
 
 L:SetMiscLocalization({
 	YellPhase2 			= "詛咒你們，凡人!如此冷酷地漠視他人的所有物必須受到嚴厲的懲罰!",
-	ShadowblazeCast 		= "化為灰燼吧!",
-	ChromaticPrototype 		= "炫彩原型體"
+	YellPhase3			= "I have tried to be an accommodating host, but you simply will not die! Time to throw all pretense aside and just... KILL YOU ALL!",
+	YellCinder			= "我中了爆裂灰燼!"
 })
