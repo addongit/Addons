@@ -1,5 +1,5 @@
 local MAJOR = "LibQTip-1.0"
-local MINOR = 38 -- Should be manually increased
+local MINOR = 36 -- Should be manually increased
 assert(LibStub, MAJOR.." requires LibStub")
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
@@ -8,8 +8,6 @@ if not lib then return end -- No upgrade needed
 ------------------------------------------------------------------------------
 -- Upvalued globals
 ------------------------------------------------------------------------------
-local _G = getfenv(0)
-
 local type = type
 local select = select
 local error = error
@@ -249,11 +247,9 @@ end
 
 function labelPrototype:SetupCell(tooltip, value, justification, font, l_pad, r_pad, max_width, min_width, ...)
 	local fs = self.fontString
-	local line = tooltip.lines[self._line]
-
 	-- detatch fs from cell for size calculations
 	fs:ClearAllPoints()
-	fs:SetFontObject(font or (line.is_header and tooltip:GetHeaderFont() or tooltip:GetFont()))
+	fs:SetFontObject(font or tooltip:GetFont())
 	fs:SetJustifyH(justification)
 	fs:SetText(tostring(value))
 
@@ -352,7 +348,6 @@ function ReleaseTooltip(tooltip)
 	
 	tooltip.releasing = nil
 	tooltip.key = nil
-	tooltip.step = nil
 	
 	ClearTooltipScripts(tooltip)
 
@@ -401,12 +396,7 @@ function ReleaseCell(cell)
 	cell:SetParent(nil)
 	cell:SetBackdrop(nil)
 	ClearFrameScripts(cell)
-
-	cell._font = nil
-	cell._justification = nil
-	cell._colSpan = nil
-	cell._line = nil
-	cell._column = nil
+	cell._font, cell._justification, cell._colSpan,	cell._line, cell._column = nil
 
 	cell._provider:ReleaseCell(cell)
 	cell._provider = nil
@@ -610,18 +600,12 @@ local function tooltip_OnMouseWheel(self, delta)
 	local slider = self.slider
 	local currentValue = slider:GetValue()
 	local minValue, maxValue = slider:GetMinMaxValues()
-	local stepValue = self.step or 10
 
 	if delta < 0 and currentValue < maxValue then
-		slider:SetValue(min(maxValue, currentValue + stepValue))
+		slider:SetValue(min(maxValue, currentValue + 10))
 	elseif delta > 0 and currentValue > minValue then
-		slider:SetValue(max(minValue, currentValue - stepValue))
+		slider:SetValue(max(minValue, currentValue - 10))
 	end
-end
-
--- Set the step size for the scroll bar
-function tipPrototype:SetScrollStep(step)
-	self.step = step
 end
 
 -- will resize the tooltip to fit the screen and show a scrollbar if needed
@@ -636,7 +620,7 @@ function tipPrototype:UpdateScrolling(maxheight)
 	local topside = self:GetTop()
 	local bottomside = self:GetBottom()
 	local screensize = UIParent:GetHeight() / scale
-	local tipsize = (topside - bottomside)
+	local tipsize = (topside - bottomside) / scale
 
 	-- if the tooltip would be too high, limit its height and show the slider
 	if bottomside < 0 or topside > screensize or (maxheight and tipsize > maxheight) then
@@ -696,7 +680,6 @@ function tipPrototype:Clear()
 		end
 		ReleaseTable(line.cells)
 		line.cells = nil
-		line.is_header = nil
 		ReleaseFrame(line)
 		self.lines[i] = nil
 	end
@@ -732,6 +715,30 @@ function tipPrototype:SetCellMarginV(size)
 	end
 	self.cell_margin_v = size
 end
+
+local function checkFont(font, level, silent)
+	if not font or type(font) ~= 'table' or type(font.IsObjectType) ~= 'function' or not font:IsObjectType("Font") then
+		if silent then
+			return false
+		end
+		error("font must be Font instance, not: "..tostring(font), level + 1)
+	end
+	return true
+end
+
+function tipPrototype:SetFont(font)
+	checkFont(font, 2)
+	self.regularFont = font
+end
+
+function tipPrototype:GetFont() return self.regularFont end
+
+function tipPrototype:SetHeaderFont(font)
+	checkFont(font, 2)
+	self.headerFont = font
+end
+
+function tipPrototype:GetHeaderFont() return self.headerFont end
 
 function SetTooltipSize(tooltip, width, height)
 	tooltip:SetHeight(2 * TOOLTIP_PADDING + height)
@@ -836,7 +843,6 @@ local function _SetCell(tooltip, lineNum, colNum, value, font, justification, co
 		end
 		return lineNum, colNum
 	end
-	font = font or (line.is_header and tooltip.headerFont or tooltip.regularFont)
 
 	-- Check previous cell
 	local cell
@@ -844,6 +850,7 @@ local function _SetCell(tooltip, lineNum, colNum, value, font, justification, co
 
 	if prevCell then
 		-- There is a cell here
+		font = font or prevCell._font
 		justification = justification or prevCell._justification
 		colSpan = colSpan or prevCell._colSpan
 
@@ -863,6 +870,7 @@ local function _SetCell(tooltip, lineNum, colNum, value, font, justification, co
 	elseif prevCell == nil then
 		-- Creating a new cell, using meaningful defaults.
 		provider = provider or tooltip.labelProvider
+		font = font or tooltip.regularFont
 		justification = justification or tooltip.columns[colNum].justification or "LEFT"
 		colSpan = colSpan or 1
 	else
@@ -942,55 +950,50 @@ local function _SetCell(tooltip, lineNum, colNum, value, font, justification, co
 	end
 end
 
-do
-	local function CreateLine(tooltip, font, ...)
-		if #tooltip.columns == 0 then
-			error("column layout should be defined before adding line", 3)
-		end
-		local lineNum = #tooltip.lines + 1
-		local line = tooltip.lines[lineNum] or AcquireFrame(tooltip.scrollChild)
-
-		line:SetFrameLevel(tooltip.scrollChild:GetFrameLevel() + 2)
-		line:SetPoint('LEFT', tooltip.scrollChild)
-		line:SetPoint('RIGHT', tooltip.scrollChild)
-
-		if lineNum > 1 then
-			local v_margin = tooltip.cell_margin_v or CELL_MARGIN_V
-
-			line:SetPoint('TOP', tooltip.lines[lineNum-1], 'BOTTOM', 0, -v_margin)
-			SetTooltipSize(tooltip, tooltip.width, tooltip.height + v_margin)
-		else
-			line:SetPoint('TOP', tooltip.scrollChild)
-		end
-		tooltip.lines[lineNum] = line
-		line.cells = line.cells or AcquireTable()
-		line.height = 0
-		line:SetHeight(1)
-		line:Show()
-
-		local colNum = 1
-
-		for i = 1, #tooltip.columns do
-			local value = select(i, ...)
-
-			if value ~= nil then
-				lineNum, colNum = _SetCell(tooltip, lineNum, i, value, font, nil, 1, tooltip.labelProvider)
-			end
-		end
-		return lineNum, colNum
+local function CreateLine(tooltip, font, ...)
+	if #tooltip.columns == 0 then
+		error("column layout should be defined before adding line", 3)
 	end
+	local lineNum = #tooltip.lines + 1
+	local line = tooltip.lines[lineNum] or AcquireFrame(tooltip.scrollChild)
 
-	function tipPrototype:AddLine(...)
-		return CreateLine(self, self.regularFont, ...)
+	line:SetFrameLevel(tooltip.scrollChild:GetFrameLevel() + 2)
+	line:SetPoint('LEFT', tooltip.scrollChild)
+	line:SetPoint('RIGHT', tooltip.scrollChild)
+
+	if lineNum > 1 then
+		local v_margin = tooltip.cell_margin_v or CELL_MARGIN_V
+
+		line:SetPoint('TOP', tooltip.lines[lineNum-1], 'BOTTOM', 0, -v_margin)
+		SetTooltipSize(tooltip, tooltip.width, tooltip.height + v_margin)
+	else
+		line:SetPoint('TOP', tooltip.scrollChild)
 	end
+	tooltip.lines[lineNum] = line
+	line.cells = line.cells or AcquireTable()
+	line.height = 0
+	line:SetHeight(1)
+	line:Show()
 
-	function tipPrototype:AddHeader(...)
-		local line, col = CreateLine(self, self.headerFont, ...)
+	local colNum = 1
 
-		self.lines[line].is_header = true
-		return line, col
+	for i = 1, #tooltip.columns do
+		local value = select(i, ...)
+
+		if value ~= nil then
+			lineNum, colNum = _SetCell(tooltip, lineNum, i, value, font, nil, 1, tooltip.labelProvider)
+		end
 	end
-end	-- do-block
+	return lineNum, colNum
+end
+
+function tipPrototype:AddLine(...)
+	return CreateLine(self, self.regularFont, ...)
+end
+
+function tipPrototype:AddHeader(...)
+	return CreateLine(self, self.headerFont, ...)
+end
 
 local GenericBackdrop = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -1040,88 +1043,40 @@ function tipPrototype:SetLineColor(lineNum, r, g, b, a)
 	end
 end
 
-do
-	local function checkFont(font, level, silent)
-		local bad = false
-
-		if not font then
-			bad = true
-		elseif type(font) == "string" then
-			local ref = _G[font] 
-
-			if not ref or type(ref) ~= 'table' or type(ref.IsObjectType) ~= 'function' or not ref:IsObjectType("Font") then
-				bad = true
-			end
-		elseif type(font) ~= 'table' or type(font.IsObjectType) ~= 'function' or not font:IsObjectType("Font") then
-			bad = true
-		end
-
-		if bad then
-			if silent then
-				return false
-			end
-			error("font must be a Font instance or a string matching the name of a global Font instance, not: "..tostring(font), level + 1)
-		end
-		return true
+-- TODO: fixed argument positions / remove checks for performance?
+function tipPrototype:SetCell(lineNum, colNum, value, ...)
+	-- Mandatory argument checking
+	if type(lineNum) ~= "number" then
+		error("line number must be a number, not: "..tostring(lineNum), 2)
+	elseif lineNum < 1 or lineNum > #self.lines then
+		error("line number out of range: "..tostring(lineNum), 2)
+	elseif type(colNum) ~= "number" then
+		error("column number must be a number, not: "..tostring(colNum), 2)
+	elseif colNum < 1 or colNum > #self.columns then
+		error("column number out of range: "..tostring(colNum), 2)
 	end
 
-	function tipPrototype:SetFont(font)
-		local is_string = type(font) == "string"
+	-- Variable argument checking
+	local font, justification, colSpan, provider
+	local i, arg = 1, ...
 
-		checkFont(font, 2)
-		self.regularFont = is_string and _G[font] or font
+	if arg == nil or checkFont(arg, 2, true) then
+		i, font, arg = 2, ...
 	end
 
-	function tipPrototype:SetHeaderFont(font)
-		local is_string = type(font) == "string"
-
-		checkFont(font, 2)
-		self.headerFont = is_string and _G[font] or font
+	if arg == nil or checkJustification(arg, 2, true) then
+		i, justification, arg = i + 1, select(i, ...)
 	end
 
-	-- TODO: fixed argument positions / remove checks for performance?
-	function tipPrototype:SetCell(lineNum, colNum, value, ...)
-		-- Mandatory argument checking
-		if type(lineNum) ~= "number" then
-			error("line number must be a number, not: "..tostring(lineNum), 2)
-		elseif lineNum < 1 or lineNum > #self.lines then
-			error("line number out of range: "..tostring(lineNum), 2)
-		elseif type(colNum) ~= "number" then
-			error("column number must be a number, not: "..tostring(colNum), 2)
-		elseif colNum < 1 or colNum > #self.columns then
-			error("column number out of range: "..tostring(colNum), 2)
-		end
-
-		-- Variable argument checking
-		local font, justification, colSpan, provider
-		local i, arg = 1, ...
-
-		if arg == nil or checkFont(arg, 2, true) then
-			i, font, arg = 2, ...
-		end
-
-		if arg == nil or checkJustification(arg, 2, true) then
-			i, justification, arg = i + 1, select(i, ...)
-		end
-
-		if arg == nil or type(arg) == 'number' then
-			i, colSpan, arg = i + 1, select(i, ...)
-		end
-
-		if arg == nil or type(arg) == 'table' and type(arg.AcquireCell) == 'function' then
-			i, provider = i + 1, arg
-		end
-
-		return _SetCell(self, lineNum, colNum, value, font, justification, colSpan, provider, select(i, ...))
+	if arg == nil or type(arg) == 'number' then
+		i, colSpan, arg = i + 1, select(i, ...)
 	end
-end	-- do-block
 
-function tipPrototype:GetFont()
-	return self.regularFont
-end
+	if arg == nil or type(arg) == 'table' and type(arg.AcquireCell) == 'function' then
+		i, provider = i + 1, arg
+	end
 
-function tipPrototype:GetHeaderFont()
-	return self.headerFont
+	return _SetCell(self, lineNum, colNum, value, font, justification, colSpan, provider, select(i, ...))
 end
 
 function tipPrototype:GetLineCount() return #self.lines end
@@ -1164,9 +1119,6 @@ local scripts = {
 	OnMouseUp = function(frame, ...)
 		frame:_OnMouseUp_func(frame._OnMouseUp_arg, ...)
 	end,
-	OnReceiveDrag = function(frame, ...)
-		frame:_OnReceiveDrag_func(frame._OnReceiveDrag_arg, ...)
-	end,
 }
 
 function SetFrameScript(frame, script, func, arg)
@@ -1176,7 +1128,7 @@ function SetFrameScript(frame, script, func, arg)
 	frame["_"..script.."_func"] = func
 	frame["_"..script.."_arg"] = arg
 
-	if script == "OnMouseDown" or script == "OnMouseUp" or script == "OnReceiveDrag" then
+	if script == "OnMouseDown" or script == "OnMouseUp" then
 		if func then
 			frame:SetScript(script, scripts[script])
 		else
@@ -1185,7 +1137,7 @@ function SetFrameScript(frame, script, func, arg)
 	end
 
 	-- if at least one script is set, set the OnEnter/OnLeave scripts for the highlight
-	if frame._OnEnter_func or frame._OnLeave_func or frame._OnMouseDown_func or frame._OnMouseUp_func or frame._OnReceiveDrag_func then
+	if frame._OnEnter_func or frame._OnLeave_func or frame._OnMouseDown_func or frame._OnMouseUp_func then
 		frame:EnableMouse(true)
 		frame:SetScript("OnEnter", scripts.OnEnter)
 		frame:SetScript("OnLeave", scripts.OnLeave)
@@ -1197,7 +1149,7 @@ function SetFrameScript(frame, script, func, arg)
 end
 
 function ClearFrameScripts(frame)
-	if frame._OnEnter_func or frame._OnLeave_func or frame._OnMouseDown_func or frame._OnMouseUp_func or frame._OnReceiveDrag_func then
+	if frame._OnEnter_func or frame._OnLeave_func or frame._OnMouseDown_func or frame._OnMouseUp_func then
 		frame:EnableMouse(false)
 		frame:SetScript("OnEnter", nil)
 		frame._OnEnter_func = nil
@@ -1205,9 +1157,6 @@ function ClearFrameScripts(frame)
 		frame:SetScript("OnLeave", nil)
 		frame._OnLeave_func = nil
 		frame._OnLeave_arg = nil
-		frame:SetScript("OnReceiveDrag", nil)
-		frame._OnReceiveDrag_func = nil
-		frame._OnReceiveDrag_arg = nil
 		frame:SetScript("OnMouseDown", nil)
 		frame._OnMouseDown_func = nil
 		frame._OnMouseDown_arg = nil

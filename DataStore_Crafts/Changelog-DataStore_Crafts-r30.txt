@@ -1,0 +1,13 @@
+------------------------------------------------------------------------
+r30 | thaoky | 2011-02-11 14:47:05 +0000 (Fri, 11 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/DataStore_Crafts.lua
+
+Added some comments
+------------------------------------------------------------------------
+r29 | thaoky | 2010-11-21 13:41:28 +0000 (Sun, 21 Nov 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Crafts.lua
+
+Now scanning profession links too when a trade skill point is earned.
+------------------------------------------------------------------------

@@ -1,18 +1,14 @@
 ## Interface: 40000
 ## Title: Archy - Archaeology Assistant
-## Version: v1.7b7
+## Version: 1.7b8
 ## Notes: Archaeology assistant
 ## Author: daihenka
 ## X-Category: Archaeology
 ## SavedVariables: ArchyDB
-## OptionalDeps: Ace3, LibDataBroker-1.1, LibDBIcon-1.0, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LinkSink-2.0, TomTom, LibAboutPanel, LibQTip-1.0
+## OptionalDeps: Ace3, LibDataBroker-1.1, LibDBIcon-1.0, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LibSink-2.0, TomTom, LibAboutPanel, LibQTip-1.0
 ## X-WoWIPortal: daihenka
 ## X-Curse-Project-ID: archy
 ## X-Curse-Project-Name: Archy - Archaeology Assistant
-## X-Curse-Packaged-Version: v1.7b7
-## X-Curse-Project-Name: Archy - Archaeology Assistant
-## X-Curse-Project-ID: archy
-## X-Curse-Repository-ID: wow/archy/mainline
 
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua

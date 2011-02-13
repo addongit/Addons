@@ -11,24 +11,39 @@ local ldb = LibStub("LibDataBroker-1.1"):NewDataObject("Archy", {
 local icon = LibStub("LibDBIcon-1.0")
 local astrolabe = DongleStub("Astrolabe-1.0")
 local qtip = LibStub("LibQTip-1.0")
+local lsm = LibStub("LibSharedMedia-3.0")
+
+if not lsm then
+	LoadAddOn("LibSharedMedia-3.0")
+	lsm = LibStub("LibSharedMedia-3.0", true)
+end
+
+local DEFAULT_LSM_FONT = "Arial Narrow"
+if lsm then
+	if not lsm:IsValid("font", DEFAULT_LSM_FONT) then
+		DEFAULT_LSM_FONT = lsm:GetDefault("font")
+	end
+end
 
 _G["Archy"] = Archy
 
 Archy.version = GetAddOnMetadata("Archy", "Version")
+
+
 
 --[[ Variable declarations ]]--
 local db
 local MAX_ARCHAEOLOGY_RANK = 525
 local SITES_PER_CONTINENT = 4
 local rank, maxRank
-local confirmArgs, requiresConfirm
+local confirmArgs
 local raceDataLoaded = false
 local archRelatedBagUpdate = false
 local keystoneLootRaceID = nil
 local playerContinent
 local siteStats, siteBlacklist
 local lastSite, nearestSite, playerPosition, surveyPosition = {}, nil, { map = 0, level = 0, x = 0,  y = 0 }, { map = 0, level = 0, x = 0,  y = 0 }
-local zoneData, siteData, raceData, currencyData, artifacts, digsites = {}, {}, {}, {}, {}, {}
+local zoneData, siteData, raceData, currencyData, artifactData, artifacts, digsites = {}, {}, {}, {}, {}, {}, {}
 local tomtomPoint, tomtomActive, tomtomExists, tomtomFrame, tomtomSite
 local distanceIndicatorActive = false
 
@@ -42,7 +57,6 @@ local mapIDToZone = {}
 local mapIDToZoneName = {}
 local zoneIDToName = {}
 local raceNameToID = {}
-local currencyIDToRaceID = {}
 local keystoneIDToRaceID = {}
 local minimapSize = {}
 
@@ -50,7 +64,7 @@ local Arrow_OnUpdate, POI_OnEnter, POI_OnLeave, GetArchaeologyRank, SolveRaceArt
 local ClearTomTomPoint, UpdateTomTomPoint, RefreshTomTom
 local RefreshBlobInfo, MinimapBlobSetPositionAndSize, UpdateSiteBlobs
 local CreateMinimapPOI, UpdateMinimapEdges, UpdateMinimapPOIs
-local AnnounceNearestSite, ResetPositions, UpdateRaceArtifact, ShowDistanceIndicator, HideDistanceIndicator
+local AnnounceNearestSite, ResetPositions, UpdateRaceArtifact, ToggleDistanceIndicator
 local inCombat = false
 local TrapWorldMouse
 
@@ -79,12 +93,13 @@ local defaults = {
 			show = true,
 			stealthMode = false,
 			icon = { hide = false },
-			locked = true,
+			locked = false,
 			confirmSolve = true,
 			showSkillBar = true,
 			sinkOptions = { },
 			easyCast = false,
 			autoLoot = true,
+			theme = "Graphical",
 		},
 		artifact = {
 			show = true,
@@ -92,7 +107,7 @@ local defaults = {
 			anchor = "TOPRIGHT",
 			positionX = 100,
 			positionY = -300,
-			scale = 1,
+			scale = 0.75,
 			alpha = 1,
 			filter = true,
 			announce = true,
@@ -103,11 +118,10 @@ local defaults = {
 			autofill = {},
 			style = "Compact",
 			borderAlpha = 1,
-			bgAlpha = 1,
-			nameFontSize = 14,
-			nameFontOutline = "OUTLINE",
-			keystoneFontSize = 14,
-			keystoneFontOutline = "OUTLINE",
+			bgAlpha = 0.5,
+			font = { name = "Friz Quadrata TT", size = 14, shadow = true, outline = "", color = { r = 1, g = 1, b = 1, a = 1 } },
+			fragmentFont = { name = "Friz Quadrata TT", size = 14, shadow = true, outline = "", color = { r = 1, g = 1, b = 1, a = 1 } },
+			keystoneFont = { name = "Friz Quadrata TT", size = 12, shadow = true, outline = "", color = { r = 1, g = 1, b = 1, a = 1 } },
 			fragmentBarColors = {
 				["Normal"] = { r = 1, g = 0.5, b = 0 },
 				["Solvable"] = { r = 0, g = 1, b = 0 },
@@ -115,6 +129,9 @@ local defaults = {
 				["AttachToSolve"] = { r = 1, g = 1, b = 0 },
 				["FirstTime"] = { r = 1, g = 1, b = 1 },
 			},
+			fragmentBarTexture = "Blizzard Parchment",
+			borderTexture = "Blizzard Dialog Gold",
+			backgroundTexture = "Blizzard Parchment",
 		},
 		digsite = {
 			show = true,
@@ -122,7 +139,7 @@ local defaults = {
 			anchor = "TOPRIGHT",
 			positionX = 400,
 			positionY = -300,
-			scale = 1,
+			scale = 0.75,
 			alpha = 1,
 			style = "Extended", 
 			sortByDistance = true,
@@ -135,20 +152,27 @@ local defaults = {
 				anchor = "TOPLEFT",
 				undocked = false,
 				showSurveyButton = true,
+				font = { name = "Friz Quadrata TT", size = 16, shadow = false, outline = "OUTLINE", color = { r = 1, g = 1, b = 1, a = 1 } },
 			},
 			filterLDB = false,
 			borderAlpha = 1,
-			bgAlpha = 1,
-			nameFontSize = 16,
-			nameFontOutline = "",
-			zoneFontSize = 12,
-			zoneFontOutline = "",
+			bgAlpha = 0.5,
+			font = { name = "Friz Quadrata TT", size = 18, shadow = true, outline = "", color = { r = 1, g = 1, b = 1, a = 1 } },
+			zoneFont = { name = "Friz Quadrata TT", size = 14, shadow = true, outline = "", color = { r = 1, g = 0.82, b = 0, a = 1 } },
+			minimal = {
+				showDistance = false,
+				showZone = false,
+				showDigCounter = true,
+			},
+			borderTexture = "Blizzard Dialog Gold",
+			backgroundTexture = "Blizzard Parchment",
 		},
 		minimap = {
 			show = true,
 			nearest = true,
 			fragmentNodes = true,
 			fragmentIcon = "CyanDot",
+			fragmentColorBySurveyDistance = true,
 			blob = false,
 			zoneBlob = false,
 			blobAlpha = 0.25,
@@ -187,6 +211,10 @@ local outlines = {
 	[""]             = L["None"],
 	["OUTLINE"]      = L["Outline"],
 	["THICKOUTLINE"] = L["Thick Outline"],
+}
+local archyThemes = {
+	["Graphical"]	 = L["Graphical"],
+	["Minimal"]		 = L["Minimal"],
 }
 
 local generalOptions = {
@@ -241,12 +269,24 @@ local generalOptions = {
 			set = function(k, v) 
 				db.general.icon.hide = v; 
 				if db.general.icon.hide then
-					icon:Hide("ArchyLDB")
+					icon:Hide("Archy")
 				else
-					icon:Show("ArchyLDB")
+					icon:Show("Archy")
 				end
 			end,
 			width = "double"
+		},
+		archyTheme = {
+			order	= 5,
+			type	= "select",
+			name	= L["Style"],
+			desc	= L["The style of display for Archy.  This will reload your UI after selecting"],
+			get	= function() return db.general.theme end,
+			set	= function(_, value) 
+				db.general.theme = value
+				ReloadUI()
+			end,
+			values	= archyThemes,
 		},
 		easyCast = {
 			order = 6,
@@ -451,16 +491,12 @@ local artifactOptions = {
 				},
 			},
 		},
-		displayOptions = {
-			name = L["Display Options"],
+		frameOptions = {
 			order = 4,
 			type = "group",
+			name = L["Frame Options"],
+--			guiInline = true,
 			args = {
-				desc = {
-					order = 0,
-					type = "description",
-					name = L["Control various aspects of how the Artifacts list is displayed"],
-				},
 				scale = {
 					order = 7,
 					type = "range",
@@ -478,7 +514,7 @@ local artifactOptions = {
 					type = "range",
 					name = L["Opacity"],
 					desc = L["Set how transparent or opaque the Artifacts list is"],
-					min = 0.25, max = 1, step = 0.01, bigStep = 0.05,
+					min = 0, max = 1, step = 0.01, bigStep = 0.05,
 					get = function() return db.artifact.alpha end,
 					set = function(_, value)
 						db.artifact.alpha = value
@@ -507,7 +543,7 @@ local artifactOptions = {
 					type = "range",
 					name = L["Border Opacity"],
 					desc = L["Set how transparent or opaque the border for the Artifacts list is"],
-					min = 0.01, max = 1, step = 0.01, bigStep = 0.05,
+					min = 0, max = 1, step = 0.01, bigStep = 0.05,
 					get = function() return db.artifact.borderAlpha end,
 					set = function(_, value)
 						db.artifact.borderAlpha = value
@@ -519,68 +555,287 @@ local artifactOptions = {
 					type = "range",
 					name = L["Background Opacity"],
 					desc = L["Set how transparent or opaque the background for the Artifacts list is"],
-					min = 0.01, max = 1, step = 0.01, bigStep = 0.05,
+					min = 0, max = 1, step = 0.01, bigStep = 0.05,
 					get = function() return db.artifact.bgAlpha end,
 					set = function(_, value)
 						db.artifact.bgAlpha = value
 						Archy:ConfigUpdated('artifact')
 					end,
 				},
-				space2 = {
-					order = 15,
-					type = "description",
-					name = " ",
-				},
-				nameFontSize = {
-					order = 16,
-					type = "range",
-					name = L["Name Font Size"],
-					desc = L["Control the font size of the artifact name"],
-					min = 4, max = 30, step = 1,
-					get = function() return db.artifact.nameFontSize end,
-					set = function(_, value)
-						db.artifact.nameFontSize = value
-						Archy:ConfigUpdated('artifact')
-					end,
-				},
-				nameFontOutline = {
-					order = 16.5,
+				borderTexture = {
+					order = 13.5,
 					type = "select",
-					name = L["Name Font Outline"],
-					desc = L["The outline that the artifact name will use"],
-					values = outlines,
-					get = function() return db.artifact.nameFontOutline end,
+					name = L["Border Texture"],
+					desc = L["Set the texture used by the frame border"],
+					dialogControl = "LSM30_Border",
+					values = lsm:HashTable(lsm.MediaType.BORDER),
+					get = function() return db.artifact.borderTexture end,
 					set = function(_, value)
-						db.artifact.nameFontOutline = value
+						db.artifact.borderTexture = value
 						Archy:ConfigUpdated('artifact')
 					end,
 				},
-				keystoneFontSize = {
-					order = 17,
-					type = "range",
-					name = L["Fragment Font Size"],
-					desc = L["Control the font size of the fragment progress"],
-					min = 4, max = 30, step = 1,
-					get = function() return db.artifact.keystoneFontSize end,
-					set = function(_, value)
-						db.artifact.keystoneFontSize = value
-						Archy:ConfigUpdated('artifact')
-					end,
-				},
-				keystoneFontOutline = {
-					order = 17.5,
+				backgroundTexture = {
+					order = 14.5,
 					type = "select",
-					name = L["Fragment Font Outline"],
-					desc = L["The outline that the fragment progress will use"],
-					values = outlines,
-					get = function() return db.artifact.keystoneFontOutline end,
+					name = L["Background Texture"],
+					desc = L["Set the texture used by the frame background"],
+					dialogControl = "LSM30_Border",
+					values = lsm:HashTable(lsm.MediaType.BACKGROUND),
+					get = function() return db.artifact.backgroundTexture end,
 					set = function(_, value)
-						db.artifact.keystoneFontOutline = value
+						db.artifact.backgroundTexture = value
 						Archy:ConfigUpdated('artifact')
 					end,
 				},
-
-
+				fragmentBarTexture = {
+					order = 20,
+					type = "select",
+					name = L["Progress Bar Texture"],
+					desc = L["Set the texture used by the progress bars"],
+					dialogControl = "LSM30_Statusbar",
+					values = lsm:HashTable(lsm.MediaType.STATUSBAR),
+					get = function() return db.artifact.fragmentBarTexture end,
+					set = function(_, value)
+						db.artifact.fragmentBarTexture = value
+						Archy:ConfigUpdated('artifact')
+					end,
+				},
+			},
+		},
+		fontOptions = {
+			name = L["Font Options"],
+			order = 5,
+			type = "group",
+			args = {
+				mainFontOptions = {
+					order = 1,
+					type = "group",
+					name = L["Main Font Options"],
+					guiInline = true,
+					args = {
+						fontName = {
+							order = 1,
+							type = "select",
+							dialogControl = 'LSM30_Font',
+							name = L["Font"],
+							desc = L["The font that will be used"],
+							values = AceGUIWidgetLSMlists.font,
+							get = function() return db.artifact.font.name end,
+							set = function(_, value)
+								db.artifact.font.name = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontSize = {
+							order = 2,
+							type = "range",
+							name = L["Font Size"],
+							desc = L["Control the font size"],
+							min = 4, max = 30, step = 1,
+							get = function() return db.artifact.font.size end,
+							set = function(_, value)
+								db.artifact.font.size = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontOutline = {
+							order = 3,
+							type = "select",
+							name = L["Font Outline"],
+							desc = L["The outline of the font"],
+							values = outlines,
+							get = function() return db.artifact.font.outline end,
+							set = function(_, value)
+								db.artifact.font.outline = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontShadow = {
+							order = 4,
+							type = "toggle",
+							name = L["Font Shadow"],
+							desc = L["Toggles if the font will have a shadow"],
+							get = function() return db.artifact.font.shadow end,
+							set = function(_, value)
+								db.artifact.font.shadow = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontColor = {
+							type = "color",
+							order = 5,
+							name = L["Font Color"],
+							desc = L["The color of the font"],
+							hasAlpha = true,
+							get = function(info)
+								return db.artifact.font.color.r, db.artifact.font.color.g, db.artifact.font.color.b, db.artifact.font.color.a
+							end,
+							set = function(info, r, g, b, a)
+								db.artifact.font.color.r = r
+								db.artifact.font.color.g = g
+								db.artifact.font.color.b = b
+								db.artifact.font.color.a = a
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+					},
+				},
+				fragmentFontOptions = {
+					order = 2,
+					type = "group",
+					name = L["Fragment Font Options"],
+					guiInline = true,
+					disabled = function() return (db.general.theme ~= "Graphical") end,
+					args = {
+						fontName = {
+							order = 1,
+							type = "select",
+							dialogControl = 'LSM30_Font',
+							name = L["Font"],
+							desc = L["The font that will be used"],
+							values = AceGUIWidgetLSMlists.font,
+							get = function() return db.artifact.fragmentFont.name end,
+							set = function(_, value)
+								db.artifact.fragmentFont.name = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontSize = {
+							order = 2,
+							type = "range",
+							name = L["Font Size"],
+							desc = L["Control the font size"],
+							min = 4, max = 30, step = 1,
+							get = function() return db.artifact.fragmentFont.size end,
+							set = function(_, value)
+								db.artifact.fragmentFont.size = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontOutline = {
+							order = 3,
+							type = "select",
+							name = L["Font Outline"],
+							desc = L["The outline of the font"],
+							values = outlines,
+							get = function() return db.artifact.fragmentFont.outline end,
+							set = function(_, value)
+								db.artifact.fragmentFont.outline = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontShadow = {
+							order = 4,
+							type = "toggle",
+							name = L["Font Shadow"],
+							desc = L["Toggles if the font will have a shadow"],
+							get = function() return db.artifact.fragmentFont.shadow end,
+							set = function(_, value)
+								db.artifact.fragmentFont.shadow = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontColor = {
+							type = "color",
+							order = 5,
+							name = L["Font Color"],
+							desc = L["The color of the font"],
+							hasAlpha = true,
+							get = function(info)
+								return db.artifact.fragmentFont.color.r, db.artifact.fragmentFont.color.g, db.artifact.fragmentFont.color.b, db.artifact.fragmentFont.color.a
+							end,
+							set = function(info, r, g, b, a)
+								db.artifact.fragmentFont.color.r = r
+								db.artifact.fragmentFont.color.g = g
+								db.artifact.fragmentFont.color.b = b
+								db.artifact.fragmentFont.color.a = a
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+					},
+				},
+				keystoneFontOptions = {
+					order = 3,
+					type = "group",
+					name = L["Key Stone Font Options"],
+					guiInline = true,
+					disabled = function() return (db.general.theme ~= "Graphical") end,
+					args = {
+						fontName = {
+							order = 1,
+							type = "select",
+							dialogControl = 'LSM30_Font',
+							name = L["Font"],
+							desc = L["The font that will be used"],
+							values = AceGUIWidgetLSMlists.font,
+							get = function() return db.artifact.keystoneFont.name end,
+							set = function(_, value)
+								db.artifact.keystoneFont.name = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontSize = {
+							order = 2,
+							type = "range",
+							name = L["Font Size"],
+							desc = L["Control the font size"],
+							min = 4, max = 30, step = 1,
+							get = function() return db.artifact.keystoneFont.size end,
+							set = function(_, value)
+								db.artifact.keystoneFont.size = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontOutline = {
+							order = 3,
+							type = "select",
+							name = L["Font Outline"],
+							desc = L["The outline of the font"],
+							values = outlines,
+							get = function() return db.artifact.keystoneFont.outline end,
+							set = function(_, value)
+								db.artifact.keystoneFont.outline = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontShadow = {
+							order = 4,
+							type = "toggle",
+							name = L["Font Shadow"],
+							desc = L["Toggles if the font will have a shadow"],
+							get = function() return db.artifact.keystoneFont.shadow end,
+							set = function(_, value)
+								db.artifact.keystoneFont.shadow = value
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+						fontColor = {
+							type = "color",
+							order = 5,
+							name = L["Font Color"],
+							desc = L["The color of the font"],
+							hasAlpha = true,
+							get = function(info)
+								return db.artifact.keystoneFont.color.r, db.artifact.keystoneFont.color.g, db.artifact.keystoneFont.color.b, db.artifact.keystoneFont.color.a
+							end,
+							set = function(info, r, g, b, a)
+								db.artifact.keystoneFont.color.r = r
+								db.artifact.keystoneFont.color.g = g
+								db.artifact.keystoneFont.color.b = b
+								db.artifact.keystoneFont.color.a = a
+								Archy:ConfigUpdated('artifact')
+							end,
+						},
+					},
+				},
+			},
+		},
+		colorOptions = {
+			name = L["Color Options"],
+			order = 6,
+			type = "group",
+			args = {
 				fragmentBarColor = {
 					order = 31,
 					name = L["Progress Bar Color"],
@@ -725,6 +980,35 @@ local digsiteOptions = {
 						Archy:ConfigUpdated('digsite')
 					end,
 				},
+				minimalOptions = {
+					name = L["Minimal Style Options"],
+					type = "group",
+					order = 10,
+					guiInline = true,
+					disabled = function() return (db.general.theme == "Graphical") end,
+					args = {
+						showZone = {
+							order = 1,
+							type = "toggle",
+							name = L["Show Zone"],
+							get = function() return db.digsite.minimal.showZone end,
+							set = function(_, value)
+								db.digsite.minimal.showZone = value
+								Archy:ConfigUpdated('digsite')
+							end,
+						},
+						announceNearest = {
+							order = 3,
+							type = "toggle",
+							name = L["Show Distance"],
+							get = function() return db.digsite.minimal.showDistance end,
+							set = function(_, value)
+								db.digsite.minimal.showDistance = value
+								Archy:ConfigUpdated('digsite')
+							end,
+						},
+					},
+				},
 			},
 		},
 		distanceIndicator = {
@@ -814,8 +1098,8 @@ local digsiteOptions = {
 				},
 			},
 		},
-		displayOptions = {
-			name = L["Display Options"],
+		frameOptions = {
+			name = L["Frame Options"],
 			order = 2,
 			type = "group",
 			args = {
@@ -841,7 +1125,7 @@ local digsiteOptions = {
 					type = "range",
 					name = L["Opacity"],
 					desc = L["Set how transparent or opaque the Dig Site list is"],
-					min = 0.25, max = 1, step = 0.01, bigStep = 0.05,
+					min = 0, max = 1, step = 0.01, bigStep = 0.05,
 					get = function() return db.digsite.alpha end,
 					set = function(_, value)
 						db.digsite.alpha = value
@@ -870,7 +1154,7 @@ local digsiteOptions = {
 					type = "range",
 					name = L["Border Opacity"],
 					desc = L["Set how transparent or opaque the border for the Dig Sites list is"],
-					min = 0.01, max = 1, step = 0.01, bigStep = 0.05,
+					min = 0, max = 1, step = 0.01, bigStep = 0.05,
 					get = function() return db.digsite.borderAlpha end,
 					set = function(_, value)
 						db.digsite.borderAlpha = value
@@ -882,66 +1166,192 @@ local digsiteOptions = {
 					type = "range",
 					name = L["Background Opacity"],
 					desc = L["Set how transparent or opaque the background for the Dig Sites list is"],
-					min = 0.01, max = 1, step = 0.01, bigStep = 0.05,
+					min = 0, max = 1, step = 0.01, bigStep = 0.05,
 					get = function() return db.digsite.bgAlpha end,
 					set = function(_, value)
 						db.digsite.bgAlpha = value
 						Archy:ConfigUpdated('digsite')
 					end,
 				},
-				space = {
-					order = 15,
-					type = "description",
-					name = " ",
-					width = "full", 
-				},
-				nameFontSize = {
-					order = 16,
-					type = "range",
-					name = L["Name Font Size"],
-					desc = L["Control the font size of the dig site name"],
-					min = 4, max = 30, step = 1,
-					get = function() return db.digsite.nameFontSize end,
-					set = function(_, value)
-						db.digsite.nameFontSize = value
-						Archy:ConfigUpdated('digsite', 'font')
-					end,
-				},
-				nameFontOutline = {
-					order = 16.5,
+				borderTexture = {
+					order = 13.5,
 					type = "select",
-					name = L["Name Font Outline"],
-					desc = L["The outline that the dig site name will use"],
-					values = outlines,
-					get = function() return db.digsite.nameFontOutline end,
+					name = L["Border Texture"],
+					desc = L["Set the texture used by the frame border"],
+					dialogControl = "LSM30_Border",
+					values = lsm:HashTable(lsm.MediaType.BORDER),
+					get = function() return db.digsite.borderTexture end,
 					set = function(_, value)
-						db.digsite.nameFontOutline = value
-						Archy:ConfigUpdated('digsite', 'font')
+						db.digsite.borderTexture = value
+						Archy:ConfigUpdated('digsite')
 					end,
 				},
-				zoneFontSize = {
-					order = 17,
-					type = "range",
-					name = L["Zone Font Size"],
-					desc = L["Control the font size of the zone and distance"],
-					min = 4, max = 30, step = 1,
-					get = function() return db.digsite.zoneFontSize end,
-					set = function(_, value)
-						db.digsite.zoneFontSize = value
-						Archy:ConfigUpdated('digsite', 'font')
-					end,
-				},
-				zoneFontOutline = {
-					order = 17.5,
+				backgroundTexture = {
+					order = 14.5,
 					type = "select",
-					name = L["Zone Font Outline"],
-					desc = L["The outline that the zone and distance will use"],
-					values = outlines,
-					get = function() return db.digsite.zoneFontOutline end,
+					name = L["Background Texture"],
+					desc = L["Set the texture used by the frame background"],
+					dialogControl = "LSM30_Border",
+					values = lsm:HashTable(lsm.MediaType.BACKGROUND),
+					get = function() return db.digsite.backgroundTexture end,
 					set = function(_, value)
-						db.digsite.zoneFontOutline = value
-						Archy:ConfigUpdated('digsite', 'font')
+						db.digsite.backgroundTexture = value
+						Archy:ConfigUpdated('digsite')
 					end,
+				},
+			},
+		},
+		fontOptions = {
+			name = L["Font Options"],
+			order = 5,
+			type = "group",
+			args = {
+				mainFontOptions = {
+					order = 1,
+					type = "group",
+					name = L["Main Font Options"],
+					guiInline = true,
+					args = {
+						fontName = {
+							order = 1,
+							type = "select",
+							dialogControl = 'LSM30_Font',
+							name = L["Font"],
+							desc = L["The font that will be used"],
+							values = AceGUIWidgetLSMlists.font,
+							get = function() return db.digsite.font.name end,
+							set = function(_, value)
+								db.digsite.font.name = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontSize = {
+							order = 2,
+							type = "range",
+							name = L["Font Size"],
+							desc = L["Control the font size"],
+							min = 4, max = 30, step = 1,
+							get = function() return db.digsite.font.size end,
+							set = function(_, value)
+								db.digsite.font.size = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontOutline = {
+							order = 3,
+							type = "select",
+							name = L["Font Outline"],
+							desc = L["The outline of the font"],
+							values = outlines,
+							get = function() return db.digsite.font.outline end,
+							set = function(_, value)
+								db.digsite.font.outline = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontShadow = {
+							order = 4,
+							type = "toggle",
+							name = L["Font Shadow"],
+							desc = L["Toggles if the font will have a shadow"],
+							get = function() return db.digsite.font.shadow end,
+							set = function(_, value)
+								db.digsite.font.shadow = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontColor = {
+							type = "color",
+							order = 5,
+							name = L["Font Color"],
+							desc = L["The color of the font"],
+							hasAlpha = true,
+							get = function(info)
+								return db.digsite.font.color.r, db.digsite.font.color.g, db.digsite.font.color.b, db.digsite.font.color.a
+							end,
+							set = function(info, r, g, b, a)
+								db.digsite.font.color.r = r
+								db.digsite.font.color.g = g
+								db.digsite.font.color.b = b
+								db.digsite.font.color.a = a
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+					},
+				},
+				zoneFontOptions = {
+					order = 2,
+					type = "group",
+					name = L["Zone Font Options"],
+					guiInline = true,
+					disabled = function() return (db.general.theme ~= "Graphical") end,
+					args = {
+						fontName = {
+							order = 1,
+							type = "select",
+							dialogControl = 'LSM30_Font',
+							name = L["Font"],
+							desc = L["The font that will be used"],
+							values = AceGUIWidgetLSMlists.font,
+							get = function() return db.digsite.zoneFont.name end,
+							set = function(_, value)
+								db.digsite.zoneFont.name = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontSize = {
+							order = 2,
+							type = "range",
+							name = L["Font Size"],
+							desc = L["Control the font size"],
+							min = 4, max = 30, step = 1,
+							get = function() return db.digsite.zoneFont.size end,
+							set = function(_, value)
+								db.digsite.zoneFont.size = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontOutline = {
+							order = 3,
+							type = "select",
+							name = L["Font Outline"],
+							desc = L["The outline of the font"],
+							values = outlines,
+							get = function() return db.digsite.zoneFont.outline end,
+							set = function(_, value)
+								db.digsite.zoneFont.outline = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontShadow = {
+							order = 4,
+							type = "toggle",
+							name = L["Font Shadow"],
+							desc = L["Toggles if the font will have a shadow"],
+							get = function() return db.digsite.zoneFont.shadow end,
+							set = function(_, value)
+								db.digsite.zoneFont.shadow = value
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+						fontColor = {
+							type = "color",
+							order = 5,
+							name = L["Font Color"],
+							desc = L["The color of the font"],
+							hasAlpha = true,
+							get = function(info)
+								return db.digsite.zoneFont.color.r, db.digsite.zoneFont.color.g, db.digsite.zoneFont.color.b, db.digsite.zoneFont.color.a
+							end,
+							set = function(info, r, g, b, a)
+								db.digsite.zoneFont.color.r = r
+								db.digsite.zoneFont.color.g = g
+								db.digsite.zoneFont.color.b = b
+								db.digsite.zoneFont.color.a = a
+								Archy:ConfigUpdated('digsite', 'font')
+							end,
+						},
+					},
 				},
 			},
 		},
@@ -1105,6 +1515,17 @@ local minimapOptions = {
 						Archy:ConfigUpdated('minimap')
 					end,
 				},
+				fragmentColorBySurveyDistance = {
+					order = 4,
+					name = L["Color Node Icons On Survey"],
+					desc = L["Color code the fragment node icon based on the survey distance"],
+					type = "toggle",
+					get = function() return db.minimap.fragmentColorBySurveyDistance end,
+					set = function(_, value)
+						db.minimap.fragmentColorBySurveyDistance = value
+						Archy:ConfigUpdated('minimap')
+					end,
+				},
 			},
 		},
 		blobs = {
@@ -1187,16 +1608,15 @@ local minimapOptions = {
 local floor = floor
 local GetCurrentMapContinent, GetCurrentMapAreaID, GetCurrentMapDungeonLevel, GetMapContinents, GetMapInfo, GetMapZones, IsInInstance, GetNumMapLandmarks, GetMapLandmarkInfo, UpdateMapHighlight = GetCurrentMapContinent, GetCurrentMapAreaID, GetCurrentMapDungeonLevel, GetMapContinents, GetMapInfo, GetMapZones, IsInInstance, GetNumMapLandmarks, GetMapLandmarkInfo, UpdateMapHighlight
 local GetNumArchaeologyRaces, GetNumArtifactsByRace, GetArchaeologyRaceInfo, ArchaeologyMapUpdateAll, ArcheologyGetVisibleBlobID, RequestArtifactCompletionHistory = GetNumArchaeologyRaces, GetNumArtifactsByRace, GetArchaeologyRaceInfo, ArchaeologyMapUpdateAll, ArcheologyGetVisibleBlobID, RequestArtifactCompletionHistory
-local GetCurrencyListSize, GetCurrencyInfo, GetItemInfo, InCombatLockdown, GetProfessions, GetProfessionInfo = GetCurrencyListSize, GetCurrencyInfo, GetItemInfo, InCombatLockdown, GetProfessions, GetProfessionInfo
+local GetCurrencyListSize, GetItemInfo, InCombatLockdown, GetProfessions, GetProfessionInfo = GetCurrencyListSize, GetItemInfo, InCombatLockdown, GetProfessions, GetProfessionInfo
 
 
 --[[ Meta Tables ]]--
 setmetatable(raceData, { __index = function(t,k) 
 	if GetNumArchaeologyRaces() == 0 then return end
-	local raceName, currencyID, raceTexture, itemID = GetArchaeologyRaceInfo(k)
-	local currencyName = GetCurrencyInfo(currencyID)
+	local raceName, raceTexture, itemID, fragCount = GetArchaeologyRaceInfo(k)
 	local itemName, _, _, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(itemID)
-	t[k] = { ['name'] = raceName, ['currency'] = { ['id'] = currencyID, ['name'] = currencyName }, ['texture'] = raceTexture, ['keystone'] = { ['id'] = itemID, ['name'] = itemName, ['texture'] = itemTexture, ['inventory'] = 0 } }
+	t[k] = { ['name'] = raceName, ['currency'] = fragCount, ['texture'] = raceTexture, ['keystone'] = { ['id'] = itemID, ['name'] = itemName, ['texture'] = itemTexture, ['inventory'] = 0 } }
 	return t[k]
 end })
 
@@ -1242,7 +1662,8 @@ __index = function(t, k)
 	arrow.poi = poi
 	arrow:Hide()
 	poi.useArrow = false
-	poi.arrow = arrow	
+	poi.arrow = arrow
+	poi:Hide()
 	return poi
 end })
 
@@ -1275,179 +1696,325 @@ do
 	SetMapByID(orig)
 
 	-- Load the site data
-	siteData[L["Ironband's Excavation Site"]] = { ['continent'] = 2, ['map'] = 35, ['blob'] = 54097, ['race'] = 1 } 
-	siteData[L["Ironbeard's Tomb"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54124, ['race'] = 1 } 
-	siteData[L["Whelgar's Excavation Site"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54126, ['race'] = 1 } 
-	siteData[L["Greenwarden's Fossil Bank"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54127, ['race'] = 3 } 
-	siteData[L["Thoradin's Wall"]] = { ['continent'] = 2, ['map'] = 16, ['blob'] = 54129, ['race'] = 1 } 
-	siteData[L["Witherbark Digsite"]] = { ['continent'] = 2, ['map'] = 16, ['blob'] = 54132, ['race'] = 8 } 
-	siteData[L["Thandol Span"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54133, ['race'] = 1 } 
-	siteData[L["Dun Garok Digsite"]] = { ['continent'] = 2, ['map'] = 24, ['blob'] = 54134, ['race'] = 1 } 
-	siteData[L["Southshore Fossil Field"]] = { ['continent'] = 2, ['map'] = 24, ['blob'] = 54135, ['race'] = 3 } 
-	siteData[L["Aerie Peak Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54136, ['race'] = 1 } 
-	siteData[L["Shadra'Alor Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54137, ['race'] = 8 } 
-	siteData[L["Altar of Zul Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54138, ['race'] = 8 } 
-	siteData[L["Jintha'Alor Lower City Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54139, ['race'] = 8 } 
-	siteData[L["Jintha'Alor Upper City Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54140, ['race'] = 8 } 
-	siteData[L["Agol'watha Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54141, ['race'] = 8 } 
-	siteData[L["Hammertoe's Digsite"]] = { ['continent'] = 2, ['map'] = 17, ['blob'] = 54832, ['race'] = 1 } 
-	siteData[L["Tomb of the Watchers Digsite"]] = { ['continent'] = 2, ['map'] = 17, ['blob'] = 54834, ['race'] = 1 } 
-	siteData[L["Uldaman Entrance Digsite"]] = { ['continent'] = 2, ['map'] = 17, ['blob'] = 54838, ['race'] = 1 } 
-	siteData[L["Sunken Temple Digsite"]] = { ['continent'] = 2, ['map'] = 38, ['blob'] = 54862, ['race'] = 8 } 
-	siteData[L["Misty Reed Fossil Bank"]] = { ['continent'] = 2, ['map'] = 38, ['blob'] = 54864, ['race'] = 3 } 
-	siteData[L["Twilight Grove Digsite"]] = { ['continent'] = 2, ['map'] = 34, ['blob'] = 55350, ['race'] = 4 } 
-	siteData[L["Vul'Gol Fossil Bank"]] = { ['continent'] = 2, ['map'] = 34, ['blob'] = 55352, ['race'] = 3 } 
-	siteData[L["Nazj'vel Digsite"]] = { ['continent'] = 1, ['map'] = 42, ['blob'] = 55354, ['race'] = 4 } 
-	siteData[L["Zoram Strand Digsite"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55356, ['race'] = 4 } 
-	siteData[L["Ruins of Ordil'Aran"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55398, ['race'] = 4 } 
-	siteData[L["Ruins of Stardust"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55400, ['race'] = 4 } 
-	siteData[L["Forest Song Digsite"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55402, ['race'] = 4 } 
-	siteData[L["Stonetalon Peak"]] = { ['continent'] = 1, ['map'] = 81, ['blob'] = 55404, ['race'] = 4 } 
-	siteData[L["Ruins of Eldre'Thar"]] = { ['continent'] = 1, ['map'] = 81, ['blob'] = 55406, ['race'] = 4 } 
-	siteData[L["Unearthed Grounds"]] = { ['continent'] = 1, ['map'] = 81, ['blob'] = 55408, ['race'] = 3 } 
-	siteData[L["Bael Modan Digsite"]] = { ['continent'] = 1, ['map'] = 607, ['blob'] = 55410, ['race'] = 1 } 
-	siteData[L["Ruins of Eldarath"]] = { ['continent'] = 1, ['map'] = 181, ['blob'] = 55412, ['race'] = 4 } 
-	siteData[L["Ruins of Arkkoran"]] = { ['continent'] = 1, ['map'] = 181, ['blob'] = 55414, ['race'] = 4 } 
-	siteData[L["Lakeridge Highway Fossil Bank"]] = { ['continent'] = 2, ['map'] = 36, ['blob'] = 55416, ['race'] = 3 } 
-	siteData[L["Slitherblade Shore Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55418, ['race'] = 4 } 
-	siteData[L["Ethel Rethor Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55420, ['race'] = 4 } 
-	siteData[L["Valley of Bones"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55422, ['race'] = 3 } 
-	siteData[L["Mannoroc Coven Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55424, ['race'] = 4 } 
-	siteData[L["Kodo Graveyard"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55426, ['race'] = 3 } 
-	siteData[L["Sargeron Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55428, ['race'] = 4 } 
-	siteData[L["Red Reaches Fossil Bank"]] = { ['continent'] = 2, ['map'] = 19, ['blob'] = 55434, ['race'] = 3 } 
-	siteData[L["Dreadmaul Fossil Field"]] = { ['continent'] = 2, ['map'] = 19, ['blob'] = 55436, ['race'] = 3 } 
-	siteData[L["Grimsilt Digsite"]] = { ['continent'] = 2, ['map'] = 28, ['blob'] = 55438, ['race'] = 1 } 
-	siteData[L["Pyrox Flats Digsite"]] = { ['continent'] = 2, ['map'] = 28, ['blob'] = 55440, ['race'] = 1 } 
-	siteData[L["Western Ruins of Thaurissan"]] = { ['continent'] = 2, ['map'] = 29, ['blob'] = 55442, ['race'] = 1 } 
-	siteData[L["Eastern Ruins of Thaurissan"]] = { ['continent'] = 2, ['map'] = 29, ['blob'] = 55444, ['race'] = 1 } 
-	siteData[L["Terror Wing Fossil Field"]] = { ['continent'] = 2, ['map'] = 29, ['blob'] = 55446, ['race'] = 3 } 
-	siteData[L["Zul'Mashar Digsite"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55448, ['race'] = 8 } 
-	siteData[L["Quel'Lithien Lodge Digsite"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55450, ['race'] = 4 } 
-	siteData[L["Infectis Scar Fossil Field"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55452, ['race'] = 3 } 
-	siteData[L["Eastern Zul'Kunda Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55454, ['race'] = 8 } 
-	siteData[L["Western Zul'Kunda Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55456, ['race'] = 8 } 
-	siteData[L["Bal'lal Ruins Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55458, ['race'] = 8 } 
-	siteData[L["Balia'mah Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55460, ['race'] = 8 } 
-	siteData[L["Ziata'jai Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55462, ['race'] = 8 } 
-	siteData[L["Eastern Zul'Mamwe Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55464, ['race'] = 8 } 
-	siteData[L["Western Zul'Mamwe Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55466, ['race'] = 8 } 
-	siteData[L["Savage Coast Raptor Fields"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55468, ['race'] = 3 } 
-	siteData[L["Ruins of Aboraz"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55470, ['race'] = 8 } 
-	siteData[L["Ruins of Jubuwal"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55472, ['race'] = 8 } 
-	siteData[L["Gurubashi Arena Digsite"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55474, ['race'] = 8 } 
-	siteData[L["Nek'mani Wellspring Digsite"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55476, ['race'] = 8 } 
-	siteData[L["Felstone Fossil Field"]] = { ['continent'] = 2, ['map'] = 22, ['blob'] = 55478, ['race'] = 3 } 
-	siteData[L["Northridge Fossil Filed"]] = { ['continent'] = 2, ['map'] = 22, ['blob'] = 55480, ['race'] = 3 } 
-	siteData[L["Andorhal Fossil Bank"]] = { ['continent'] = 2, ['map'] = 22, ['blob'] = 55482, ['race'] = 3 } 
-	siteData[L["Wyrmbog Fossil Field"]] = { ['continent'] = 1, ['map'] = 141, ['blob'] = 55755, ['race'] = 3 } 
-	siteData[L["Quagmire Fossil Field"]] = { ['continent'] = 1, ['map'] = 141, ['blob'] = 55757, ['race'] = 3 } 
-	siteData[L["Dire Maul Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56327, ['race'] = 4 } 
-	siteData[L["Broken Commons Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56329, ['race'] = 4 } 
-	siteData[L["Ravenwind Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56331, ['race'] = 4 } 
-	siteData[L["Oneiros Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56333, ['race'] = 4 } 
-	siteData[L["Solarsal Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56335, ['race'] = 4 } 
-	siteData[L["Darkmist Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56337, ['race'] = 4 } 
-	siteData[L["South Isildien Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56339, ['race'] = 4 } 
-	siteData[L["North Isildien Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56341, ['race'] = 4 } 
-	siteData[L["Constellas Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56343, ['race'] = 4 } 
-	siteData[L["Morlos'Aran Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56345, ['race'] = 4 } 
-	siteData[L["Jaedenar Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56347, ['race'] = 4 } 
-	siteData[L["Ironwood Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56349, ['race'] = 4 } 
-	siteData[L["Lake Kel'Theril Digsite"]] = { ['continent'] = 1, ['map'] = 281, ['blob'] = 56351, ['race'] = 4 } 
-	siteData[L["Owl Wing Thicket Digsite"]] = { ['continent'] = 1, ['map'] = 281, ['blob'] = 56354, ['race'] = 4 } 
-	siteData[L["Frostwhisper Gorge Digsite"]] = { ['continent'] = 1, ['map'] = 281, ['blob'] = 56356, ['race'] = 4 } 
-	siteData[L["Fields of Blood Fossil Bank"]] = { ['continent'] = 1, ['map'] = 607, ['blob'] = 56358, ['race'] = 3 } 
-	siteData[L["Nightmare Scar Digsite"]] = { ['continent'] = 1, ['map'] = 607, ['blob'] = 56362, ['race'] = 4 } 
-	siteData[L["Zul'Farrak Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56364, ['race'] = 8 } 
-	siteData[L["Broken Pillar Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56367, ['race'] = 8 } 
-	siteData[L["Eastmoon Ruins Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56369, ['race'] = 8 } 
-	siteData[L["Southmoon Ruins Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56371, ['race'] = 8 } 
-	siteData[L["Dunemaul Fossil Ridge"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56373, ['race'] = 3 } 
-	siteData[L["Abyssal Sands Fossil Ridge"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56375, ['race'] = 3 } 
-	siteData[L["Lower Lakkari Tar Pits"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56380, ['race'] = 3 } 
-	siteData[L["Upper Lakkari Tar Pits"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56382, ['race'] = 3 } 
-	siteData[L["Terror Run Fossil Field"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56384, ['race'] = 3 } 
-	siteData[L["Screaming Reaches Fossil Field"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56386, ['race'] = 3 } 
-	siteData[L["Marshlands Fossil Bank"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56388, ['race'] = 3 } 
-	siteData[L["Southwind Village Digsite"]] = { ['continent'] = 1, ['map'] = 261, ['blob'] = 56390, ['race'] = 4 } 
-	siteData[L["Gor'gaz Outpost Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56392, ['race'] = 6 } 
-	siteData[L["Zeth'Gor Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56394, ['race'] = 6 } 
-	siteData[L["Hellfire Basin Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56396, ['race'] = 6 } 
-	siteData[L["Hellfire Citadel Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56398, ['race'] = 6 } 
-	siteData[L["Sha'naar Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56400, ['race'] = 2 } 
-	siteData[L["Boha'mu Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 467, ['blob'] = 56402, ['race'] = 2 } 
-	siteData[L["Twin Spire Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 467, ['blob'] = 56404, ['race'] = 2 } 
-	siteData[L["Ruins of Enkaat Digsite"]] = { ['continent'] = 3, ['map'] = 479, ['blob'] = 56406, ['race'] = 2 } 
-	siteData[L["Arklon Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 479, ['blob'] = 56408, ['race'] = 2 } 
-	siteData[L["Ruins of Farahlon Digsite"]] = { ['continent'] = 3, ['map'] = 479, ['blob'] = 56410, ['race'] = 2 } 
-	siteData[L["Ancestral Grounds Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56412, ['race'] = 6 } 
-	siteData[L["Sunspring Post Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56416, ['race'] = 6 } 
-	siteData[L["Laughing Skull Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56418, ['race'] = 6 } 
-	siteData[L["Burning Blade Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56420, ['race'] = 6 } 
-	siteData[L["Halaa Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56422, ['race'] = 2 } 
-	siteData[L["Grangol'var Village Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56424, ['race'] = 6 } 
-	siteData[L["Tuurem Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56426, ['race'] = 2 } 
-	siteData[L["Bleeding Hollow Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56428, ['race'] = 6 } 
-	siteData[L["Bonechewer Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56430, ['race'] = 6 } 
-	siteData[L["Bone Wastes Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56432, ['race'] = 2 } 
-	siteData[L["East Auchindoun Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56434, ['race'] = 2 } 
-	siteData[L["West Auchindoun Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56437, ['race'] = 2 } 
-	siteData[L["Illidari Point Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56439, ['race'] = 2 } 
-	siteData[L["Coilskar Point Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56441, ['race'] = 2 } 
-	siteData[L["Ruins of Baa'ri Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56446, ['race'] = 2 } 
-	siteData[L["Eclipse Point Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56448, ['race'] = 2 } 
-	siteData[L["Warden's Cage Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56450, ['race'] = 6 } 
-	siteData[L["Dragonmaw Fortress"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56455, ['race'] = 6 } 
-	siteData[L["Skorn Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56504, ['race'] = 9 } 
-	siteData[L["Halgrind Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56506, ['race'] = 9 } 
-	siteData[L["Wyrmskull Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56508, ['race'] = 9 } 
-	siteData[L["Shield Hill Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56510, ['race'] = 9 } 
-	siteData[L["Baleheim Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56512, ['race'] = 9 } 
-	siteData[L["Nifflevar Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56514, ['race'] = 9 } 
-	siteData[L["Gjalerbron Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56516, ['race'] = 9 } 
-	siteData[L["Pit of Narjun Digsite"]] = { ['continent'] = 4, ['map'] = 488, ['blob'] = 56518, ['race'] = 5 } 
-	siteData[L["Moonrest Gardens Digsite"]] = { ['continent'] = 4, ['map'] = 488, ['blob'] = 56520, ['race'] = 4 } 
-	siteData[L["En'kilah Digsite"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 56522, ['race'] = 5 } 
-	siteData[L["Kolramas Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56524, ['race'] = 5 } 
-	siteData[L["Riplash Ruins Digsite"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 56526, ['race'] = 4 } 
-	siteData[L["Violet Stand Digsite"]] = { ['continent'] = 4, ['map'] = 510, ['blob'] = 56528, ['race'] = 4 } 
-	siteData[L["Ruins of Shandaral Digsite"]] = { ['continent'] = 4, ['map'] = 510, ['blob'] = 56530, ['race'] = 4 } 
-	siteData[L["Altar of Sseratus Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56533, ['race'] = 8 } 
-	siteData[L["Zim'Rhuk Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56535, ['race'] = 8 } 
-	siteData[L["Zol'Heb Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56537, ['race'] = 8 } 
-	siteData[L["Altar of Quetz'lun Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56539, ['race'] = 8 } 
-	siteData[L["Talramas Digsite"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 56541, ['race'] = 5 } 
-	siteData[L["Voldrune Digsite"]] = { ['continent'] = 4, ['map'] = 490, ['blob'] = 56543, ['race'] = 9 } 
-	siteData[L["Drakil'Jin Ruins Digsite"]] = { ['continent'] = 4, ['map'] = 490, ['blob'] = 56547, ['race'] = 8 } 
-	siteData[L["Brunnhildar Village Digsite"]] = { ['continent'] = 4, ['map'] = 495, ['blob'] = 56549, ['race'] = 9 } 
-	siteData[L["Sifreldar Village Digsite"]] = { ['continent'] = 4, ['map'] = 495, ['blob'] = 56551, ['race'] = 9 } 
-	siteData[L["Valkyrion Digsite"]] = { ['continent'] = 4, ['map'] = 495, ['blob'] = 56553, ['race'] = 9 } 
-	siteData[L["Scourgeholme Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56555, ['race'] = 5 } 
-	siteData[L["Ymirheim Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56560, ['race'] = 9 } 
-	siteData[L["Jotunheim Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56562, ['race'] = 9 } 
-	siteData[L["Njorndar Village Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56564, ['race'] = 9 } 
-	siteData[L["Ruins of Lar'donir Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56566, ['race'] = 4 } 
-	siteData[L["Shrine of Goldrinn Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56568, ['race'] = 4 } 
-	siteData[L["Grove of Aessina Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56570, ['race'] = 4 } 
-	siteData[L["Sanctuary of Malorne Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56572, ['race'] = 4 } 
-	siteData[L["Scorched Plain Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56574, ['race'] = 4 } 
-	siteData[L["Quel'Dormir Gardens Digsite"]] = { ['continent'] = 2, ['map'] = 615, ['blob'] = 56576, ['race'] = 4 } 
-	siteData[L["Nar'shola (Middle Tier) Digsite"]] = { ['continent'] = 2, ['map'] = 615, ['blob'] = 56578, ['race'] = 4 } 
-	siteData[L["Biel'aran Ridge Digsite"]] = { ['continent'] = 2, ['map'] = 615, ['blob'] = 56580, ['race'] = 4 } 
-	siteData[L["Dunwald Ruins Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56583, ['race'] = 1 } 
-	siteData[L["Thundermar Ruins Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56585, ['race'] = 1 } 
-	siteData[L["Humboldt Conflagration Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56587, ['race'] = 1 } 
-	siteData[L["Grim Batol Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56589, ['race'] = 1 } 
-	siteData[L["Khartut's Tomb Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56591, ['race'] = 7 } 
-	siteData[L["Tombs of the Precursors Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56593, ['race'] = 7 } 
-	siteData[L["Steps of Fate Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56595, ['race'] = 7 } 
-	siteData[L["Neferset Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56597, ['race'] = 7 } 
-	siteData[L["Orsis Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56599, ['race'] = 7 } 
-	siteData[L["Ruins of Ammon Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56601, ['race'] = 7 } 
-	siteData[L["Ruins of Khintaset Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56603, ['race'] = 7 } 
-	siteData[L["Temple of Uldum Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56605, ['race'] = 7 } 
-	siteData[L["Ruins of Ahmtul Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56607, ['race'] = 7 } 
+	siteData[L["Ironband's Excavation Site"]] = { ['continent'] = 2, ['map'] = 35, ['blob'] = 54097, ['race'] = 1 }
+	siteData[L["Ironbeard's Tomb"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54124, ['race'] = 1 }
+	siteData[L["Whelgar's Excavation Site"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54126, ['race'] = 1 }
+	siteData[L["Greenwarden's Fossil Bank"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54127, ['race'] = 3 }
+	siteData[L["Thoradin's Wall"]] = { ['continent'] = 2, ['map'] = 16, ['blob'] = 54129, ['race'] = 1 }
+	siteData[L["Witherbark Digsite"]] = { ['continent'] = 2, ['map'] = 16, ['blob'] = 54132, ['race'] = 8 }
+	siteData[L["Thandol Span"]] = { ['continent'] = 2, ['map'] = 40, ['blob'] = 54133, ['race'] = 1 }
+	siteData[L["Dun Garok Digsite"]] = { ['continent'] = 2, ['map'] = 24, ['blob'] = 54134, ['race'] = 1 }
+	siteData[L["Southshore Fossil Field"]] = { ['continent'] = 2, ['map'] = 24, ['blob'] = 54135, ['race'] = 3 }
+	siteData[L["Aerie Peak Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54136, ['race'] = 1 }
+	siteData[L["Shadra'Alor Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54137, ['race'] = 8 }
+	siteData[L["Altar of Zul Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54138, ['race'] = 8 }
+	siteData[L["Jintha'Alor Lower City Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54139, ['race'] = 8 }
+	siteData[L["Jintha'Alor Upper City Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54140, ['race'] = 8 }
+	siteData[L["Agol'watha Digsite"]] = { ['continent'] = 2, ['map'] = 26, ['blob'] = 54141, ['race'] = 8 }
+	siteData[L["Hammertoe's Digsite"]] = { ['continent'] = 2, ['map'] = 17, ['blob'] = 54832, ['race'] = 1 }
+	siteData[L["Tomb of the Watchers Digsite"]] = { ['continent'] = 2, ['map'] = 17, ['blob'] = 54834, ['race'] = 1 }
+	siteData[L["Uldaman Entrance Digsite"]] = { ['continent'] = 2, ['map'] = 17, ['blob'] = 54838, ['race'] = 1 }
+	siteData[L["Sunken Temple Digsite"]] = { ['continent'] = 2, ['map'] = 38, ['blob'] = 54862, ['race'] = 8 }
+	siteData[L["Misty Reed Fossil Bank"]] = { ['continent'] = 2, ['map'] = 38, ['blob'] = 54864, ['race'] = 3 }
+	siteData[L["Twilight Grove Digsite"]] = { ['continent'] = 2, ['map'] = 34, ['blob'] = 55350, ['race'] = 4 }
+	siteData[L["Vul'Gol Fossil Bank"]] = { ['continent'] = 2, ['map'] = 34, ['blob'] = 55352, ['race'] = 3 }
+	siteData[L["Nazj'vel Digsite"]] = { ['continent'] = 1, ['map'] = 42, ['blob'] = 55354, ['race'] = 4 }
+	siteData[L["Zoram Strand Digsite"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55356, ['race'] = 4 }
+	siteData[L["Ruins of Ordil'Aran"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55398, ['race'] = 4 }
+	siteData[L["Ruins of Stardust"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55400, ['race'] = 4 }
+	siteData[L["Forest Song Digsite"]] = { ['continent'] = 1, ['map'] = 43, ['blob'] = 55402, ['race'] = 4 }
+	siteData[L["Stonetalon Peak"]] = { ['continent'] = 1, ['map'] = 81, ['blob'] = 55404, ['race'] = 4 }
+	siteData[L["Ruins of Eldre'Thar"]] = { ['continent'] = 1, ['map'] = 81, ['blob'] = 55406, ['race'] = 4 }
+	siteData[L["Unearthed Grounds"]] = { ['continent'] = 1, ['map'] = 81, ['blob'] = 55408, ['race'] = 3 }
+	siteData[L["Bael Modan Digsite"]] = { ['continent'] = 1, ['map'] = 607, ['blob'] = 55410, ['race'] = 1 }
+	siteData[L["Ruins of Eldarath"]] = { ['continent'] = 1, ['map'] = 181, ['blob'] = 55412, ['race'] = 4 }
+	siteData[L["Ruins of Arkkoran"]] = { ['continent'] = 1, ['map'] = 181, ['blob'] = 55414, ['race'] = 4 }
+	siteData[L["Lakeridge Highway Fossil Bank"]] = { ['continent'] = 2, ['map'] = 36, ['blob'] = 55416, ['race'] = 3 }
+	siteData[L["Slitherblade Shore Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55418, ['race'] = 4 }
+	siteData[L["Ethel Rethor Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55420, ['race'] = 4 }
+	siteData[L["Valley of Bones"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55422, ['race'] = 3 }
+	siteData[L["Mannoroc Coven Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55424, ['race'] = 4 }
+	siteData[L["Kodo Graveyard"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55426, ['race'] = 3 }
+	siteData[L["Sargeron Digsite"]] = { ['continent'] = 1, ['map'] = 101, ['blob'] = 55428, ['race'] = 4 }
+	siteData[L["Red Reaches Fossil Bank"]] = { ['continent'] = 2, ['map'] = 19, ['blob'] = 55434, ['race'] = 3 }
+	siteData[L["Dreadmaul Fossil Field"]] = { ['continent'] = 2, ['map'] = 19, ['blob'] = 55436, ['race'] = 3 }
+	siteData[L["Grimsilt Digsite"]] = { ['continent'] = 2, ['map'] = 28, ['blob'] = 55438, ['race'] = 1 }
+	siteData[L["Pyrox Flats Digsite"]] = { ['continent'] = 2, ['map'] = 28, ['blob'] = 55440, ['race'] = 1 }
+	siteData[L["Western Ruins of Thaurissan"]] = { ['continent'] = 2, ['map'] = 29, ['blob'] = 55442, ['race'] = 1 }
+	siteData[L["Eastern Ruins of Thaurissan"]] = { ['continent'] = 2, ['map'] = 29, ['blob'] = 55444, ['race'] = 1 }
+	siteData[L["Terror Wing Fossil Field"]] = { ['continent'] = 2, ['map'] = 29, ['blob'] = 55446, ['race'] = 3 }
+	siteData[L["Zul'Mashar Digsite"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55448, ['race'] = 8 }
+	siteData[L["Quel'Lithien Lodge Digsite"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55450, ['race'] = 4 }
+	siteData[L["Infectis Scar Fossil Field"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55452, ['race'] = 3 }
+	siteData[L["Eastern Zul'Kunda Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55454, ['race'] = 8 }
+	siteData[L["Western Zul'Kunda Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55456, ['race'] = 8 }
+	siteData[L["Bal'lal Ruins Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55458, ['race'] = 8 }
+	siteData[L["Balia'mah Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55460, ['race'] = 8 }
+	siteData[L["Ziata'jai Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55462, ['race'] = 8 }
+	siteData[L["Eastern Zul'Mamwe Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55464, ['race'] = 8 }
+	siteData[L["Western Zul'Mamwe Digsite"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55466, ['race'] = 8 }
+	siteData[L["Savage Coast Raptor Fields"]] = { ['continent'] = 2, ['map'] = 37, ['blob'] = 55468, ['race'] = 3 }
+	siteData[L["Ruins of Aboraz"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55470, ['race'] = 8 }
+	siteData[L["Ruins of Jubuwal"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55472, ['race'] = 8 }
+	siteData[L["Gurubashi Arena Digsite"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55474, ['race'] = 8 }
+	siteData[L["Nek'mani Wellspring Digsite"]] = { ['continent'] = 2, ['map'] = 673, ['blob'] = 55476, ['race'] = 8 }
+	siteData[L["Felstone Fossil Field"]] = { ['continent'] = 2, ['map'] = 22, ['blob'] = 55478, ['race'] = 3 }
+	siteData[L["Northridge Fossil Field"]] = { ['continent'] = 2, ['map'] = 22, ['blob'] = 55480, ['race'] = 3 }
+	siteData[L["Andorhal Fossil Bank"]] = { ['continent'] = 2, ['map'] = 22, ['blob'] = 55482, ['race'] = 3 }
+	siteData[L["Wyrmbog Fossil Field"]] = { ['continent'] = 1, ['map'] = 141, ['blob'] = 55755, ['race'] = 3 }
+	siteData[L["Quagmire Fossil Field"]] = { ['continent'] = 1, ['map'] = 141, ['blob'] = 55757, ['race'] = 3 }
+	siteData[L["Dire Maul Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56327, ['race'] = 4 }
+	siteData[L["Broken Commons Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56329, ['race'] = 4 }
+	siteData[L["Ravenwind Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56331, ['race'] = 4 }
+	siteData[L["Oneiros Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56333, ['race'] = 4 }
+	siteData[L["Solarsal Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56335, ['race'] = 4 }
+	siteData[L["Darkmist Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56337, ['race'] = 4 }
+	siteData[L["South Isildien Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56339, ['race'] = 4 }
+	siteData[L["North Isildien Digsite"]] = { ['continent'] = 1, ['map'] = 121, ['blob'] = 56341, ['race'] = 4 }
+	siteData[L["Constellas Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56343, ['race'] = 4 }
+	siteData[L["Morlos'Aran Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56345, ['race'] = 4 }
+	siteData[L["Jaedenar Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56347, ['race'] = 4 }
+	siteData[L["Ironwood Digsite"]] = { ['continent'] = 1, ['map'] = 182, ['blob'] = 56349, ['race'] = 4 }
+	siteData[L["Lake Kel'Theril Digsite"]] = { ['continent'] = 1, ['map'] = 281, ['blob'] = 56351, ['race'] = 4 }
+	siteData[L["Owl Wing Thicket Digsite"]] = { ['continent'] = 1, ['map'] = 281, ['blob'] = 56354, ['race'] = 4 }
+	siteData[L["Frostwhisper Gorge Digsite"]] = { ['continent'] = 1, ['map'] = 281, ['blob'] = 56356, ['race'] = 4 }
+	siteData[L["Fields of Blood Fossil Bank"]] = { ['continent'] = 1, ['map'] = 607, ['blob'] = 56358, ['race'] = 3 }
+	siteData[L["Nightmare Scar Digsite"]] = { ['continent'] = 1, ['map'] = 607, ['blob'] = 56362, ['race'] = 4 }
+	siteData[L["Zul'Farrak Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56364, ['race'] = 8 }
+	siteData[L["Broken Pillar Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56367, ['race'] = 8 }
+	siteData[L["Eastmoon Ruins Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56369, ['race'] = 8 }
+	siteData[L["Southmoon Ruins Digsite"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56371, ['race'] = 8 }
+	siteData[L["Dunemaul Fossil Ridge"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56373, ['race'] = 3 }
+	siteData[L["Abyssal Sands Fossil Ridge"]] = { ['continent'] = 1, ['map'] = 161, ['blob'] = 56375, ['race'] = 3 }
+	siteData[L["Lower Lakkari Tar Pits"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56380, ['race'] = 3 }
+	siteData[L["Upper Lakkari Tar Pits"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56382, ['race'] = 3 }
+	siteData[L["Terror Run Fossil Field"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56384, ['race'] = 3 }
+	siteData[L["Screaming Reaches Fossil Field"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56386, ['race'] = 3 }
+	siteData[L["Marshlands Fossil Bank"]] = { ['continent'] = 1, ['map'] = 201, ['blob'] = 56388, ['race'] = 3 }
+	siteData[L["Southwind Village Digsite"]] = { ['continent'] = 1, ['map'] = 261, ['blob'] = 56390, ['race'] = 4 }
+	siteData[L["Gor'gaz Outpost Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56392, ['race'] = 6 }
+	siteData[L["Zeth'Gor Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56394, ['race'] = 6 }
+	siteData[L["Hellfire Basin Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56396, ['race'] = 6 }
+	siteData[L["Hellfire Citadel Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56398, ['race'] = 6 }
+	siteData[L["Sha'naar Digsite"]] = { ['continent'] = 3, ['map'] = 465, ['blob'] = 56400, ['race'] = 2 }
+	siteData[L["Boha'mu Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 467, ['blob'] = 56402, ['race'] = 2 }
+	siteData[L["Twin Spire Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 467, ['blob'] = 56404, ['race'] = 2 }
+	siteData[L["Ruins of Enkaat Digsite"]] = { ['continent'] = 3, ['map'] = 479, ['blob'] = 56406, ['race'] = 2 }
+	siteData[L["Arklon Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 479, ['blob'] = 56408, ['race'] = 2 }
+	siteData[L["Ruins of Farahlon Digsite"]] = { ['continent'] = 3, ['map'] = 479, ['blob'] = 56410, ['race'] = 2 }
+	siteData[L["Ancestral Grounds Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56412, ['race'] = 6 }
+	siteData[L["Sunspring Post Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56416, ['race'] = 6 }
+	siteData[L["Laughing Skull Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56418, ['race'] = 6 }
+	siteData[L["Burning Blade Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56420, ['race'] = 6 }
+	siteData[L["Halaa Digsite"]] = { ['continent'] = 3, ['map'] = 477, ['blob'] = 56422, ['race'] = 2 }
+	siteData[L["Grangol'var Village Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56424, ['race'] = 6 }
+	siteData[L["Tuurem Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56426, ['race'] = 2 }
+	siteData[L["Bleeding Hollow Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56428, ['race'] = 6 }
+	siteData[L["Bonechewer Ruins Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56430, ['race'] = 6 }
+	siteData[L["Bone Wastes Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56432, ['race'] = 2 }
+	siteData[L["East Auchindoun Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56434, ['race'] = 2 }
+	siteData[L["West Auchindoun Digsite"]] = { ['continent'] = 3, ['map'] = 478, ['blob'] = 56437, ['race'] = 2 }
+	siteData[L["Illidari Point Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56439, ['race'] = 2 }
+	siteData[L["Coilskar Point Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56441, ['race'] = 2 }
+	siteData[L["Ruins of Baa'ri Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56446, ['race'] = 2 }
+	siteData[L["Eclipse Point Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56448, ['race'] = 2 }
+	siteData[L["Warden's Cage Digsite"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56450, ['race'] = 6 }
+	siteData[L["Dragonmaw Fortress"]] = { ['continent'] = 3, ['map'] = 473, ['blob'] = 56455, ['race'] = 6 }
+	siteData[L["Skorn Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56504, ['race'] = 9 }
+	siteData[L["Halgrind Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56506, ['race'] = 9 }
+	siteData[L["Wyrmskull Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56508, ['race'] = 9 }
+	siteData[L["Shield Hill Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56510, ['race'] = 9 }
+	siteData[L["Baleheim Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56512, ['race'] = 9 }
+	siteData[L["Nifflevar Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56514, ['race'] = 9 }
+	siteData[L["Gjalerbron Digsite"]] = { ['continent'] = 4, ['map'] = 491, ['blob'] = 56516, ['race'] = 9 }
+	siteData[L["Pit of Narjun Digsite"]] = { ['continent'] = 4, ['map'] = 488, ['blob'] = 56518, ['race'] = 5 }
+	siteData[L["Moonrest Gardens Digsite"]] = { ['continent'] = 4, ['map'] = 488, ['blob'] = 56520, ['race'] = 4 }
+	siteData[L["En'kilah Digsite"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 56522, ['race'] = 5 }
+	siteData[L["Kolramas Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56524, ['race'] = 5 }
+	siteData[L["Riplash Ruins Digsite"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 56526, ['race'] = 4 }
+	siteData[L["Violet Stand Digsite"]] = { ['continent'] = 4, ['map'] = 510, ['blob'] = 56528, ['race'] = 4 }
+	siteData[L["Ruins of Shandaral Digsite"]] = { ['continent'] = 4, ['map'] = 510, ['blob'] = 56530, ['race'] = 4 }
+	siteData[L["Altar of Sseratus Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56533, ['race'] = 8 }
+	siteData[L["Zim'Rhuk Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56535, ['race'] = 8 }
+	siteData[L["Zol'Heb Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56537, ['race'] = 8 }
+	siteData[L["Altar of Quetz'lun Digsite"]] = { ['continent'] = 4, ['map'] = 496, ['blob'] = 56539, ['race'] = 8 }
+	siteData[L["Talramas Digsite"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 56541, ['race'] = 5 }
+	siteData[L["Voldrune Digsite"]] = { ['continent'] = 4, ['map'] = 490, ['blob'] = 56543, ['race'] = 9 }
+	siteData[L["Drakil'Jin Ruins Digsite"]] = { ['continent'] = 4, ['map'] = 490, ['blob'] = 56547, ['race'] = 8 }
+	siteData[L["Brunnhildar Village Digsite"]] = { ['continent'] = 4, ['map'] = 495, ['blob'] = 56549, ['race'] = 9 }
+	siteData[L["Sifreldar Village Digsite"]] = { ['continent'] = 4, ['map'] = 495, ['blob'] = 56551, ['race'] = 9 }
+	siteData[L["Valkyrion Digsite"]] = { ['continent'] = 4, ['map'] = 495, ['blob'] = 56553, ['race'] = 9 }
+	siteData[L["Scourgeholme Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56555, ['race'] = 5 }
+	siteData[L["Ymirheim Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56560, ['race'] = 9 }
+	siteData[L["Jotunheim Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56562, ['race'] = 9 }
+	siteData[L["Njorndar Village Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 56564, ['race'] = 9 }
+	siteData[L["Ruins of Lar'donir Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56566, ['race'] = 4 }
+	siteData[L["Shrine of Goldrinn Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56568, ['race'] = 4 }
+	siteData[L["Grove of Aessina Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56570, ['race'] = 4 }
+	siteData[L["Sanctuary of Malorne Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56572, ['race'] = 4 }
+	siteData[L["Scorched Plain Digsite"]] = { ['continent'] = 1, ['map'] = 606, ['blob'] = 56574, ['race'] = 4 }
+	siteData[L["Quel'Dormir Gardens Digsite"]] = { ['continent'] = 2, ['map'] = 615, ['blob'] = 56576, ['race'] = 4 }
+	siteData[L["Nar'shola (Middle Tier) Digsite"]] = { ['continent'] = 2, ['map'] = 615, ['blob'] = 56578, ['race'] = 4 }
+	siteData[L["Biel'aran Ridge Digsite"]] = { ['continent'] = 2, ['map'] = 615, ['blob'] = 56580, ['race'] = 4 }
+	siteData[L["Dunwald Ruins Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56583, ['race'] = 1 }
+	siteData[L["Thundermar Ruins Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56585, ['race'] = 1 }
+	siteData[L["Humboldt Conflagration Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56587, ['race'] = 1 }
+	siteData[L["Grim Batol Digsite"]] = { ['continent'] = 2, ['map'] = 700, ['blob'] = 56589, ['race'] = 1 }
+	siteData[L["Khartut's Tomb Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56591, ['race'] = 7 }
+	siteData[L["Tombs of the Precursors Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56593, ['race'] = 7 }
+	siteData[L["Steps of Fate Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56595, ['race'] = 7 }
+	siteData[L["Neferset Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56597, ['race'] = 7 }
+	siteData[L["Orsis Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56599, ['race'] = 7 }
+	siteData[L["Ruins of Ammon Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56601, ['race'] = 7 }
+	siteData[L["Ruins of Khintaset Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56603, ['race'] = 7 }
+	siteData[L["Temple of Uldum Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56605, ['race'] = 7 }
+	siteData[L["Ruins of Ahmtul Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56607, ['race'] = 7 }
+	siteData[L["Akhenet Fields Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56608, ['race'] = 7 }
+	siteData[L["Cursed Landing Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56609, ['race'] = 7 }
+	siteData[L["Keset Pass Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 56611, ['race'] = 7 }
+	siteData[L["Terrorweb Tunnel Digsite"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 55443, ['race'] = 5 }
+	siteData[L["Plaguewood Digsite"]] = { ['continent'] = 2, ['map'] = 23, ['blob'] = 60444, ['race'] = 5 }
+	siteData[L["River Delta Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 60350, ['race'] = 7 }
+	siteData[L["Obelisk of the Stars Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 60358, ['race'] = 7 }
+	siteData[L["Sahket Wastes Digsite"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 60361, ['race'] = 7 }
+	siteData[L["Schnottz's Landing"]] = { ['continent'] = 1, ['map'] = 720, ['blob'] = 60363, ['race'] = 7 }
+	siteData[L["Sands of Nasam"]] = { ['continent'] = 4, ['map'] = 486, ['blob'] = 60369, ['race'] = 5 }
+	siteData[L["Pit of Fiends Digsite"]] = { ['continent'] = 4, ['map'] = 492, ['blob'] = 60367, ['race'] = 5 }
+
+	artifactData[L["Pewter Drinking Cup"]] = { ['itemID'] = 86857, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Ceramic Funeral Urn"]] = { ['itemID'] = 86864, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Worn Hunting Knife"]] = { ['itemID'] = 86865, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Bone Gaming Dice"]] = { ['itemID'] = 86866, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Stone Gryphon"]] = { ['itemID'] = 88180, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Silver Neck Torc"]] = { ['itemID'] = 88181, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Zandalari Voodoo Doll"]] = { ['itemID'] = 88262, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Fetish of Hir'eek"]] = { ['itemID'] = 88907, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Lizard Foot Charm"]] = { ['itemID'] = 88908, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Wooden Whistle"]] = { ['itemID'] = 88909, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Belt Buckle with Anvilmar Crest"]] = { ['itemID'] = 88910, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Black Trilobite"]] = { ['itemID'] = 88929, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Beautiful Preserved Fern"]] = { ['itemID'] = 88930, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Highborne Pyxis"]] = { ['itemID'] = 89009, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Inlaid Ivory Comb"]] = { ['itemID'] = 89012, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Scandalous Silk Nightgown"]] = { ['itemID'] = 89014, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Fossilized Hatchling"]] = { ['itemID'] = 89693, ['race'] = 3, ['rare'] = 1 }
+	artifactData[L["Cloak Clasp with Antlers"]] = { ['itemID'] = 89696, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Jade Asp with Ruby Eyes"]] = { ['itemID'] = 89701, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Feathered Gold Earring"]] = { ['itemID'] = 89711, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Moltenfist's Jeweled Goblet"]] = { ['itemID'] = 89717, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Eerie Smolderthorn Idol"]] = { ['itemID'] = 89890, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Cinnabar Bijou"]] = { ['itemID'] = 89891, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Coin from Eldre'Thalas"]] = { ['itemID'] = 89893, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Shattered Glaive"]] = { ['itemID'] = 89894, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Twisted Ammonite Shell"]] = { ['itemID'] = 89895, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Green Dragon Ring"]] = { ['itemID'] = 89896, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Notched Sword of Tunadil the Redeemer"]] = { ['itemID'] = 90410, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Bodacious Door Knocker"]] = { ['itemID'] = 90411, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Boot Heel with Scrollwork"]] = { ['itemID'] = 90412, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Golden Chamber Pot"]] = { ['itemID'] = 90413, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Winged Helm of Corehammer"]] = { ['itemID'] = 90415, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Ironstar's Petrified Shield"]] = { ['itemID'] = 90419, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Skull-Shaped Planter"]] = { ['itemID'] = 90420, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Bracelet of Jade and Coins"]] = { ['itemID'] = 90421, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Gahz'rilla Figurine"]] = { ['itemID'] = 90423, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Atal'ai Scepter"]] = { ['itemID'] = 90429, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Devilsaur Tooth"]] = { ['itemID'] = 90432, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Insect in Amber"]] = { ['itemID'] = 90433, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Kaldorei Amphora"]] = { ['itemID'] = 90451, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Ancient Shark Jaws"]] = { ['itemID'] = 90452, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Hairpin of Silver and Malachite"]] = { ['itemID'] = 90453, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Delicate Music Box"]] = { ['itemID'] = 90458, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Highborne Soul Mirror"]] = { ['itemID'] = 90464, ['race'] = 4, ['rare'] = 1 }
+	artifactData[L["Druid and Priest Statue Set"]] = { ['itemID'] = 90493, ['race'] = 4, ['rare'] = 1 }
+	artifactData[L["Dented Shield of Horuz Killcrow"]] = { ['itemID'] = 90504, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Scorched Staff of Shadow Priest Anund"]] = { ['itemID'] = 90506, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Scepter of Charlga Razorflank"]] = { ['itemID'] = 90509, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Mithril Chain of Angerforge"]] = { ['itemID'] = 90518, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Skull Staff of Shadowforge"]] = { ['itemID'] = 90519, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Clockwork Gnome"]] = { ['itemID'] = 90521, ['race'] = 1, ['rare'] = 1 }
+	artifactData[L["Chalice of the Mountain Kings"]] = { ['itemID'] = 90553, ['race'] = 1, ['rare'] = 1 }
+	artifactData[L["Tooth with Gold Filling"]] = { ['itemID'] = 90558, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Drakkari Sacrificial Knife"]] = { ['itemID'] = 90581, ['race'] = 8, ['rare'] = 0 }
+	artifactData[L["Zin'rokh, Destroyer of Worlds"]] = { ['itemID'] = 90608, ['race'] = 8, ['rare'] = 2 }
+	artifactData[L["String of Small Pink Pearls"]] = { ['itemID'] = 90609, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Chest of Tiny Glass Animals"]] = { ['itemID'] = 90610, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Cracked Crystal Vial"]] = { ['itemID'] = 90611, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Scepter of Xavius"]] = { ['itemID'] = 90612, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Kaldorei Wind Chimes"]] = { ['itemID'] = 90614, ['race'] = 4, ['rare'] = 1 }
+	artifactData[L["Queen Azshara's Dressing Gown"]] = { ['itemID'] = 90616, ['race'] = 4, ['rare'] = 2 }
+	artifactData[L["Feathered Raptor Arm"]] = { ['itemID'] = 90617, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Vicious Ancient Fish"]] = { ['itemID'] = 90618, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Fossilized Raptor"]] = { ['itemID'] = 90619, ['race'] = 3, ['rare'] = 2 }
+	artifactData[L["Tiny Bronze Scorpion"]] = { ['itemID'] = 90622, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Maul of Stone Guard Mur'og"]] = { ['itemID'] = 90720, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Gray Candle Stub"]] = { ['itemID'] = 90728, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Rusted Steak Knife"]] = { ['itemID'] = 90730, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Scepter of Nekros Skullcrusher"]] = { ['itemID'] = 90732, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Fierce Wolf Figurine"]] = { ['itemID'] = 90734, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Skull Drinking Cup"]] = { ['itemID'] = 90833, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Tile of Glazed Clay"]] = { ['itemID'] = 90832, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Fiendish Whip"]] = { ['itemID'] = 90831, ['race'] = 6, ['rare'] = 0 }
+	artifactData[L["Headdress of the First Shaman"]] = { ['itemID'] = 90843, ['race'] = 6, ['rare'] = 2 }
+	artifactData[L["Anklet with Golden Bells"]] = { ['itemID'] = 90853, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Carved Harp of Exotic Wood"]] = { ['itemID'] = 90860, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Strange Silver Paperweight"]] = { ['itemID'] = 90861, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Scepter of the Nathrezim"]] = { ['itemID'] = 90864, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Baroque Sword Scabbard"]] = { ['itemID'] = 90968, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Fine Crystal Candelabra"]] = { ['itemID'] = 90974, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Dignified Portrait"]] = { ['itemID'] = 90975, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Arrival of the Naaru"]] = { ['itemID'] = 90983, ['race'] = 2, ['rare'] = 1 }
+	artifactData[L["The Last Relic of Argus"]] = { ['itemID'] = 90984, ['race'] = 2, ['rare'] = 1 }
+	artifactData[L["Plated Elekk Goad"]] = { ['itemID'] = 90987, ['race'] = 2, ['rare'] = 0 }
+	artifactData[L["Intricate Treasure Chest Key"]] = { ['itemID'] = 90988, ['race'] = 9, ['rare'] = 0 }
+	artifactData[L["Nifflevar Bearded Axe"]] = { ['itemID'] = 90997, ['race'] = 9, ['rare'] = 2 }
+	artifactData[L["Scramseax"]] = { ['itemID'] = 91008, ['race'] = 9, ['rare'] = 0 }
+	artifactData[L["Flint Striker"]] = { ['itemID'] = 91012, ['race'] = 9, ['rare'] = 0 }
+	artifactData[L["Fanged Cloak Pin"]] = { ['itemID'] = 91014, ['race'] = 9, ['rare'] = 0 }
+	artifactData[L["Thorned Necklace"]] = { ['itemID'] = 91084, ['race'] = 9, ['rare'] = 0 }
+	artifactData[L["Proto-Drake Skeleton"]] = { ['itemID'] = 91089, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Imprint of a Kraken Tentacle"]] = { ['itemID'] = 91132, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Spidery Sundial"]] = { ['itemID'] = 91133, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Scepter of Nezar'Azret"]] = { ['itemID'] = 91170, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Infested Ruby Ring"]] = { ['itemID'] = 91188, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Gruesome Heart Box"]] = { ['itemID'] = 91191, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Six-Clawed Cornice"]] = { ['itemID'] = 91197, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Ewer of Jormungar Blood"]] = { ['itemID'] = 91209, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Vizier's Scrawled Streamer"]] = { ['itemID'] = 91211, ['race'] = 5, ['rare'] = 0 }
+	artifactData[L["Blessing of the Old God"]] = { ['itemID'] = 91214, ['race'] = 5, ['rare'] = 2 }
+	artifactData[L["Puzzle Box of Yogg-Saron"]] = { ['itemID'] = 91215, ['race'] = 5, ['rare'] = 2 }
+	artifactData[L["Silver Kris of Korl"]] = { ['itemID'] = 91219, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Warmaul of Burningeye"]] = { ['itemID'] = 91221, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Spiked Gauntlets of Anvilrage"]] = { ['itemID'] = 91223, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Word of Empress Zoe"]] = { ['itemID'] = 91224, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Scepter of Bronzebeard"]] = { ['itemID'] = 91225, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["The Innkeeper's Daughter"]] = { ['itemID'] = 91226, ['race'] = 1, ['rare'] = 1 }
+	artifactData[L["Staff of Sorcerer-Thane Thaurissan"]] = { ['itemID'] = 91227, ['race'] = 1, ['rare'] = 2 }
+	artifactData[L["Tyrande's Favorite Doll"]] = { ['itemID'] = 91757, ['race'] = 4, ['rare'] = 2 }
+	artifactData[L["Bones of Transformation"]] = { ['itemID'] = 91761, ['race'] = 4, ['rare'] = 2 }
+	artifactData[L["Carcanet of the Hundred Magi"]] = { ['itemID'] = 91762, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Silver Scroll Case"]] = { ['itemID'] = 91766, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Umbra Crescent"]] = { ['itemID'] = 91769, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Wisp Amulet"]] = { ['itemID'] = 91773, ['race'] = 4, ['rare'] = 2 }
+	artifactData[L["Castle of Sand"]] = { ['itemID'] = 91775, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Cat Statue with Emerald Eyes"]] = { ['itemID'] = 91779, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Soapstone Scarab Necklace"]] = { ['itemID'] = 91780, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Tiny Oasis Mosaic"]] = { ['itemID'] = 91782, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Engraved Scimitar Hilt"]] = { ['itemID'] = 91785, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Canopic Jar"]] = { ['itemID'] = 91790, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Sketch of a Desert Palace"]] = { ['itemID'] = 91792, ['race'] = 7, ['rare'] = 0 }
+	artifactData[L["Pipe of Franclorn Forgewright"]] = { ['itemID'] = 91793, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Mummified Monkey Paw"]] = { ['itemID'] = 92137, ['race'] = 7, ['rare'] = 2 }
+	artifactData[L["Staff of Ammunae"]] = { ['itemID'] = 92139, ['race'] = 7, ['rare'] = 2 }
+	artifactData[L["Pendant of the Scarab Storm"]] = { ['itemID'] = 92145, ['race'] = 7, ['rare'] = 2 }
+	artifactData[L["Scepter of Azj'Aqir"]] = { ['itemID'] = 92148, ['race'] = 7, ['rare'] = 2 }
+	artifactData[L["Scimitar of the Sirocco"]] = { ['itemID'] = 92163, ['race'] = 7, ['rare'] = 2 }
+	artifactData[L["Ring of the Boy Emperor"]] = { ['itemID'] = 92168, ['race'] = 7, ['rare'] = 2 }
+	artifactData[L["Dwarven Baby Socks"]] = { ['itemID'] = 93440, ['race'] = 1, ['rare'] = 0 }
+	artifactData[L["Necklace with Elune Pendant"]] = { ['itemID'] = 93441, ['race'] = 4, ['rare'] = 0 }
+	artifactData[L["Shard of Petrified Wood"]] = { ['itemID'] = 93442, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Strange Velvet Worm"]] = { ['itemID'] = 93443, ['race'] = 3, ['rare'] = 0 }
+	artifactData[L["Fine Bloodscalp Dinnerware"]] = { ['itemID'] = 93444, ['race'] = 8, ['rare'] = 0 }
+
 
 	--  Minimap size values
 	minimapSize = {
@@ -1490,18 +2057,19 @@ end
 --[[ Function Hooks ]]--
 -- Hook and overwrite the default SolveArtifact function to provide confirmations when nearing cap
 local blizSolveArtifact = SolveArtifact
-SolveArtifact = function(raceIndex)
+SolveArtifact = function(raceIndex, useStones)
 	local rank, maxRank = GetArchaeologyRank()
+	local requiresConfirm = false
 	if db.general.confirmSolve and maxRank < MAX_ARCHAEOLOGY_RANK and (rank + 25) >= maxRank then requiresConfirm = true end
 	if requiresConfirm then
 		if not confirmArgs then confirmArgs = {} end
 		confirmArgs.race = raceIndex
+		confirmArgs.useStones = useStones
 		StaticPopup_Show("ARCHY_CONFIRM_SOLVE", rank, maxRank)
 	else
 		return SolveRaceArtifact(raceIndex)
 	end
 end
-
 
 --[[ Dialog declarations ]]--
 StaticPopupDialogs["ARCHY_CONFIRM_SOLVE"] = {
@@ -1510,7 +2078,7 @@ StaticPopupDialogs["ARCHY_CONFIRM_SOLVE"] = {
 	button2 = "No",
 	OnAccept = function()
 		if confirmArgs and confirmArgs.race then
-			SolveRaceArtifact(confirmArgs.race)
+			SolveRaceArtifact(confirmArgs.race, confirmArgs.useStones)
 			confirmArgs = nil
 		else
 			blizSolveArtifact()
@@ -1542,7 +2110,7 @@ local function IsTaintable()
 end
 
 local function ShouldBeHidden()
-	if (not db.general.show) or IsInInstance() or (not HasArchaeology()) or (not playerContinent) then
+	if (not db.general.show) or IsInInstance() or (not HasArchaeology()) or (not playerContinent) or (UnitIsGhost('player') == 1) then
 		return true
 	end
 end
@@ -1627,10 +2195,8 @@ local function LoadRaceData()
 		local race = raceData[rid]		-- meta table should load the data
 		if race then							-- we have race data
 			raceNameToID[race['name']] = rid
-			currencyIDToRaceID[race['currency']['id']] = rid
 			keystoneIDToRaceID[race['keystone']['id']] = rid
-			local _, currencyAmount = GetCurrencyInfo(race['currency']['id'])
-			currencyData[race['currency']['id']] = currencyAmount
+			currencyData[race['currency']] = race['currency']
 		end
 	end
 	
@@ -1693,10 +2259,8 @@ function Archy:ConfigUpdated(ns, opt)
 		end
 		self:SetFramePosition(digsiteFrame)
 		self:SetFramePosition(distanceIndicatorFrame)
-		HideDistanceIndicator()
-		ShowDistanceIndicator()
+		ToggleDistanceIndicator()
 	elseif ns == "minimap" then
-		
 		UpdateMinimapPOIs(true)
 		UpdateSiteBlobs()
 	elseif ns == "tomtom" then
@@ -1800,13 +2364,21 @@ local function UpdateRace(rid)
 	UpdateArtifactFrame(rid)
 end
 
-function SolveRaceArtifact(rid)
+function SolveRaceArtifact(rid, useStones)
 	if rid then
 		SetSelectedArtifact(rid)
 		artifactSolved['raceId'] = rid
 		artifactSolved['name'] = GetSelectedArtifactInfo();
 		keystoneLootRaceID = rid -- this is to force a refresh after the ARTIFACT_COMPLETE event
 
+		if useStones ~= nil then
+			if useStones then
+				artifacts[rid]['stonesAdded'] = min(raceData[rid]['keystone']['inventory'], artifacts[rid]['sockets'])
+			else
+				artifacts[rid]['stonesAdded'] = 0
+			end
+		end
+		
 		if artifacts[rid]['stonesAdded'] > 0 then
 			for i=1, artifacts[rid]['stonesAdded'] do
 				SocketItemToArtifact()
@@ -1974,7 +2546,11 @@ function Archy:UpdateSiteDistances()
 	local distance, nearest
 	for i=1,SITES_PER_CONTINENT do 
 		local site = digsites[continentMapToID[playerContinent]][i]
-		site.distance = astrolabe:ComputeDistance(playerPosition.map, playerPosition.level, playerPosition.x, playerPosition.y, site.map, site.level, site.x, site.y)
+		if site.poi then
+			site.distance = astrolabe:GetDistanceToIcon(site.poi)
+		else
+			site.distance = astrolabe:ComputeDistance(playerPosition.map, playerPosition.level, playerPosition.x, playerPosition.y, site.map, site.level, site.x, site.y)
+		end
 		if not Archy:IsSiteBlacklisted(site.name) then
 			if not distance or site.distance < distance then
 				distance = site.distance
@@ -2018,7 +2594,7 @@ function Archy:UpdateSiteDistances()
 end
 
 function AnnounceNearestSite()
-	if not nearestSite or not nearestSite.distance then return end
+	if not nearestSite or not nearestSite.distance or nearestSite.distance == 999999 then return end
 	Archy:Pour(string.format(L["Nearest Dig Site is: %s in %s (%.1f yards away)"], GREEN_FONT_COLOR_CODE .. nearestSite.name .. "|r", GREEN_FONT_COLOR_CODE .. nearestSite.zoneName .. "|r", nearestSite.distance), 1, 1, 1)
 end
 
@@ -2027,13 +2603,13 @@ end
 
 function Archy:ImportOldStatsDB()
 	for key, st in pairs(Archy.db.char.digsites) do
-		if key ~= "blacklist" and key ~= "stats" then
+		if key ~= "blacklist" and key ~= "stats" and key ~= "counter" and key ~= "" then
 			if siteData[key] then
 				local site = siteData[key]
-				siteStats[site.blob]['surveys'] = (siteStats[site.blob]['surveys'] or 0) + st['surveys']
-				siteStats[site.blob]['fragments'] = (siteStats[site.blob]['fragments'] or 0) + st['fragments']
-				siteStats[site.blob]['looted'] = (siteStats[site.blob]['looted'] or 0) + st['looted']
-				siteStats[site.blob]['keystones'] = (siteStats[site.blob]['keystones'] or 0) + st['keystones']
+				siteStats[site.blob]['surveys'] = (siteStats[site.blob]['surveys'] or 0) + (st['surveys'] or 0)
+				siteStats[site.blob]['fragments'] = (siteStats[site.blob]['fragments'] or 0) + (st['fragments'] or 0)
+				siteStats[site.blob]['looted'] = (siteStats[site.blob]['looted'] or 0) + (st['looted'] or 0)
+				siteStats[site.blob]['keystones'] = (siteStats[site.blob]['keystones'] or 0) + (st['keystones'] or 0)
 				Archy.db.char.digsites[key] = nil
 			end
 		end
@@ -2087,38 +2663,23 @@ function Archy:ClearSurveyNodeDB()
 	collectgarbage('collect')
 end
 
-function ShowDistanceIndicator()
-	if not IsTaintable() then
-		if not distanceIndicatorFrame:IsShown() and not ShouldBeHidden() and db.digsite.distanceIndicator.enabled and distanceIndicatorActive then
-			distanceIndicatorFrame.circle:SetAlpha(1.0)
-			distanceIndicatorFrame:Show()
-		end
-		if not db.digsite.distanceIndicator.showSurveyButton then
-			distanceIndicatorFrame.surveyButton:Hide()
-			distanceIndicatorFrame:SetWidth(42)
-		else
-			distanceIndicatorFrame.surveyButton:Show()
-			distanceIndicatorFrame:SetWidth(52 + distanceIndicatorFrame.surveyButton:GetWidth())
-		end
+function ToggleDistanceIndicator()
+	if IsTaintable() then return end
+	if not db.digsite.distanceIndicator.enabled or ShouldBeHidden() then
+		distanceIndicatorFrame:Hide()
+		return 
 	end
-end
-function HideDistanceIndicator()
-	if not IsTaintable() then
-		if distanceIndicatorFrame:IsShown() then
-			if not ShouldBeHidden() and db.digsite.distanceIndicator.enabled and not distanceIndicatorActive then
-				distanceIndicatorFrame.circle:SetAlpha(0)
-			else
-				distanceIndicatorFrame:Hide()
-			end
-		end
-		if not db.digsite.distanceIndicator.showSurveyButton then
-			distanceIndicatorFrame.surveyButton:Hide()
-			distanceIndicatorFrame:SetWidth(42)
-		else
-			distanceIndicatorFrame.surveyButton:Show()
-			distanceIndicatorFrame:SetWidth(52 + distanceIndicatorFrame.surveyButton:GetWidth())
-		end
+
+	distanceIndicatorFrame:Show()
+	if distanceIndicatorActive then distanceIndicatorFrame.circle:SetAlpha(1) else distanceIndicatorFrame.circle:SetAlpha(0) end
+	if db.digsite.distanceIndicator.showSurveyButton then 
+		distanceIndicatorFrame.surveyButton:Show() 
+		distanceIndicatorFrame:SetWidth(52 + distanceIndicatorFrame.surveyButton:GetWidth())
+	else 
+		distanceIndicatorFrame.surveyButton:Hide() 
+		distanceIndicatorFrame:SetWidth(42)
 	end
+	
 end
 
 local diColors = {
@@ -2130,10 +2691,8 @@ local function SetDistanceIndicatorColor(color)
 	if color then
 		distanceIndicatorFrame.circle.texture:SetTexCoord(unpack(diColors[color]))
 		distanceIndicatorFrame.circle:SetAlpha(1)
-		ShowDistanceIndicator()
-	else
-		HideDistanceIndicator()
 	end
+	ToggleDistanceIndicator()
 end
 
 local function SetDistanceIndicatorText(distance)
@@ -2157,7 +2716,7 @@ local function UpdateDistanceIndicator()
 	elseif distance >= redMin and distance <= redMax then
 		SetDistanceIndicatorColor("Red")
 	else
-		HideDistanceIndicator()
+		ToggleDistanceIndicator()
 		return
 	end
 	SetDistanceIndicatorText(distance)
@@ -2165,6 +2724,125 @@ end
 
 
 --[[ Minimap Functions ]]--
+local sitePool = {}
+local surveyPool = {}
+local allPois = {}
+local sitePoiCount, surveyPoiCount = 0, 0
+
+local function GetSitePOI(siteId, map, level, x, y, tooltip)
+	local poi = table.remove(sitePool)
+
+	if not poi then	-- we don't have enough available pois, need to create one
+		sitePoiCount = sitePoiCount + 1
+--		print("Creating ArchyMinimap_SitePOI" .. sitePoiCount)
+		poi = CreateFrame("Frame", "ArchyMinimap_SitePOI" .. sitePoiCount, Minimap)
+		poi.index = sitePoiCount
+		poi:SetWidth(10)
+		poi:SetHeight(10)
+		
+		table.insert(allPois, poi)
+		
+		poi.icon = poi:CreateTexture("BACKGROUND")
+		poi.icon:SetTexture([[Interface\Archeology\Arch-Icon-Marker.blp]])
+		poi.icon:SetPoint("CENTER", 0, 0)
+		poi.icon:SetHeight(14)
+		poi.icon:SetWidth(14)
+		poi.icon:Hide()
+
+		poi.arrow = poi:CreateTexture("BACKGROUND")
+		poi.arrow:SetTexture([[Interface\Minimap\ROTATING-MINIMAPGUIDEARROW.tga]])
+		poi.arrow:SetPoint("CENTER", 0, 0)
+		poi.arrow:SetWidth(32)
+		poi.arrow:SetHeight(32)
+		poi.arrow:Hide()
+		poi:Hide()
+	end
+	
+	poi:SetScript("OnEnter", POI_OnEnter)
+	poi:SetScript("OnLeave", POI_OnLeave)
+	poi:SetScript("OnUpdate", Arrow_OnUpdate)
+	poi.type = "site"
+	poi.tooltip = tooltip
+	poi.location = { map, level, x, y }
+	poi.active = true
+	poi.siteId = siteId
+	poi.t = 0
+	return poi
+end
+
+local function ClearSitePOI(poi)
+	if poi then
+		astrolabe:RemoveIconFromMinimap(poi)
+		poi.icon:Hide()
+		poi.arrow:Hide()
+		poi:Hide()
+		poi.active = false
+		poi.tooltip = nil
+		poi.location = nil
+		poi.siteId = nil
+		poi:SetScript("OnEnter", nil)
+		poi:SetScript("OnLeave", nil)
+		poi:SetScript("OnUpdate", nil)
+		table.insert(sitePool, poi)
+	end
+end
+
+local function GetSurveyPOI(siteId, surveyNum, map, level, x, y, tooltip)
+	local poi = table.remove(surveyPool)
+	if not poi then	-- we don't have enough available pois, need to create one
+		surveyPoiCount = surveyPoiCount + 1
+		poi = CreateFrame("Frame", "ArchyMinimap_SurveyPOI" .. surveyPoiCount, Minimap)
+		poi.index = surveyPoiCount
+		poi:SetWidth(8)
+		poi:SetHeight(8)
+
+		table.insert(allPois, poi)
+
+		poi.icon = poi:CreateTexture("BACKGROUND")
+		poi.icon:SetTexture([[Interface\AddOns\Archy\Media\Nodes]])
+		if db.minimap.fragmentIcon == "Cross" then
+			poi.icon:SetTexCoord(0,0.46875,0, 0.453125)
+		else
+			poi.icon:SetTexCoord(0,0.234375,0.5, 0.734375)
+		end
+		poi.icon:SetPoint("CENTER", 0, 0)
+		poi.icon:SetHeight(8)
+		poi.icon:SetWidth(8)
+		poi.icon:Hide()
+
+		poi:Hide()
+	end
+	
+	poi:SetScript("OnEnter", POI_OnEnter)
+	poi:SetScript("OnLeave", POI_OnLeave)
+	poi:SetScript("OnUpdate", Arrow_OnUpdate)
+	poi.type = "survey"
+	poi.tooltip = tooltip
+	poi.location = { map, level, x, y }
+	poi.active = true
+	poi.siteId = siteId
+	poi.surveyNum = surveyNum
+	poi.t = 0
+	return poi
+end
+
+local function ClearSurveyPOI(poi)
+	if poi then
+		astrolabe:RemoveIconFromMinimap(poi)
+		poi.icon:Hide()
+		poi:Hide()
+		poi.active = false
+		poi.tooltip = nil
+		poi.siteId = nil
+		poi.surveyNum = nil
+		poi.location = nil
+		poi:SetScript("OnEnter", nil)
+		poi:SetScript("OnLeave", nil)
+		poi:SetScript("OnUpdate", nil)
+		table.insert(surveyPool, poi)
+	end
+end
+
 function CreateMinimapPOI(index, type, loc, title, siteId, surveyNum)
 	local poi = pois[index]
 	local poiButton = CreateFrame("Frame", nil, poi)
@@ -2203,102 +2881,166 @@ function CreateMinimapPOI(index, type, loc, title, siteId, surveyNum)
 end
 
 function UpdateMinimapEdges()
-	for id, poi in pairs(pois) do
+	for id, poi in pairs(allPois) do
 		if poi.active then
-			if astrolabe:IsIconOnEdge(poi) then
-				poi.poiButton:Hide()
-				if poi.useArrow then poi.arrow:Show() end
+			local edge = astrolabe:IsIconOnEdge(poi)
+			if poi.type == "site" then
+				if edge then
+					poi.icon:Hide()
+					poi.arrow:Show()
+				else
+					poi.icon:Show()
+					poi.arrow:Hide()
+				end
 			else
-				poi.poiButton:Show()
-				if poi.useArrow then poi.arrow:Hide() end
+				if edge then
+					poi.icon:Hide()
+					poi:Hide()
+				else
+					poi.icon:Show()
+					poi:Show()
+				end
 			end
+		end
+	end
+end
+
+function UpdateMinimapSurveyColors()
+	if not db.minimap.fragmentColorBySurveyDistance then return end
+	local greenMin, greenMax = 0, db.digsite.distanceIndicator.green
+	local yellowMin, yellowMax = greenMax, db.digsite.distanceIndicator.yellow
+	local redMin, redMax = yellowMax, 500
+	for id, poi in pairs(allPois) do
+		if poi.active and poi.type == "survey" then
+			local distance = astrolabe:GetDistanceToIcon(poi)
+			if distance >= greenMin and distance <= greenMax then
+				poi.icon:SetTexCoord(0.75,1,0.5, 0.734375)
+--				poi.poiButton.texture:SetVertexColor(0,1,0,1)
+			elseif distance >= yellowMin and distance <= yellowMax then
+				poi.icon:SetTexCoord(0.5,0.734375,0.5, 0.734375)
+--				poi.poiButton.texture:SetVertexColor(1,1,0,1)
+			elseif distance >= redMin and distance <= redMax then
+				poi.icon:SetTexCoord(0.25,0.484375,0.5, 0.734375)
+--				poi.poiButton.texture:SetVertexColor(1,0,0,1)
+			end
+		end
+	end
+end
+
+function ClearMinimapSurveyColors()
+	if not db.minimap.fragmentColorBySurveyDistance and db.minimap.fragmentIcon ~= "CyanDot" then return end
+	for id, poi in pairs(allPois) do
+		if poi.active and poi.type == "survey" then
+			poi.icon:SetTexCoord(0,0.234375,0.5, 0.734375)
 		end
 	end
 end
 
 local lastNearestSite
+local function GetContinentSiteIDs()
+	local validSiteIDs = {}
+	if db.general.show and db.minimap.show then return validSiteIDs end
+	if digsites[continentMapToID[playerContinent]] then
+		for _, site in pairs(digsites[continentMapToID[playerContinent]]) do
+			tinsert(validSiteIDs, site.id)
+		end
+	end
+	return validSiteIDs
+end
+
+local function ClearAllPOIs()
+	for idx, poi in ipairs(allPois) do
+		if poi.type == "site" then
+			ClearSitePOI(poi)
+		elseif poi.type == "survey" then
+			ClearSurveyPOI(poi)
+		end
+	end
+end
+
+local function ClearInvalidPOIs()
+	local validSiteIDs = GetContinentSiteIDs()
+	
+	for idx, poi in ipairs(allPois) do
+		if not validSiteIDs[poi.siteId] then
+			if poi.type == "site" then
+				ClearSitePOI(poi)
+			else
+				ClearSurveyPOI(poi)
+			end
+		elseif poi.type == "survey" and lastNearestSite.id ~= nearestSite.id and lastNearestSite.id == poi.siteId then
+			ClearSurveyPOI(poi)
+		end
+	end
+end
+
 function UpdateMinimapPOIs(force)
 	if WorldMapButton:IsVisible() then return end
 	if lastNearestSite ~= nearestSite or force then
 		lastNearestSite = nearestSite
-		local validSiteIDs = {}
-		if db.general.show and db.minimap.show then
-			if digsites[continentMapToID[playerContinent]] then
-				for _, site in pairs(digsites[continentMapToID[playerContinent]]) do
-					tinsert(validSiteIDs, site.id)
-				end
-			end
-		end
+		local validSiteIDs = GetContinentSiteIDs()
 		
-		-- remove the icons from the minimap
-		for id, poi in pairs(pois) do
-			if not tContains(validSiteIDs, poi.siteId) or (poi.type == "survey" and lastNearestSite.id ~= poi.siteId) or force then
-				astrolabe:RemoveIconFromMinimap(poi)
-				if poi.poiButton then
-					poi.poiButton:Hide()
-					poi.poiButton:SetParent(Minimap)
-					poi.poiButton = nil
-				end
-				if poi.useArrow then
-					poi.arrow:Hide()
-				end
-				poi.active = false
-			end
+		local sites = digsites[continentMapToID[playerContinent]]
+		if not sites or (#sites == 0) or IsInInstance() then 
+			ClearAllPOIs()
+			return
+		else
+			ClearInvalidPOIs()
 		end
 		
 		if not playerPosition.x and not playerPosition.y then return end
-		if db.general.show and db.minimap.show then
-			local sites = digsites[continentMapToID[playerContinent]]
-			if not sites or (#sites == 0) then return end
-			local i = 1
-			for _, site in pairs(sites) do
-				if not db.minimap.nearest or (db.minimap.nearest and nearestSite and nearestSite.id == site.id) then
-					-- check to see if the poi exists
-					local exists = false
-					for poiIndex, poiObj in pairs(pois) do
-						if poiObj.siteId == site.id and not poiObj.surveyNum and poiObj.active then
-							exists = true
-							break
+
+		
+		local i = 1
+		for _, site in pairs(sites) do
+			site.poi = GetSitePOI(site.id, site.map, site.level, site.x, site.y, site.name .. "\n" .. L["Zone: "] .. site.zoneName)
+			site.poi.active = true
+			astrolabe:PlaceIconOnMinimap(site.poi, site.map, site.level, site.x, site.y)
+			
+			if ((not db.minimap.nearest) or (nearestSite and nearestSite.id == site.id)) and db.general.show and db.minimap.show then
+				site.poi:Show()
+				site.poi.icon:Show()
+			else
+				site.poi:Hide()
+				site.poi.icon:Hide()
+			end
+			
+			if nearestSite and nearestSite.id == site.id then
+				if (not site.surveyPOIs) then site.surveyPOIs = {} end
+				if Archy.db.global.surveyNodes[site.id] and db.minimap.fragmentNodes then
+					for surveyNum, node in pairs(Archy.db.global.surveyNodes[site.id]) do
+						site.surveyPOIs[surveyNum] = GetSurveyPOI(site.id, surveyNum, node.m, node.f, node.x, node.y, L["Survey"] .. " #" .. surveyNum .. "\n" .. site.name .. "\n" .. L["Zone: "] .. site.zoneName)
+						site.surveyPOIs[surveyNum].active = true
+						astrolabe:PlaceIconOnMinimap(site.surveyPOIs[surveyNum], node.m, node.f, node.x, node.y)
+						
+						if db.general.show then
+							site.surveyPOIs[surveyNum]:Show()
+							site.surveyPOIs[surveyNum].icon:Show()
+						else
+							site.surveyPOIs[surveyNum]:Hide()
+							site.surveyPOIs[surveyNum].icon:Hide()
 						end
-					end
-					if not exists then
-						while pois[i] and pois[i].active do i = i + 1 end
-						-- i = i + 1
-						local poi = CreateMinimapPOI(i, "site", { map = site.map, level = site.level, x = site.x, y = site.y }, site.name .. "\n" .. L["Zone: "] .. site.zoneName)
-						astrolabe:PlaceIconOnMinimap(poi, site.map, site.level, site.x, site.y)
-					end
-					
-					if nearestSite and db.minimap.fragmentNodes and nearestSite.id == site.id then
-						if Archy.db.global.surveyNodes[site.id] then
-							for surveyNum, node in pairs(Archy.db.global.surveyNodes[site.id]) do
-								local exists = false
-								for poiIndex, poiObj in pairs(pois) do
-									if poiObj.siteId == site.id and poiObj.surveyNum == surveyNum and poiObj.active then
-										exists = true
-										break
-									end
-								end
-								if not exists then
-									while pois[i] and pois[i].active do i = i + 1 end
-									local nodePoi = CreateMinimapPOI(i, "survey", { map = node.m, level = node.f, x = node.x, y = node.y }, L["Survey"] .. " #" .. surveyNum .. "\n" .. site.name .. "\n" .. L["Zone: "] .. site.zoneName, site.id, surveyNum)
-									astrolabe:PlaceIconOnMinimap(nodePoi, node.m, node.f, node.x, node.y)
-								end
-							end
-						end
+						
+						Arrow_OnUpdate(site.surveyPOIs[surveyNum], 5)
 					end
 				end
 			end
-			UpdateMinimapEdges()
+			
+			Arrow_OnUpdate(site.poi, 5)
 		end
+		--UpdateMinimapEdges()
+		ClearMinimapSurveyColors()
+--			print("Calling collectgarbage for UpdateMinimapPOIs(force = ", force,")")
+		collectgarbage('collect')
 	else
-		if lastNearestSite then UpdateMinimapEdges() end
+--		if lastNearestSite then UpdateMinimapEdges() end
 	end
 end
 
 function POI_OnEnter(self)
-	if self.title then
+	if self.tooltip then
 		GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
-		GameTooltip:SetText(self.title, NORMAL_FONT_COLOR[1], NORMAL_FONT_COLOR[2], NORMAL_FONT_COLOR[3], 1) --, true)
+		GameTooltip:SetText(self.tooltip, NORMAL_FONT_COLOR[1], NORMAL_FONT_COLOR[2], NORMAL_FONT_COLOR[3], 1) --, true)
 	end
 end
 
@@ -2316,21 +3058,43 @@ function Arrow_OnUpdate(self, elapsed)
 	end
 	self.t = 0
 	
-	local angle = astrolabe:GetDirectionToIcon(self.poi)
-	angle = angle + rad_135
-
-	if GetCVar("rotateMinimap") == "1" then
-		angle = angle - GetPlayerFacing()
-	end
-	
-	if angle == self.last_angle then
+	if IsInInstance() then 
+		self:Hide()
 		return
 	end
-	self.last_angle = angle
 	
-	--rotate the texture
-	local sin,cos = math.sin(angle) * square_half, math.cos(angle) * square_half
-	self.texture:SetTexCoord(0.5-sin, 0.5+cos, 0.5+cos, 0.5+sin, 0.5-cos, 0.5-sin, 0.5+sin, 0.5-cos)
+	if not self.active then return end
+
+	local edge = astrolabe:IsIconOnEdge(self)
+
+	if self.type == "site" then
+		if edge then
+			if self.icon:IsShown() then self.icon:Hide() end
+			if not self.arrow:IsShown() then self.arrow:Show() end
+
+			-- Rotate the icon, as required
+			local angle = astrolabe:GetDirectionToIcon(self)
+			angle = angle + rad_135
+
+			if GetCVar("rotateMinimap") == "1" then
+				--local cring = MiniMapCompassRing:GetFacing()
+				local cring = GetPlayerFacing()
+				angle = angle - cring
+			end
+
+			local sin,cos = math.sin(angle) * square_half, math.cos(angle) * square_half
+			self.arrow:SetTexCoord(0.5-sin, 0.5+cos, 0.5+cos, 0.5+sin, 0.5-cos, 0.5-sin, 0.5+sin, 0.5-cos)
+		else
+			if not self.icon:IsShown() then self.icon:Show() end
+			if self.arrow:IsShown() then self.arrow:Hide() end
+		end
+	else
+		if edge then
+			if self.icon:IsShown() then self.icon:Hide() end
+		else
+			if not self.icon:IsShown() then self.icon:Show() end
+		end
+	end
 end
 
 --[[ Blob Functions ]]--
@@ -2665,8 +3429,7 @@ function ldb:OnClick(button, down)
 	elseif button == "LeftButton" then
 		db.general.show = not db.general.show
 		Archy:ConfigUpdated()
-		HideDistanceIndicator()
-		ShowDistanceIndicator()
+		ToggleDistanceIndicator()
 	elseif button == "RightButton" then
 		ToggleLock()
 	elseif button == "MiddleButton" then
@@ -2770,21 +3533,21 @@ function Archy:OnInitialize()
 	if not db.data then db.data = {} end
 	db.data.imported = false
 	
-	digsiteFrame = CreateFrame("Frame", "ArchyDigSiteFrame", UIParent, "ArchyDigSiteContainer")
+	digsiteFrame = CreateFrame("Frame", "ArchyDigSiteFrame", UIParent, (db.general.theme == "Graphical" and "ArchyDigSiteContainer" or "ArchyMinDigSiteContainer"))
 	digsiteFrame.children = setmetatable({}, {
 	__index = function(t,k)
 		if k then
-			local f = CreateFrame("Frame", "ArchyDigSiteChildFrame" .. k, digsiteFrame, "ArchyDigSiteRowTemplate")
+			local f = CreateFrame("Frame", "ArchyDigSiteChildFrame" .. k, digsiteFrame, (db.general.theme == "Graphical" and "ArchyDigSiteRowTemplate" or "ArchyMinDigSiteRowTemplate"))
 			f:Show()
 			t[k] = f
 			return f
 		end
 	end })
-	racesFrame = CreateFrame("Frame", "ArchyArtifactFrame", UIParent, "ArchyArtifactContainer")
+	racesFrame = CreateFrame("Frame", "ArchyArtifactFrame", UIParent, (db.general.theme == "Graphical" and "ArchyArtifactContainer" or "ArchyMinArtifactContainer"))
 	racesFrame.children = setmetatable({}, {
 	__index = function(t,k)
 		if k then
-			local f = CreateFrame("Frame", "ArchyArtifactChildFrame" .. k, racesFrame, "ArchyArtifactRowTemplate")
+			local f = CreateFrame("Frame", "ArchyArtifactChildFrame" .. k, racesFrame, (db.general.theme == "Graphical" and "ArchyArtifactRowTemplate" or "ArchyMinArtifactRowTemplate"))
 			f:Show()
 			t[k] = f
 			return f
@@ -2799,7 +3562,7 @@ function Archy:OnInitialize()
 
 	self:UpdateFramePositions()
 	
-	icon:Register("ArchyLDB", ldb, db.general.icon)
+	icon:Register("Archy", ldb, db.general.icon)
 	
 	TrapWorldMouse()
 	
@@ -2835,16 +3598,38 @@ function Archy:OnEnable()
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "CurrencyUpdated")
 
 	self:ScheduleTimer("UpdatePlayerPosition", 1, true)
+	self:ScheduleTimer("UpdateDigSiteFrame", 1)
+	self:ScheduleTimer("UpdateRacesFrame", 1)
+	self:ScheduleTimer("RefreshAll", 1)
 	timerID = self:ScheduleRepeatingTimer("UpdatePlayerPosition", 0.1)
 
 	db.general.locked = false
 	
 	Archy:UpdateDigSiteFrame()
 	Archy:UpdateRacesFrame()
-	HideDistanceIndicator()
-	ShowDistanceIndicator()
+	ToggleDistanceIndicator()
 	tomtomActive = true
 	tomtomExists = (TomTom and TomTom.AddZWaypoint and TomTom.RemoveWaypoint) and true or false
+	self:CheckForMinimapAddons()
+end
+
+function Archy:CheckForMinimapAddons()
+	local mbf = LibStub("AceAddon-3.0"):GetAddon("Minimap Button Frame", true)
+	if mbf then
+		local foundMBF = false
+		if MBF.db.profile.MinimapIcons then
+			for i, button in pairs(MBF.db.profile.MinimapIcons) do
+				if string.lower(button) == "archyminimap" or string.lower(button) == "archyminimap_" then
+					foundMBF = true
+					break
+				end
+			end
+			if not foundMBF then
+				tinsert(MBF.db.profile.MinimapIcons, "ArchyMinimap")
+				self:Print("Adding Archy to the MinimapButtonFrame protected items list")
+			end
+		end
+	end
 end
 
 function Archy:OnDisable()
@@ -2864,6 +3649,8 @@ end
 
 function Archy:OnProfileUpdate()
 	db = self.db.profile
+	self:ConfigUpdated()
+	self:UpdateFramePositions()
 end
 
 --[[ Event Handlers ]]--
@@ -2910,8 +3697,22 @@ end
 function Archy:SkillLinesChanged()
 	if not playerContinent then return end
 	
+	local rank, maxRank = GetArchaeologyRank()
+--[[
+	if rank == 300 or rank == 375 or rank == 450 then
+		-- Force reload of race and artifact data when outland, northrend and tol'vir become available
+		LoadRaceData()
+		if GetNumArchaeologyRaces() > 0 then 
+			for rid = 1,GetNumArchaeologyRaces() do
+				UpdateRaceArtifact(rid)
+			end
+			self:UpdateRacesFrame()
+			self:RefreshRacesDisplay()
+		end
+	end
+]]	
+	
 	if racesFrame and racesFrame.skillBar then
-		local rank, maxRank = GetArchaeologyRank()
 		racesFrame.skillBar:SetMinMaxValues(0, maxRank)
 		racesFrame.skillBar:SetValue(rank)
 		racesFrame.skillBar.text:SetText(string.format("%s : %d/%d", GetArchaeologyInfo(), rank, maxRank))
@@ -2939,8 +3740,10 @@ function Archy:PlayerCastSurvey(event, unit, spell, _, _, spellid)
 		siteStats[lastSite.id]['surveys'] = siteStats[lastSite.id]['surveys'] + 1
 
 		distanceIndicatorActive = true
-		ShowDistanceIndicator()
+		ToggleDistanceIndicator()
 		UpdateDistanceIndicator()
+		
+		UpdateMinimapSurveyColors()
 
 		tomtomActive = false
 		RefreshTomTom()
@@ -2953,8 +3756,8 @@ function Archy:CurrencyUpdated()
 	if GetNumArchaeologyRaces() == 0 then return end
 	
 	for rid = 1, GetNumArchaeologyRaces() do
-		local cid = raceData[rid]['currency']['id']
-		local _, currencyAmount = GetCurrencyInfo(cid)
+		local cid = raceData[rid]['currency']
+		local _, _, _, currencyAmount = GetArchaeologyRaceInfo(rid)
 		local diff = currencyAmount - (currencyData[cid] or 0)
 		currencyData[cid] = currencyAmount
 		if diff < 0 then
@@ -2981,7 +3784,7 @@ function Archy:CurrencyUpdated()
 
 			-- deactivate the distance indicator
 			distanceIndicatorActive = false
-			HideDistanceIndicator()
+			ToggleDistanceIndicator()
 			
 			-- Increment the site stats
 			IncrementDigCounter(lastSite.id)
@@ -3009,8 +3812,15 @@ end
 
 --[[ Positional functions ]]--
 function Archy:UpdatePlayerPosition(force)
-	if not HasArchaeology() then return end
-	if (GetCurrentMapAreaID() == -1) then return end
+	if (not db.general.show) or (not HasArchaeology()) or (IsInInstance()) or (UnitIsGhost('player') == 1) then return end
+	if (GetCurrentMapAreaID() == -1) then 
+		if not IsInInstance() then
+			self:UpdateSiteDistances()
+			self:UpdateDigSiteFrame()
+			self:RefreshDigSiteDisplay()
+			return
+		end
+	end
 	local map, level, x, y = astrolabe:GetCurrentPlayerPosition()
 	if x == 0 and y == 0 then return end
 	if not map or not level then return end
@@ -3019,15 +3829,7 @@ function Archy:UpdatePlayerPosition(force)
 	if playerPosition.x ~= x or playerPosition.y ~= y or playerPosition.map ~= map or playerPosition.level ~= level or force then
 		playerPosition.x, playerPosition.y, playerPosition.map, playerPosition.level = x, y, map, level
 
-		-- player location has changed
-		if not IsInInstance() then
-			self:UpdateSiteDistances()
-			UpdateDistanceIndicator()
-			UpdateMinimapPOIs()
-			UpdateSiteBlobs()
-		end
-		self:UpdateDigSiteFrame()
-		self:RefreshDigSiteDisplay()
+		self:RefreshAll()
 	end
 	
 	if playerContinent ~= continent then 		-- we have switch continents or moved into an instance, battleground or something similar
@@ -3050,6 +3852,18 @@ function Archy:UpdatePlayerPosition(force)
 		self:RefreshDigSiteDisplay()
 		self:UpdateFramePositions()
 	end
+end
+
+function Archy:RefreshAll()
+	-- player location has changed
+	if not IsInInstance() then
+		self:UpdateSiteDistances()
+		UpdateDistanceIndicator()
+		UpdateMinimapPOIs()
+		UpdateSiteBlobs()
+	end
+	--self:UpdateDigSiteFrame()
+	self:RefreshDigSiteDisplay()
 end
 
 
@@ -3155,22 +3969,67 @@ function SetMovableState(self, value)
 	else self:RegisterForDrag() end
 end
 
+local function ApplyShadowToFontString(fs, hasShadow)
+	if hasShadow then
+		fs:SetShadowColor(0,0,0,1)
+		fs:SetShadowOffset(1, -1)
+	else
+		fs:SetShadowColor(0,0,0,0)
+		fs:SetShadowOffset(0, 0)
+	end
+end
+
 function Archy:UpdateRacesFrame()
 	if IsTaintable() then return end
 	racesFrame:SetScale(db.artifact.scale)
 	racesFrame:SetAlpha(db.artifact.alpha)
-	racesFrame:SetBackdropColor(1,1,1,db.artifact.bgAlpha)
-	racesFrame:SetBackdropBorderColor(1,1,1,db.artifact.borderAlpha)
 --	racesFrame:ClearAllPoints()
 --	racesFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", db.artifact.positionX, db.artifact.positionY)
 	SetMovableState(racesFrame, (not db.general.locked))
 
-	local nFn = [[Fonts\FRIZQT__.TTF]]
+	local font = lsm:Fetch("font", db.artifact.font.name)
+	local fragmentFont = lsm:Fetch("font", db.artifact.fragmentFont.name)
+	local keystoneFont = lsm:Fetch("font", db.artifact.keystoneFont.name)
 	for _, f in pairs(racesFrame.children) do
-		f.fragmentBar.artifact:SetFont(nFn, db.artifact.nameFontSize, db.artifact.nameFontOutline)
-		f.fragmentBar.fragments:SetFont(nFn, db.artifact.keystoneFontSize, db.artifact.keystoneFontOutline)
+		if db.general.theme == "Graphical" then
+			f.fragmentBar.artifact:SetFont(font, db.artifact.font.size, db.artifact.font.outline)
+			f.fragmentBar.artifact:SetTextColor(db.artifact.font.color.r, db.artifact.font.color.g, db.artifact.font.color.b, db.artifact.font.color.a)
+			f.fragmentBar.fragments:SetFont(fragmentFont, db.artifact.fragmentFont.size, db.artifact.fragmentFont.outline)
+			f.fragmentBar.fragments:SetTextColor(db.artifact.fragmentFont.color.r, db.artifact.fragmentFont.color.g, db.artifact.fragmentFont.color.b, db.artifact.fragmentFont.color.a)
+			f.fragmentBar.keystones.count:SetFont(keystoneFont, db.artifact.keystoneFont.size, db.artifact.keystoneFont.outline)
+			f.fragmentBar.keystones.count:SetTextColor(db.artifact.keystoneFont.color.r, db.artifact.keystoneFont.color.g, db.artifact.keystoneFont.color.b, db.artifact.keystoneFont.color.a)
+			ApplyShadowToFontString(f.fragmentBar.artifact, db.artifact.font.shadow)
+			ApplyShadowToFontString(f.fragmentBar.fragments, db.artifact.fragmentFont.shadow)
+			ApplyShadowToFontString(f.fragmentBar.keystones.count, db.artifact.keystoneFont.shadow)
+		else
+			f.fragments.text:SetFont(font, db.artifact.font.size, db.artifact.font.outline)
+			f.sockets.text:SetFont(font, db.artifact.font.size, db.artifact.font.outline)
+			f.artifact.text:SetFont(font, db.artifact.font.size, db.artifact.font.outline)
+			f.fragments.text:SetTextColor(db.artifact.font.color.r, db.artifact.font.color.g, db.artifact.font.color.b, db.artifact.font.color.a)
+			f.sockets.text:SetTextColor(db.artifact.font.color.r, db.artifact.font.color.g, db.artifact.font.color.b, db.artifact.font.color.a)
+			f.artifact.text:SetTextColor(db.artifact.font.color.r, db.artifact.font.color.g, db.artifact.font.color.b, db.artifact.font.color.a)
+			ApplyShadowToFontString(f.fragments.text, db.artifact.font.shadow)
+			ApplyShadowToFontString(f.sockets.text, db.artifact.font.shadow)
+			ApplyShadowToFontString(f.artifact.text, db.artifact.font.shadow)
+		end
 	end
 
+	local borderTexture = lsm:Fetch('border', db.artifact.borderTexture) or [[Interface\None]]
+	local backgroundTexture = lsm:Fetch('background', db.artifact.backgroundTexture) or [[Interface\None]]
+	racesFrame:SetBackdrop({ bgFile = backgroundTexture, edgeFile = borderTexture, tile = false, edgeSize = 8, tileSize = 8, insets = { left = 2, top = 2, right = 2, bottom = 2 }})
+	racesFrame:SetBackdropColor(1,1,1,db.artifact.bgAlpha)
+	racesFrame:SetBackdropBorderColor(1,1,1,db.artifact.borderAlpha)
+	
+
+	if not IsTaintable() then
+		local height = racesFrame.container:GetHeight() + ((db.general.theme == "Graphical") and 15 or 25)
+		if db.general.showSkillBar and db.general.theme == "Graphical" then
+			height = height + 30
+		end
+		racesFrame:SetHeight(height)
+		racesFrame:SetWidth(racesFrame.container:GetWidth() + ((db.general.theme == "Graphical") and 45 or 0))
+	end
+	
 	if racesFrame:IsVisible() then
 		if db.general.stealthMode or not db.artifact.show or ShouldBeHidden() then
 			racesFrame:Hide()
@@ -3178,36 +4037,6 @@ function Archy:UpdateRacesFrame()
 	else
 		if not db.general.stealthMode and db.artifact.show and not ShouldBeHidden() then
 			racesFrame:Show()
-		end
-	end
-end
-
-function Archy:UpdateDigSiteFrame()
-	if IsTaintable() then return end
-	digsiteFrame:SetScale(db.digsite.scale)
-	digsiteFrame:SetAlpha(db.digsite.alpha)
-	digsiteFrame:SetBackdropColor(1,1,1,db.digsite.bgAlpha)
-	digsiteFrame:SetBackdropBorderColor(1,1,1,db.digsite.borderAlpha)
-	--SetMovableState(digsiteFrame, (not db.general.locked))
-	
-	local nFn = [[Fonts\FRIZQT__.TTF]]
-	for _, siteFrame in pairs(digsiteFrame.children) do
-		siteFrame.site.name:SetFont(nFn, db.digsite.nameFontSize, db.digsite.nameFontOutline)
-		siteFrame.digCounter.value:SetFont(nFn, db.digsite.nameFontSize, db.digsite.nameFontOutline)
-		siteFrame.zone.name:SetFont(nFn, db.digsite.zoneFontSize, db.digsite.zoneFontOutline)
-		siteFrame.distance.value:SetFont(nFn, db.digsite.zoneFontSize, db.digsite.zoneFontOutline)
-	end
-	
-
-	local cid = continentMapToID[playerContinent]
-	
-	if digsiteFrame:IsVisible() then
-		if db.general.stealthMode or not db.digsite.show or ShouldBeHidden() or not digsites[cid] or #digsites[cid] == 0 then
-			digsiteFrame:Hide()
-		end
-	else
-		if not db.general.stealthMode and db.digsite.show and not ShouldBeHidden() and digsites[cid] and #digsites[cid] > 0 then
-			digsiteFrame:Show()
 		end
 	end
 end
@@ -3222,104 +4051,161 @@ function Archy:RefreshRacesDisplay()
 	local topFrame = racesFrame.container
 	local hiddenAnchor = racesFrame
 	local count = 0
+	if db.general.theme == "Minimal" then
+		racesFrame.title.text:SetText(L["Artifacts"])
+	end
 	
 	for _, child in pairs(racesFrame.children) do child:Hide() end
 	for rid, race in pairs(raceData) do
 		local child = racesFrame.children[rid]
 		local artifact = artifacts[rid]
-		child.solveButton:SetText(L["Solve"])
-		child.solveButton:SetWidth(child.solveButton:GetTextWidth() + 20)
-		child.solveButton.tooltip = L["Solve"]
-
-		if child.style ~= db.artifact.style then
-			TransformRaceFrame(child)
-		end
-		
-		child:SetID(rid)
-		child.crest.texture:SetTexture(race['texture'])
-		child.crest.tooltip = race['name'] .. "\n" .. NORMAL_FONT_COLOR_CODE .. L["Key Stones:"] .. "|r " .. race['keystone']['inventory']
-		child.crest.text:SetText(race['name'])
-		child.icon.texture:SetTexture(artifact['icon'])
 		local _, _, completionCount = GetArtifactStats(rid, artifact['name'])
-		child.icon.tooltip = HIGHLIGHT_FONT_COLOR_CODE .. artifact['name'] .. "|r\n" .. NORMAL_FONT_COLOR_CODE .. artifact['tooltip'] 
-			.. "\n\n" .. HIGHLIGHT_FONT_COLOR_CODE .. string.format(L["Solved Count: %s"], NORMAL_FONT_COLOR_CODE .. (completionCount or "0") .. "|r")
-			.. "\n\n" .. GREEN_FONT_COLOR_CODE .. L["Left-Click to open artifact in default Archaeology UI"] .. "|r"
-			
-		child.fragmentBar.barTexture:SetTexCoord(0, 0.810546875, 0.40625, 0.5625)			-- can solve with keystones if they were attached
-		local barColor
-		if artifact['rare'] then
-			barColor = db.artifact.fragmentBarColors["Rare"]
-			child.fragmentBar.barBackground:SetTexCoord(0, 0.72265625, 0.3671875, 0.7890625)		-- rare
-		else
-			if completionCount == 0 then
-				barColor = db.artifact.fragmentBarColors["FirstTime"]
-			else
-				barColor = db.artifact.fragmentBarColors["Normal"]
-			end
-			child.fragmentBar.barBackground:SetTexCoord(0, 0.72265625, 0, 0.411875)					-- bg
-		end
-		child.fragmentBar:SetMinMaxValues(0, artifact['fragTotal'])
-		child.fragmentBar:SetValue(min(artifact['fragments'] + artifact['fragAdjust'], artifact['fragTotal']))
-		local adjust = (artifact['fragAdjust'] > 0) and string.format(" (|cFF00FF00+%d|r)", artifact['fragAdjust']) or ""
-		child.fragmentBar.fragments:SetText(string.format("%d%s / %d", artifact['fragments'], adjust, artifact['fragTotal']))
-		child.fragmentBar.artifact:SetText(artifact['name'])
-		local endFound = false
+		child:SetID(rid)
 		
-		if db.artifact.style == "Compact" then
-			if artifact['sockets'] > 0 then
-				child.fragmentBar.keystones.tooltip = string.format(L["%d Key stone sockets available"], artifact['sockets']) 
-				.. "\n" .. string.format(L["%d %ss in your inventory"], (race['keystone']['inventory'] or 0), (race['keystone']['name'] or L["Key stone"]))
-				child.fragmentBar.keystones:Show()
-				child.fragmentBar.keystones.count:SetText(string.format("%d/%d", artifact['stonesAdded'], artifact['sockets']))
-				if artifact['stonesAdded'] > 0 then
-					child.fragmentBar.keystones.icon:SetTexture(race['keystone']['texture'])
-				else
-					child.fragmentBar.keystones.icon:SetTexture(nil)
-				end
-			else
-				child.fragmentBar.keystones:Hide()
-			end
-		else
-			for ki=1, (ARCHAEOLOGY_MAX_STONES or 4) do
-				if ki > artifact['sockets'] or not race['keystone']['name'] then
-					child.fragmentBar["keystone" .. ki]:Hide()
-				else
-					child.fragmentBar["keystone" .. ki].icon:SetTexture(race['keystone']['texture'])
-					if ki <= artifact['stonesAdded'] then
-						child.fragmentBar["keystone" .. ki].icon:Show()
-						child.fragmentBar["keystone" .. ki].tooltip = string.format(ARCHAEOLOGY_KEYSTONE_REMOVE_TOOLTIP, race['keystone']['name'])
-						child.fragmentBar["keystone" .. ki]:Enable()
-					else
-						child.fragmentBar["keystone" .. ki].icon:Hide()
-						child.fragmentBar["keystone" .. ki].tooltip = string.format(ARCHAEOLOGY_KEYSTONE_ADD_TOOLTIP, race['keystone']['name'])
-						child.fragmentBar["keystone" .. ki]:Enable()
-						if endFound then
-							child.fragmentBar["keystone" .. ki]:Disable()
-						end
-						endFound = true
-					end
-					child.fragmentBar["keystone" .. ki]:Show()
-				end
-			end
-		end
-		
-		if artifact['canSolve'] or (artifact['stonesAdded'] > 0 and artifact['canSolveStone']) then
-			child.solveButton:Enable()
-			barColor = db.artifact.fragmentBarColors["Solvable"]
-		else
-			if (artifact['canSolveStone']) then
-				barColor = db.artifact.fragmentBarColors["AttachToSolve"]
-			end
-			child.solveButton:Disable()
-		end
+		if db.general.theme == "Graphical" then
+			child.solveButton:SetText(L["Solve"])
+			child.solveButton:SetWidth(child.solveButton:GetTextWidth() + 20)
+			child.solveButton.tooltip = L["Solve"]
 
-		child.fragmentBar.barTexture:SetVertexColor(barColor.r, barColor.g, barColor.b, 1)
+			if child.style ~= db.artifact.style then
+				TransformRaceFrame(child)
+			end
+			
+			child.crest.texture:SetTexture(race['texture'])
+			child.crest.tooltip = race['name'] .. "\n" .. NORMAL_FONT_COLOR_CODE .. L["Key Stones:"] .. "|r " .. race['keystone']['inventory']
+			child.crest.text:SetText(race['name'])
+			child.icon.texture:SetTexture(artifact['icon'])
+			child.icon.tooltip = HIGHLIGHT_FONT_COLOR_CODE .. artifact['name'] .. "|r\n" .. NORMAL_FONT_COLOR_CODE .. artifact['tooltip'] 
+				.. "\n\n" .. HIGHLIGHT_FONT_COLOR_CODE .. string.format(L["Solved Count: %s"], NORMAL_FONT_COLOR_CODE .. (completionCount or "0") .. "|r")
+				.. "\n\n" .. GREEN_FONT_COLOR_CODE .. L["Left-Click to open artifact in default Archaeology UI"] .. "|r"
+			
+
+			
+			-- setup the bar texture here
+			local barTexture = (lsm and lsm:Fetch('statusbar', db.artifact.fragmentBarTexture)) or DEFAULT_STATUSBAR_TEXTURE
+			child.fragmentBar.barTexture:SetTexture(barTexture)
+			child.fragmentBar.barTexture:SetHorizTile(false)
+--[[
+			if db.artifact.fragmentBarTexture == "Archy" then
+				child.fragmentBar.barTexture:SetTexCoord(0, 0.810546875, 0.40625, 0.5625)			-- can solve with keystones if they were attached
+			else
+				child.fragmentBar.barTexture:SetTexCoord(0, 0, 0.77525001764297, 0.810546875)
+			end
+]]			
+			
+			
+			local barColor
+			if artifact['rare'] then
+				barColor = db.artifact.fragmentBarColors["Rare"]
+				child.fragmentBar.barBackground:SetTexCoord(0, 0.72265625, 0.3671875, 0.7890625)		-- rare
+			else
+				if completionCount == 0 then
+					barColor = db.artifact.fragmentBarColors["FirstTime"]
+				else
+					barColor = db.artifact.fragmentBarColors["Normal"]
+				end
+				child.fragmentBar.barBackground:SetTexCoord(0, 0.72265625, 0, 0.411875)					-- bg
+			end
+			child.fragmentBar:SetMinMaxValues(0, artifact['fragTotal'])
+			child.fragmentBar:SetValue(min(artifact['fragments'] + artifact['fragAdjust'], artifact['fragTotal']))
+			local adjust = (artifact['fragAdjust'] > 0) and string.format(" (|cFF00FF00+%d|r)", artifact['fragAdjust']) or ""
+			child.fragmentBar.fragments:SetText(string.format("%d%s / %d", artifact['fragments'], adjust, artifact['fragTotal']))
+			child.fragmentBar.artifact:SetText(artifact['name'])
+			child.fragmentBar.artifact:SetWordWrap(true)
+			local endFound = false
+			local artifactNameSize = child.fragmentBar:GetWidth() - 10
+			
+			if db.artifact.style == "Compact" then
+				artifactNameSize = artifactNameSize - 40
+				if artifact['sockets'] > 0 then
+					child.fragmentBar.keystones.tooltip = string.format(L["%d Key stone sockets available"], artifact['sockets']) 
+					.. "\n" .. string.format(L["%d %ss in your inventory"], (race['keystone']['inventory'] or 0), (race['keystone']['name'] or L["Key stone"]))
+					child.fragmentBar.keystones:Show()
+					if child.fragmentBar.keystones and child.fragmentBar.keystones.count then
+						child.fragmentBar.keystones.count:SetText(string.format("%d/%d", artifact['stonesAdded'], artifact['sockets']))
+					end
+					if artifact['stonesAdded'] > 0 then
+						child.fragmentBar.keystones.icon:SetTexture(race['keystone']['texture'])
+					else
+						child.fragmentBar.keystones.icon:SetTexture(nil)
+					end
+				else
+					child.fragmentBar.keystones:Hide()
+				end
+			else
+				for ki=1, (ARCHAEOLOGY_MAX_STONES or 4) do
+					if ki > artifact['sockets'] or not race['keystone']['name'] then
+						child.fragmentBar["keystone" .. ki]:Hide()
+					else
+						child.fragmentBar["keystone" .. ki].icon:SetTexture(race['keystone']['texture'])
+						if ki <= artifact['stonesAdded'] then
+							child.fragmentBar["keystone" .. ki].icon:Show()
+							child.fragmentBar["keystone" .. ki].tooltip = string.format(ARCHAEOLOGY_KEYSTONE_REMOVE_TOOLTIP, race['keystone']['name'])
+							child.fragmentBar["keystone" .. ki]:Enable()
+						else
+							child.fragmentBar["keystone" .. ki].icon:Hide()
+							child.fragmentBar["keystone" .. ki].tooltip = string.format(ARCHAEOLOGY_KEYSTONE_ADD_TOOLTIP, race['keystone']['name'])
+							child.fragmentBar["keystone" .. ki]:Enable()
+							if endFound then
+								child.fragmentBar["keystone" .. ki]:Disable()
+							end
+							endFound = true
+						end
+						child.fragmentBar["keystone" .. ki]:Show()
+					end
+				end
+			end
+			
+			if artifact['canSolve'] or (artifact['stonesAdded'] > 0 and artifact['canSolveStone']) then
+				child.solveButton:Enable()
+				barColor = db.artifact.fragmentBarColors["Solvable"]
+			else
+				if (artifact['canSolveStone']) then
+					barColor = db.artifact.fragmentBarColors["AttachToSolve"]
+				end
+				child.solveButton:Disable()
+			end
+
+			child.fragmentBar.barTexture:SetVertexColor(barColor.r, barColor.g, barColor.b, 1)
+
+			artifactNameSize = artifactNameSize - child.fragmentBar.fragments:GetStringWidth()
+			child.fragmentBar.artifact:SetWidth(artifactNameSize)
+			
+		else
+			local fragmentColor = (artifact['canSolve'] and "|cFF00FF00" or (artifact['canSolveStone'] and "|cFFFFFF00" or ""))
+			local nameColor = (artifact['rare'] and "|cFF0070DD" or ((completionCount and  completionCount > 0) and GRAY_FONT_COLOR_CODE or ""))
+			child.fragments.text:SetText(fragmentColor .. artifact['fragments'] .. "/" .. artifact['fragTotal'])
+			if (raceData[rid]['keystone']['inventory'] > 0 or artifact['sockets'] > 0) then
+				child.sockets.text:SetText(raceData[rid]['keystone']['inventory'] .. "/" .. artifact['sockets'])
+				child.sockets.tooltip = string.format(L["%d Key stone sockets available"], artifact['sockets']) 
+						.. "\n" .. string.format(L["%d %ss in your inventory"], (race['keystone']['inventory'] or 0), (race['keystone']['name'] or L["Key stone"]))
+			else
+				child.sockets.text:SetText("")
+				child.sockets.tooltip = nil
+			end
+			
+			child.crest:SetNormalTexture(raceData[rid]['texture'])
+			child.crest:SetHighlightTexture(raceData[rid]['texture'])
+			child.crest.tooltip = artifact['name'] .. "\n" .. NORMAL_FONT_COLOR_CODE .. L["Race: "] .. "|r" .. HIGHLIGHT_FONT_COLOR_CODE .. raceData[rid]['name'] .. "\n\n" .. GREEN_FONT_COLOR_CODE .. L["Left-Click to solve without key stones"] .. "\n" .. L["Right-Click to solve with key stones"]
+			
+			child.artifact.text:SetText(nameColor .. artifact['name'])
+			child.artifact.tooltip = HIGHLIGHT_FONT_COLOR_CODE .. artifact['name'] .. "|r\n" .. NORMAL_FONT_COLOR_CODE .. artifact['tooltip'] 
+				.. "\n\n" .. HIGHLIGHT_FONT_COLOR_CODE .. string.format(L["Solved Count: %s"], NORMAL_FONT_COLOR_CODE .. (completionCount or "0") .. "|r")
+				.. "\n\n" .. GREEN_FONT_COLOR_CODE .. L["Left-Click to open artifact in default Archaeology UI"] .. "|r"
+			
+			
+			
+			child.artifact:SetWidth(child.artifact.text:GetStringWidth())
+			child.artifact:SetHeight(child.artifact.text:GetStringHeight())
+			child:SetWidth(child.fragments:GetWidth() + child.sockets:GetWidth() + child.crest:GetWidth() + child.artifact:GetWidth() + 30)
+		end
+		
 		if not db.artifact.blacklist[rid] and artifact['fragTotal'] > 0 and (not db.artifact.filter or tContains(ContinentRaces(playerContinent), rid))then
 			child:ClearAllPoints()
 			if topFrame == racesFrame.container then
-				child:SetPoint("TOP", topFrame, "TOP", 0, 0)
+				child:SetPoint("TOPLEFT", topFrame, "TOPLEFT", 0, 0)
 			else
-				child:SetPoint("TOP", topFrame, "BOTTOM", 0, -5)
+				child:SetPoint("TOPLEFT", topFrame, "BOTTOMLEFT", 0, -5)
 			end
 			topFrame = child
 			child:Show()
@@ -3332,25 +4218,31 @@ function Archy:RefreshRacesDisplay()
 	end
 
 	local containerXofs = 0
-	if db.artifact.style == "Compact" then
+	if db.general.theme == "Graphical" and db.artifact.style == "Compact" then
 		maxHeight = maxHeight + 10
 		containerXofs = -10
 	end
 	
 	
-	racesFrame.skillBar:SetWidth(maxWidth)
-	racesFrame.skillBar.border:SetWidth(maxWidth+9)
-	
 	racesFrame.container:SetHeight(maxHeight)
 	racesFrame.container:SetWidth(maxWidth)
 	
-	if db.general.showSkillBar then
-		racesFrame.skillBar:Show()
-		racesFrame.container:ClearAllPoints()
-		racesFrame.container:SetPoint("TOP", racesFrame.skillBar, "BOTTOM", containerXofs, -10)
-		maxHeight = maxHeight + 30
+	if racesFrame.skillBar then
+		racesFrame.skillBar:SetWidth(maxWidth)
+		racesFrame.skillBar.border:SetWidth(maxWidth+9)
+	
+		if db.general.showSkillBar then
+			racesFrame.skillBar:Show()
+			racesFrame.container:ClearAllPoints()
+			racesFrame.container:SetPoint("TOP", racesFrame.skillBar, "BOTTOM", containerXofs, -10)
+			maxHeight = maxHeight + 30
+		else
+			racesFrame.skillBar:Hide()
+			racesFrame.container:ClearAllPoints()
+			racesFrame.container:SetPoint("TOP", racesFrame, "TOP", containerXofs, -20)
+			maxHeight = maxHeight + 10
+		end
 	else
-		racesFrame.skillBar:Hide()
 		racesFrame.container:ClearAllPoints()
 		racesFrame.container:SetPoint("TOP", racesFrame, "TOP", containerXofs, -20)
 		maxHeight = maxHeight + 10
@@ -3358,11 +4250,61 @@ function Archy:RefreshRacesDisplay()
 
 	if not IsTaintable() then
 		if count == 0 then racesFrame:Hide() end
-		racesFrame:SetHeight(maxHeight + 15)
-		racesFrame:SetWidth(maxWidth + 45)
+		racesFrame:SetHeight(maxHeight + ((db.general.theme == "Graphical") and 15 or 25))
+		racesFrame:SetWidth(maxWidth + ((db.general.theme == "Graphical") and 45 or 0))
 	end
 	
 	
+end
+
+function Archy:UpdateDigSiteFrame()
+	if IsTaintable() then return end
+	digsiteFrame:SetScale(db.digsite.scale)
+	digsiteFrame:SetAlpha(db.digsite.alpha)
+	local borderTexture = lsm:Fetch('border', db.digsite.borderTexture) or [[Interface\None]]
+	local backgroundTexture = lsm:Fetch('background', db.digsite.backgroundTexture) or [[Interface\None]]
+	digsiteFrame:SetBackdrop({ bgFile = backgroundTexture, edgeFile = borderTexture, tile = false, edgeSize = 8, tileSize = 8, insets = { left = 2, top = 2, right = 2, bottom = 2 }})
+	digsiteFrame:SetBackdropColor(1,1,1,db.digsite.bgAlpha)
+	digsiteFrame:SetBackdropBorderColor(1,1,1,db.digsite.borderAlpha)
+	--SetMovableState(digsiteFrame, (not db.general.locked))
+
+	local font = lsm:Fetch("font", db.digsite.font.name)
+	local zoneFont = lsm:Fetch("font", db.digsite.zoneFont.name)
+	for _, siteFrame in pairs(digsiteFrame.children) do
+		siteFrame.site.name:SetFont(font, db.digsite.font.size, db.digsite.font.outline)
+		siteFrame.digCounter.value:SetFont(font, db.digsite.font.size, db.digsite.font.outline)
+		siteFrame.site.name:SetTextColor(db.digsite.font.color.r, db.digsite.font.color.g, db.digsite.font.color.b, db.digsite.font.color.a)
+		siteFrame.digCounter.value:SetTextColor(db.digsite.font.color.r, db.digsite.font.color.g, db.digsite.font.color.b, db.digsite.font.color.a)
+		ApplyShadowToFontString(siteFrame.site.name, db.digsite.font.shadow)
+		ApplyShadowToFontString(siteFrame.digCounter.value, db.digsite.font.shadow)
+		if db.general.theme == "Graphical" then
+			siteFrame.zone.name:SetFont(zoneFont, db.digsite.zoneFont.size, db.digsite.zoneFont.outline)
+			siteFrame.distance.value:SetFont(zoneFont, db.digsite.zoneFont.size, db.digsite.zoneFont.outline)
+			siteFrame.zone.name:SetTextColor(db.digsite.zoneFont.color.r, db.digsite.zoneFont.color.g, db.digsite.zoneFont.color.b, db.digsite.zoneFont.color.a)
+			siteFrame.distance.value:SetTextColor(db.digsite.zoneFont.color.r, db.digsite.zoneFont.color.g, db.digsite.zoneFont.color.b, db.digsite.zoneFont.color.a)
+			ApplyShadowToFontString(siteFrame.zone.name, db.digsite.zoneFont.shadow)
+			ApplyShadowToFontString(siteFrame.distance.value, db.digsite.zoneFont.shadow)
+		else
+			siteFrame.zone.name:SetFont(font, db.digsite.font.size, db.digsite.font.outline)
+			siteFrame.distance.value:SetFont(font, db.digsite.font.size, db.digsite.font.outline)
+			siteFrame.zone.name:SetTextColor(db.digsite.font.color.r, db.digsite.font.color.g, db.digsite.font.color.b, db.digsite.font.color.a)
+			siteFrame.distance.value:SetTextColor(db.digsite.font.color.r, db.digsite.font.color.g, db.digsite.font.color.b, db.digsite.font.color.a)
+			ApplyShadowToFontString(siteFrame.zone.name, db.digsite.font.shadow)
+			ApplyShadowToFontString(siteFrame.distance.value, db.digsite.font.shadow)
+		end
+	end
+
+	local cid = continentMapToID[playerContinent]
+	
+	if digsiteFrame:IsVisible() then
+		if db.general.stealthMode or not db.digsite.show or ShouldBeHidden() or not digsites[cid] or #digsites[cid] == 0 then
+			digsiteFrame:Hide()
+		end
+	else
+		if not db.general.stealthMode and db.digsite.show and not ShouldBeHidden() and digsites[cid] and #digsites[cid] > 0 then
+			digsiteFrame:Show()
+		end
+	end
 end
 
 function Archy:ShowDigSiteTooltip(self)
@@ -3384,6 +4326,59 @@ function Archy:ShowDigSiteTooltip(self)
 end
 
 function Archy:ResizeDigSiteDisplay()
+	if db.general.theme == "Graphical" then
+		self:ResizeGraphicalDigSiteDisplay()
+	else
+		self:ResizeMinimalDigSiteDisplay()
+	end
+end
+
+function Archy:ResizeMinimalDigSiteDisplay()
+	local maxWidth, maxHeight = 0, 0
+	local topFrame = digsiteFrame.container
+	local siteIndex = 0
+	local maxNameWidth, maxZoneWidth, maxDistWidth, maxDigCounterWidth = 0, 0, 70, 20
+	for _, siteFrame in pairs(digsiteFrame.children) do
+		siteIndex = siteIndex + 1
+		siteFrame.zone:SetWidth(siteFrame.zone.name:GetStringWidth())
+		siteFrame.distance:SetWidth(siteFrame.distance.value:GetStringWidth())
+		siteFrame.site:SetWidth(siteFrame.site.name:GetStringWidth())
+		local width
+		local nameWidth = siteFrame.site:GetWidth()
+		local zoneWidth = siteFrame.zone:GetWidth()
+		if maxNameWidth < nameWidth then maxNameWidth = nameWidth end
+		if maxZoneWidth < zoneWidth then maxZoneWidth = zoneWidth end
+		if maxDistWidth < siteFrame.distance:GetWidth() then maxDistWidth = siteFrame.distance:GetWidth() end
+		maxHeight = maxHeight + siteFrame:GetHeight() + 5
+
+		siteFrame:ClearAllPoints()
+		if siteIndex == 1 then siteFrame:SetPoint("TOP", topFrame, "TOP", 0, 0) else siteFrame:SetPoint("TOP", topFrame, "BOTTOM", 0, -5) end
+		topFrame = siteFrame
+	end
+	if not db.digsite.minimal.showDistance then maxDistWidth = 0 end
+	if not db.digsite.minimal.showZone then maxZoneWidth = 0 end
+	if not db.digsite.minimal.showDigCounter then maxDigCounterWidth = 0 end
+	maxWidth = 57 + maxDigCounterWidth + maxNameWidth + maxZoneWidth + maxDistWidth
+	for _, siteFrame in pairs(digsiteFrame.children) do
+		siteFrame.zone:SetWidth(maxZoneWidth == 0 and 1 or maxZoneWidth)
+		siteFrame.site:SetWidth(maxNameWidth)
+		siteFrame.distance:SetWidth(maxDistWidth == 0 and 1 or maxDistWidth)
+		siteFrame:SetWidth(maxWidth)
+		siteFrame.distance:SetAlpha(db.digsite.minimal.showDistance and 1 or 0)
+		siteFrame.zone:SetAlpha(db.digsite.minimal.showZone and 1 or 0)
+	end
+	local cpoint, crelTo, crelPoint, cxOfs, cyOfs = digsiteFrame.container:GetPoint()
+
+	digsiteFrame.container:SetWidth(maxWidth)
+	
+	digsiteFrame.container:SetHeight(maxHeight)
+	if not IsTaintable() then 
+		digsiteFrame:SetHeight(digsiteFrame.container:GetHeight() + cyOfs + 40)
+		digsiteFrame:SetWidth(maxWidth + cxOfs + 30)
+	end
+end
+
+function Archy:ResizeGraphicalDigSiteDisplay()
 	local maxWidth, maxHeight = 0, 0
 	local topFrame = digsiteFrame.container
 	local siteIndex = 0
@@ -3394,7 +4389,7 @@ function Archy:ResizeDigSiteDisplay()
 		siteFrame.site:SetWidth(siteFrame.site.name:GetStringWidth())
 		local width
 		local nameWidth = siteFrame.site:GetWidth()
-		local zoneWidth = siteFrame.zone:GetWidth()
+		local zoneWidth = siteFrame.zone:GetWidth() + 10
 		if nameWidth > zoneWidth then
 			width = siteFrame.crest:GetWidth() + nameWidth + siteFrame.digCounter:GetWidth() + 6
 		else
@@ -3440,18 +4435,24 @@ function Archy:RefreshDigSiteDisplay()
 	
 	for siteIndex, site in pairs(digsites[cid]) do
 		local siteFrame = digsiteFrame.children[siteIndex]
+		local count = siteStats[site.id]['counter']
 		
-		if siteFrame.style ~= db.digsite.style then
-			TransformSiteFrame(siteFrame)
+		if db.general.theme == "Graphical" then
+			if siteFrame.style ~= db.digsite.style then
+				TransformSiteFrame(siteFrame)
+			end
+			count = (count and count > 0) and tostring(count) or ""
+		else
+			count = (count and tostring(count) or "0") .. "/3"
 		end
 
 		siteFrame.distance.value:SetText(string.format(L["%d yards"], site.distance))
-		local count = siteStats[site.id]['counter']
-		siteFrame.digCounter.value:SetText((count and count > 0) and "|cFFFFFFFF" .. count .. "|r" or "")
-		siteFrame.site.name:SetText((Archy:IsSiteBlacklisted(site.name)) and "|cFFFF0000" .. site.name or "|cFFFFFFFF" .. site.name)
+		siteFrame.digCounter.value:SetText(count)
+		siteFrame.site.name:SetText((Archy:IsSiteBlacklisted(site.name)) and "|cFFFF0000" .. site.name or site.name)
 	
 		if siteFrame.site.siteName ~= site.name then
 			siteFrame.crest.icon:SetTexture(raceData[site.raceId]['texture'])
+			siteFrame.crest.tooltip = raceData[site.raceId]['name']
 			siteFrame.zone.name:SetText(site.zoneName)
 			siteFrame.site.siteName = site.name
 			siteFrame.site.zoneId = site.zoneId
@@ -3561,7 +4562,7 @@ function Archy:SaveFramePosition(frame)
 	end
 	
 	self:OnProfileUpdate()
-	Archy:SetFramePosition(frame)
+	--Archy:SetFramePosition(frame)
 end
 
 

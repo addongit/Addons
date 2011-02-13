@@ -1,3 +1,6 @@
+v1.7 (Copied into this file by Cidrei)
+* Use of CurseForge repository
+
 v1.7b6 - 31-Dec-2010
 * Fixed a bug with the survey nodes table not being initialized
 * Fixed a bug with the Archy being locked and using a portal

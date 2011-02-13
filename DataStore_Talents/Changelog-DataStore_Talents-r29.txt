@@ -1,0 +1,61 @@
+------------------------------------------------------------------------
+r29 | thaoky | 2010-11-24 19:00:31 +0000 (Wed, 24 Nov 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Fixed a Lua error when logging on with a mage.
+------------------------------------------------------------------------
+r28 | thaoky | 2010-11-21 13:38:52 +0000 (Sun, 21 Nov 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Removed deDE locale exception for the Shaman Enhancement tree.
+------------------------------------------------------------------------
+r27 | thaoky | 2010-11-20 13:02:54 +0000 (Sat, 20 Nov 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+- Added support for remote talent tree inspection.
+------------------------------------------------------------------------
+r26 | thaoky | 2010-10-26 10:46:41 +0000 (Tue, 26 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Fixed a typo.
+------------------------------------------------------------------------
+r25 | thaoky | 2010-10-26 08:01:45 +0000 (Tue, 26 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Removed a restriction on talent reference scanning
+------------------------------------------------------------------------
+r24 | thaoky | 2010-10-25 20:55:25 +0000 (Mon, 25 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+More frFR fixes
+------------------------------------------------------------------------
+r23 | thaoky | 2010-10-25 20:21:29 +0000 (Mon, 25 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Fixed frFR locale exception.
+------------------------------------------------------------------------
+r22 | thaoky | 2010-10-25 19:01:10 +0000 (Mon, 25 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Added a locale exception for koKR
+------------------------------------------------------------------------
+r21 | thaoky | 2010-10-24 18:44:50 +0000 (Sun, 24 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Minor fix while scanning icon paths.
+------------------------------------------------------------------------
+r20 | thaoky | 2010-10-16 20:23:19 +0000 (Sat, 16 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Talents.lua
+
+Registering event USE_GLYPH to refresh the glyph list.
+------------------------------------------------------------------------
