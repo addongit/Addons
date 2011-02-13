@@ -1,0 +1,42 @@
+Archy 1.7b8 bugfix4
+~ with credit to original posters of the information.
+---
+
+I took some of my own fixes and some of the community fixes and put them all together into a bug fix patch of the most recent version of Archy to tide people over until a proper release can be done. There have been changes to some of the functions and other additions (like the new digsites). If you're reporting bugs specific to this bugfix, be sure you're reporting them in the right place.
+
+This newest version is based on an unreleased beta by daihenka and includes a new minimalist interface, as well as various bug fixes that the author had put in place. I have bumped the version number of Archy to 1.7b8 to reflect this. As such, aside from updating the digsites and making it 4.0.6 compatible I did little work on this one so that it may be tested on its own merits and to see if any of the existing bugs have been fixed by the changes. 
+
+It is believed that we now have all of the new digsites. If you come across any that are not in the addon, by all means do let me know.
+
+Thanks!
+
+Fixes
+1.7b8 bugfix4
+^ - I somehow managed to upload an older version of the addon and not the finished one. Good job, me! Fixes the 3759 error and the missing digsites in the locale. I don't even know how that one got zipped up.
+* - Updates to the deDE locale. -- Contiki
+
+1.7b8 bugfix3
+* - This version is based on an unreleased beta by daihenka. It includes a new alternative interface and several changes related to it, as well as various bug fixes including the fps drop inside of old instances. -- Codex, daihenka
+* - Old data import re-enabled. Fixed by daihenka.
+^ - Updated digsite list. It is believed that we now have all the new sites. -- foxtyke, bradc, Shambarimen, mercuria, MasterAries7, bdemore, Darenia
+
+bugfix2
+^ - Updated Ace3 libs to r1009 per Bluspacecow's suggestion. Fixes some configuration weirdness. -- Bluspacecow
+
+bugfix1
+^ - GetArcheaologyRaceInfo() return order changes. -- Brandho
+^ - Fixed fragment counts not updating. Related to the above change.
+^ - Fix "to make the bars look pretty again." (They're still a little wonky when they update.) -- LLGames
+^ - Added new dig sites, more are out there. (Need to get the blob IDs on these.) -- bdemore, chrixian, Tekz08
+^ - Possible fix for GetNumArtifactsByRace() bug? (Haven't encountered myself, so we'll see.)
+^ - Fixed prompt on completing artifacts not going away with training a new rank of Archaeology. (Not tested, should work. Will check tomorrow.)
+^ - Fix for the nil surveys error on load. (Commented the function out. Imports old data. Assuming it works in future as it should now, it'll keep existing data when fixed.)
+
+Known Issues
+% - "Bad argument #5 to 'format' (string expected, got nil)" are going to pop up whenever a di gsite that is not currently in the addon appears. It would be greatly appreciated if you could report the name of the dig site, as well as the zone and the race for it as well. They will be added to future bug fixes to prevent this from happening.
+% - Also related to the new dig sites, they are currently only being added to the enUS locale. I'm not sure how other locales work with AceLocale, so if you get errors or English for the new sites, this would be why.
+
+Special Mentions
+* - Bluspacecow for linking the Curse page and making me look over there too.
+* - daihenka because it's his addon, of course.
+* - Codex for the unreleased beta.

@@ -1,4 +1,4 @@
-﻿--Mage Nuggets 2.075 by B-Buck (Bbuck of Eredar)
+﻿--Mage Nuggets 2.078 by B-Buck (Bbuck of Eredar)
 
 MageNugz = {
   spMonitorToggle = false;
@@ -85,12 +85,14 @@ MageNugz = {
   moonkinProcTog = true;
   innervatNotify = "Innervate Cast On You!";
   castBoxes = true;
+  igniteTog = true;
   moonkinProcSize = 3;
   starfallCooldown = true;
   treantCooldown = true;
   moonkinMin = false;
   moonkinAnchorTog = true;
   cauterizeToggle = true;
+  moonkinBoxTog = false;
 }
 
 local livingBombCount = 0;
@@ -133,6 +135,8 @@ local talentSpec = "damage";
 local mnplayerClass = " "
 local mnenglishClass = " "
 local sstimeleft = 0;
+local igniteTemp = 0;
+local ignitetimer = 0;
 
 function MN_Start(self)
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -157,13 +161,13 @@ function MageNuggets_SlashCommandHandler(msg) --Handles the slash commands
     elseif (msg == "ports") then
         MageNuggets_Minimap_OnClick(); 
     else
-    DEFAULT_CHAT_FRAME:AddMessage("|cffffffff------------|cff00BFFF".."Mage".." |cff00FF00".."Nuggets".."|cffffffff 2.075--------------")
+    DEFAULT_CHAT_FRAME:AddMessage("|cffffffff------------|cff00BFFF".."Mage".." |cff00FF00".."Nuggets".."|cffffffff 2.078--------------")
     DEFAULT_CHAT_FRAME:AddMessage("|cffffffff".."/magenuggets".." ".."options (Shows Option Menu)")
     DEFAULT_CHAT_FRAME:AddMessage("|cffffffff".."/magenuggets".." ".."ports (Shows Portal Menu)")
     end
 end
 --
-local MN_UpdateInterval = 1.0;
+local MN_UpdateInterval = 0.25;
 function MageNuggets_OnUpdate(self, elapsed) 
  self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
  if (self.TimeSinceLastUpdate > MN_UpdateInterval) then
@@ -391,6 +395,28 @@ function MageNuggetsClearCast_OnUpdate(self, elapsed)
     end   
 end
 --
+function MageNuggetsIgnite_OnUpdate(self, elapsed)
+ self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
+    if (self.TimeSinceLastUpdate > 0.1) then   
+        if (ignitetimer > 0) then
+            ignitetimer = ignitetimer - 0.1;
+            if(ignitetimer < 2.1) then
+                local igntemp = RoundZero(igniteTemp / 2);
+                MageNugIgnite_FrameText:SetText(igntemp);
+                
+            
+            end
+            MageNugIgnite_Frame_Bar:SetValue(ignitetimer);
+            MageNugIgnite_FrameText2:SetText(RoundOne(ignitetimer));
+            
+        else  
+            MageNugIgnite_Frame:Hide();   
+       
+        end    
+    self.TimeSinceLastUpdate = 0;
+    end   
+end
+--
 function MageNuggetsCritMass_OnUpdate(self, elapsed)  
  self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
     if (self.TimeSinceLastUpdate > 1.0) then   
@@ -438,7 +464,7 @@ end
 function MNManaGem_OnUpdate(self, elapsed)
     self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;
     if (self.TimeSinceLastUpdate > 0.3) then   
-        local count = GetItemCount("Mana Gem", nil, true)
+        local count = GetItemCount(36799, nil, true)
         if (count ~= 0) then
             MageNugManaGem_Frame_Text:SetText("|cffffffff"..count)
         else
@@ -617,11 +643,11 @@ function MageNuggetsSP_OnUpdate(self, elapsed)
             mastery = RoundCrit(mastery * adept);
             masteryText = "|cff9966FFAdept";
         elseif(firePoints > arcanePoints) and (firePoints > frostPoints) then
-            mastery = ((GetCombatRatingBonus(26)+8)*2.5);
+            mastery = ((GetCombatRatingBonus(26)+8)*2.8);
             mastery = RoundCrit(mastery)
             masteryText = "|cffFF3300Burn";
         elseif(frostPoints > arcanePoints) and (frostPoints > firePoints) then
-            mastery = ((GetCombatRatingBonus(26)+8)*2.5);
+            mastery = ((GetCombatRatingBonus(26)+2)*2.5);
             mastery = RoundCrit(mastery)
             masteryText = "|cff66CCFFBurn";
         else
@@ -665,7 +691,7 @@ function MageNuggetsSP_OnUpdate(self, elapsed)
                 end
             end
         end   
-        if(spellId3 == 22959) then --critical mass
+        if(spellId3 == 22959) or (spellId3 == 17800) then --critical mass and shadow and flame
             critRating = critRating + 5.0;
             if (MageNugz.buffmonToggle == false) then
                 scorchTime = RoundZero(expirationTime3 - GetTime());
@@ -851,7 +877,9 @@ function MageNuggets_OnEvent(this, event, ...)
                 MNmoonkinToggle();
             else
                 if(MageNugMoonkinOptionFrame_CheckButton:GetChecked())then
-                    MageNugMoonkinToggle_Frame:Show();
+                    if(MageNugz.moonkinBoxTog == false)then
+                        MageNugMoonkinToggle_Frame:Show();
+                    end
                 end
             end
         end
@@ -964,6 +992,30 @@ function MageNuggets_OnEvent(this, event, ...)
                 abProgMonTime = 6;
                 MageNugAB_FrameText:SetText("|cffFF00FF"..abStackCount)
                 MageNugAB_Frame_ABBar:SetValue(abProgMonTime)
+            end
+        end
+        if(MageNugz.igniteTog == true)then
+            if((event1 == "SPELL_PERIODIC_DAMAGE") and (sourceName == UnitName("player")))then
+                if((arg10 == 1) and (arg6 == 4)) then
+                    if(destGUID == UnitGUID("target")) and (arg ~= 12654) then   
+                        local mastertemp = ((GetCombatRatingBonus(26)+8)*2.8)
+                        igniteTemp = RoundZero((arg4 * 0.40)*(1+(0.01 * mastertemp)));
+                        ignitetimer = 5.0;
+                        MageNugIgnite_FrameText:SetText(igniteTemp);
+                        MageNugIgnite_Frame:Show();
+                    end
+                end
+            end
+            if((event1 == "SPELL_DAMAGE") and (sourceName == UnitName("player")))then
+                if((arg10 == 1) and (arg6 == 4))then
+                    if(destGUID == UnitGUID("target")) then  
+                        local mastertemp = ((GetCombatRatingBonus(26)+8)*2.8)
+                        igniteTemp = RoundZero((arg4*0.40)*(1+(0.01*mastertemp)));
+                        ignitetimer = 5.0;   
+                        MageNugIgnite_FrameText:SetText(igniteTemp);
+                        MageNugIgnite_Frame:Show();
+                    end
+                end
             end
         end
         if (event1 == "SPELL_DISPEL") and (sourceName == UnitName("player")) then
@@ -1270,6 +1322,24 @@ function MageNuggets_OnEvent(this, event, ...)
                     PlaySoundFile("Interface\\AddOns\\MageNuggets\\Sounds\\"..MageNugz.treantSound)
                 end
             end
+            if (arg == 122) then -- frost nova
+                --if (MageNugz.cbCooldown == true) then
+                    frostnovaId, _, _, _, _, _, _, _, _ = GetSpellInfo(122);
+                    MNcooldownMonitor(frostnovaId, 25, "Interface\\Icons\\spell_frost_frostnova")
+                --end
+            end
+            if (arg == 120) then -- cone of cold
+                --if (MageNugz.cbCooldown == true) then
+                    coneofcoldId, _, _, _, _, _, _, _, _ = GetSpellInfo(120);
+                    MNcooldownMonitor(coneofcoldId, 10, "Interface\\Icons\\spell_frost_glacier")
+                --end
+            end
+            if (arg == 82731) then -- Flame Orb
+                --if (MageNugz.cbCooldown == true) then
+                    flameOrbId, _, _, _, _, _, _, _, _ = GetSpellInfo(82731);
+                    MNcooldownMonitor(flameOrbId, 60, "Interface\\Icons\\spell_mage_flameorb")
+                --end
+            end
             if (arg == 11129) then -- Combustion
                 if (MageNugz.cbCooldown == true) then
                     combustionId, _, _, _, _, _, _, _, _ = GetSpellInfo(11129);
@@ -1340,6 +1410,11 @@ function MageNuggets_OnEvent(this, event, ...)
                 if(arg == 22959) then
                     MNcritMass_Frame:Hide();
                 end
+               --[[ if(arg == 12654)then
+                    igniteTemp = 0;
+                    MageNugIgnite_FrameText:SetText(igniteTemp);
+                end
+                --]]
                 if (arg == 36032) then
                     abStackCount = 0;
                     MageNugAB_Frame:Hide();
@@ -1516,7 +1591,6 @@ function MageNuggets_OnEvent(this, event, ...)
                 end
             end
         end
-        --
         if event1 == "SPELL_AURA_APPLIED" then
             if sourceName == UnitName("player") then
             if (arg == 83582) then -- pyromaniac
@@ -1837,7 +1911,7 @@ function MageNuggets_OnEvent(this, event, ...)
                     end         
                     if (MageNugz.mwCooldown == true) then
                         magewardId, _, _, _, _, _, _, _, _ = GetSpellInfo(543);
-                        MNcooldownMonitor(magewardId, 30, "Interface\\Icons\\Spell_frost_coldhearted")
+                        MNcooldownMonitor(magewardId, 30, "Interface\\Icons\\spell_fire_twilightfireward")
                     end
                 end
                 if (arg == 1463) then
@@ -2077,7 +2151,7 @@ function MageNuggets_OnEvent(this, event, ...)
                     CombatText_AddMessage("Stole"..":"..GetSpellLink(spellId1), CombatText_StandardScroll, 0.10, 0, 1, "sticky", nil);
                 end
                 if (MageNugz.consoleTextEnabled == true) then
-                    DEFAULT_CHAT_FRAME:AddMessage("|cffFFFFFF".."Spell Stolen"..":"..GetSpellLink(spellId1))
+                    DEFAULT_CHAT_FRAME:AddMessage("|cffFFFFFF".."Spell Stolen"..":"..GetSpellLink(spellId1).."From "..destName)
 	    	    end
             end
 		end
@@ -2130,6 +2204,7 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
         if((mnenglishClass == 'WARRIOR') or (mnenglishClass == 'ROGUE') or (mnenglishClass == 'DEATH KNIGHT') or (mnenglishClass == 'PALADAIN') or (mnenglishClass == 'HUNTER')) then
             MageNugz.spMonitorToggle = true;
             MageNugz.ssMonitorToggle = false;
+            MageNugz.igniteTog = false;
             MageNugz.mageProcToggle = false;
             MageNugz.camZoomTogg = false;
             MageNugz.absorbToggle = false;
@@ -2152,7 +2227,8 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNstarSurge_Frame:Hide();
         end
         if(mnenglishClass == 'WARLOCK') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.078 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            MageNugz.igniteTog = false;
             MageNugz.ssMonitorToggle = false;
             MageNugz.mageProcToggle = false;
             MageNugz.absorbToggle = false;
@@ -2173,7 +2249,8 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNstarSurge_Frame:Hide();
         end
         if(mnenglishClass == 'SHAMAN')then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.078 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            MageNugz.igniteTog = false;
             MageNugz.mageProcToggle = false;
             MageNugz.absorbToggle = false;
             MageNugz.mirrorImageToggle = false;
@@ -2194,7 +2271,8 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNSpellSteal_FrameTitleText:SetText("|cffffffffPURGEABLE")
         end
         if(mnenglishClass == 'PRIEST') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.078 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            MageNugz.igniteTog = false;
             MageNugz.ssMonitorToggle = false;
             MageNugz.mageProcToggle = false;
             MageNugz.absorbToggle = false;
@@ -2215,7 +2293,8 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MNstarSurge_Frame:Hide();
         end
         if(mnenglishClass == 'DRUID') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.078 ".."loaded! Some Options Disabled (Class:"..UnitClass("Player")..")")
+            MageNugz.igniteTog = false;
             MageNugz.ssMonitorToggle = false;
             MageNugz.absorbToggle = false;
             MageNugz.mirrorImageToggle = false;
@@ -2245,14 +2324,14 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             end
         end
         if(mnenglishClass == 'MAGE') then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.075 ".."loaded! (Use: /magenuggets options)")
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00BFFF".."Mage".."|cff00FF00".."Nuggets".."|cffffffff 2.078 ".."loaded! (Use: /magenuggets options)")
             MageNugCD_Frame_Text:SetText(" ");
             MageNugz.moonkinTog = true;
             MageNugMoonkin_Frame:Hide()
             MNmoonFire_Frame:Hide();
             MNinsectSwarm_Frame:Hide();
             MNstarSurge_Frame:Hide();
-            MNSpellSteal_FrameTitleText:SetText("|cff00CCFFS P E L L S T E A L")
+            MNSpellSteal_FrameTitleText:SetText("|cffFFFFFFS P E L L S T E A L")
             if(MageNugz.managemToggle == true) then
                 if(MageNugz.mgCombatTog == true) then
                     MageNugManaGem_Frame:Hide();
@@ -2303,6 +2382,12 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MageNugOptionsFrame_CheckButton5:SetChecked(0);
         else
             MageNugOptionsFrame_CheckButton5:SetChecked(1);
+        end
+        if(MageNugz.igniteTog == true) or (MageNugz.igniteTog == nil) then
+            MageNugOptionsFrame_IgniteCheckButton:SetChecked(1);
+            MageNugz.igniteTog = true;
+        else
+            MageNugOptionsFrame_IgniteCheckButton:GetChecked(0);
         end
         if (MageNugz.mirrorImageToggle == true) then
             MageNugOptionsFrame_CheckButton6:SetChecked(0);
@@ -2765,6 +2850,12 @@ function MNVariablesLoaded_OnEvent() --Takes care of the options on load up
             MageNugCooldownFrame_Slider1:SetValue(MageNugz.cooldownSize);
         end
         -----moonkin optioins--------
+        if(MageNugz.moonkinBoxTog == false) or (MageNugz.moonkinBoxTog == nil)then
+            MageNugMoonkinOptionFrame_CheckButton:SetChecked(0);
+            MageNugz.moonkinBoxTog = false;
+        else
+            MageNugMoonkinOptionFrame_CheckButton:SetChecked(1);
+        end
         if(MageNugz.moonkinTog == nil) then
             MageNugz.moonkinTog = false;
         end
@@ -2968,6 +3059,15 @@ function MNstatMonCombat()
         if(MageNugz.spMonitorToggle == false) then
             MageNugSP_Frame:Show();
         end
+    end
+end
+--
+function MNigniteToggle()
+    local isChecked = MageNugOptionsFrame_IgniteCheckButton:GetChecked();
+    if (isChecked == 1) then
+        MageNugz.igniteTog = true;
+    else
+        MageNugz.igniteTog = false;
     end
 end
 --
@@ -3202,6 +3302,7 @@ function MnClickThrough()
     local clickChecked = MageNugOption2Frame_ClickThruCheckButton:GetChecked();
     if (clickChecked == 1) then
         MageNugz.clickthru = true;
+        MageNugIgnite_Frame:EnableMouse(false)
         MageNugSP_Frame:EnableMouse(false)
         MNTorment_Frame:EnableMouse(false)
         MNicyveins_Frame:EnableMouse(false)
@@ -3252,6 +3353,7 @@ function MnClickThrough()
     else
         MageNugz.clickthru = false;
         MageNugSP_Frame:EnableMouse(true)
+        MageNugIgnite_Frame:EnableMouse(true)
         MNTorment_Frame:EnableMouse(true)
         MNicyveins_Frame:EnableMouse(true)
         MNarcanepower_Frame:EnableMouse(true)
@@ -3310,6 +3412,7 @@ function ShowConfigFrames() --Shows frames for 20 seconds
     MageNugMI_Frame:Show();
     livingbombGlobalTime = 60;
     MageNugLB_Frame:Show();
+    MageNugIgnite_Frame:Show();
     --MNcooldownMonitor("Cooldowns", 60, "Interface\\Icons\\Spell_frost_coldhearted")
     --MNcooldownMonitor("Cooldowns", 60, "Interface\\Icons\\Spell_frost_coldhearted")
     --MNcooldownMonitor("Cooldowns", 60, "Interface\\Icons\\Spell_frost_coldhearted")
@@ -3347,6 +3450,7 @@ function HideConfigFrames()
     MageNugMI_Frame:Hide();
     MageNugLB_Frame:Hide();
     MageNugPolyFrame:Hide();
+    MageNugIgnite_Frame:Hide();
     MageNugImpactProcFrame:Hide()
     MageNugBFProcFrame:Hide();
     MageNugProcFrame:Hide();
@@ -3882,11 +3986,13 @@ function MageNugLivingBombSize()
         MageNugLB_Frame:SetScale(0.7);
         MageNugManaGem_Frame:SetScale(0.7);
         MageNugClearcast_Frame:SetScale(0.7);
+        MageNugIgnite_Frame:SetScale(0.7);
         MageNugz.livingBCounterSize = 0;
     end
     if (tempInt == 1) then
         MageNugAB_Frame:SetScale(0.8);
         MageNugLB_Frame:SetScale(0.8);
+        MageNugIgnite_Frame:SetScale(0.8);
         MageNugManaGem_Frame:SetScale(0.8);
         MageNugClearcast_Frame:SetScale(0.8);
         MageNugz.livingBCounterSize = 1;
@@ -3894,6 +4000,7 @@ function MageNugLivingBombSize()
     if (tempInt == 2) then
         MageNugAB_Frame:SetScale(0.9);
         MageNugLB_Frame:SetScale(0.9);
+        MageNugIgnite_Frame:SetScale(0.9);
         MageNugManaGem_Frame:SetScale(0.9);
         MageNugClearcast_Frame:SetScale(0.9);
         MageNugz.livingBCounterSize = 2;
@@ -3903,18 +4010,21 @@ function MageNugLivingBombSize()
         MageNugLB_Frame:SetScale(1.0);
         MageNugManaGem_Frame:SetScale(1.0);
         MageNugClearcast_Frame:SetScale(1.0);
+        MageNugIgnite_Frame:SetScale(1.0);
         MageNugz.livingBCounterSize = 3;
     end
     if (tempInt == 4) then
         MageNugAB_Frame:SetScale(1.1);
         MageNugLB_Frame:SetScale(1.1);
         MageNugManaGem_Frame:SetScale(1.1);
+        MageNugIgnite_Frame:SetScale(1.1);
         MageNugClearcast_Frame:SetScale(1.1);
         MageNugz.livingBCounterSize = 4;
     end
     if (tempInt == 5) then
         MageNugAB_Frame:SetScale(1.2);
         MageNugLB_Frame:SetScale(1.2);
+        MageNugIgnite_Frame:SetScale(1.2);
         MageNugManaGem_Frame:SetScale(1.2);
         MageNugClearcast_Frame:SetScale(1.2);
         MageNugz.livingBCounterSize = 5;
@@ -3922,6 +4032,7 @@ function MageNugLivingBombSize()
     if (tempInt == 6) then
         MageNugAB_Frame:SetScale(1.3);
         MageNugLB_Frame:SetScale(1.3);
+        MageNugIgnite_Frame:SetScale(1.3);
         MageNugManaGem_Frame:SetScale(1.3);
         MageNugClearcast_Frame:SetScale(1.3);
         MageNugz.livingBCounterSize = 6;
@@ -4395,6 +4506,16 @@ function MNmoonkinminimalToggle()
         MageNugMoonkin_Frame_Texture:Show();
     end
 end
+
+function MNmoonkinBoxToggle()
+    local isChecked = MageNugMoonkinToggle_Frame_CheckButton:GetChecked();
+    if (isChecked == 1) then
+        MageNugz.moonkinBoxTog = true;
+    else  
+        MageNugz.moonkinBoxTog = false;
+    end
+end
+
 
 function MNmoonFire_OnUpdate(self, elapsed)
     self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed;

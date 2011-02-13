@@ -1,6 +1,6 @@
 ﻿--[[
 Name: Sink-2.0
-Revision: $Rev: 72 $
+Revision: $Rev: 71 $
 Author(s): Rabbit (rabbit.magtheridon@gmail.com), Antiarc (cheal@gmail.com)
 Website: http://rabbit.nihilum.eu
 Documentation: http://wiki.wowace.com/index.php/Sink-2.0
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 -- Sink-2.0
 
 local SINK20 = "LibSink-2.0"
-local SINK20_MINOR = 90000 + tonumber(("$Revision: 72 $"):match("(%d+)"))
+local SINK20_MINOR = 90000 + tonumber(("$Revision: 71 $"):match("(%d+)"))
 
 local sink = LibStub:NewLibrary(SINK20, SINK20_MINOR)
 if not sink then return end
@@ -256,11 +256,8 @@ end
 
 local function blizzard(addon, text, r, g, b, font, size, outline, sticky, _, icon)
 	if icon then text = "|T"..icon..":20:20:-5|t"..text end
-	if tostring(SHOW_COMBAT_TEXT) ~= "0" then
+	if tostring(SHOW_COMBAT_TEXT) ~= "0" and CombatText_AddMessage then
 		local s = getSticky(addon) or sticky
-		if type(CombatText_AddMessage) == "nil" then
-			UIParentLoadAddOn("Blizzard_CombatText")
-		end
 		CombatText_AddMessage(text, CombatText_StandardScroll, r, g, b, s and "crit" or nil, false)
 	else
 		UIErrorsFrame:AddMessage(text, r, g, b, 1.0)

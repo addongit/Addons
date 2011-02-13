@@ -75,7 +75,7 @@
 </Frame>
 
 <Frame name="MageNugMoonkinToggle_Frame" parent="UIParent" hidden="true" enableMouse="true" movable="true">
-    <Size x="200" y="100" />
+    <Size x="200" y="120" />
     <Anchors>
         <Anchor point="CENTER" />
     </Anchors>
@@ -104,14 +104,50 @@
                    <AbsValue val="12"/>
                 </FontHeight>
             </FontString>
-            <FontString name="$parentText" font="Fonts\FRIZQT__.TTF" inherits="GameFontNormal" text="Enable Moonkin Frame?">
+            <FontString name="$parentText" font="Fonts\FRIZQT__.TTF" inherits="GameFontNormal" text="Enable the Moonkin frame?">
+                <Anchors>
+                    <Anchor point="CENTER" relativeTo="$parent">
+                        <Offset>
+                            <AbsDimension x="0" y="18"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
                 <FontHeight>
-                   <AbsValue val="12"/>
+                   <AbsValue val="10"/>
+                </FontHeight>
+            </FontString>
+            <FontString name="$parentText" font="Fonts\FRIZQT__.TTF" inherits="GameFontNormal" text="Never show this again.">
+                <Anchors>
+                    <Anchor point="CENTER" relativeTo="$parent">
+                        <Offset>
+                            <AbsDimension x="-2" y="-13"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <FontHeight>
+                   <AbsValue val="8"/>
                 </FontHeight>
             </FontString>
         </Layer>
     </Layers>
      <Frames>
+         <CheckButton name="$parent_CheckButton" inherits="OptionsCheckButtonTemplate">
+-          <Anchors>
+-               <Anchor point="CENTER">
+-                   <Offset>
+                        <AbsDimension x="-65" y="-13" /> 
+                    </Offset>
+                </Anchor>
+            </Anchors>
+-           <Scripts>
+                <OnLoad>
+                    -- Disable Minimap Button
+                </OnLoad> 
+                <OnClick>
+                    MNmoonkinBoxToggle();
+                </OnClick> 
+            </Scripts>
+        </CheckButton>    
         <Button name="$parentButton1" inherits="OptionsButtonTemplate" text="Yes">
 	        <Size>
                <AbsDimension x="60" y="20"/>
@@ -603,7 +639,7 @@
         <OnEnter>
 			if (MageNugz.toolTips == true) then
                 GameTooltip:SetOwner(self, ANCHOR_TOPLEFT);
-			    GameTooltip:AddLine("Critical Mass")
+			    GameTooltip:AddLine("Critical Mass and \nShadow and Flame")
 			    GameTooltip:Show()
             end
         </OnEnter>
@@ -682,6 +718,103 @@
         </OnUpdate>
     </Scripts>
 </Frame>
+
+<Frame name="MageNugIgnite_Frame" parent="UIParent" hidden="false" enableMouse="true" movable="true">
+    <Size x="36" y="36" />
+    <Anchors>
+        <Anchor point="CENTER" />
+    </Anchors>
+    <Backdrop  edgeFile="Interface/Tooltips/UI-Tooltip-Border" tile="true">
+    <TileSize>
+        <AbsValue val="32"/>
+    </TileSize>
+    <EdgeSize>
+        <AbsValue val="10"/>
+    </EdgeSize>
+    <BackgroundInsets>
+        <AbsInset left="2" right="2" top="2" bottom="2"/>
+    </BackgroundInsets>
+    </Backdrop>
+    <Layers>
+        <Layer level="BACKGROUND">
+            <Texture name="$parentTexture" file="Interface\Icons\spell_fire_incinerate">
+                <Size>
+                    <AbsDimension x="35" y="35"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="CENTER" relativePoint="CENTER" />
+                </Anchors>
+                    <TexCoords left="0" right="1" top="0" bottom="1"/>
+            </Texture>
+        </Layer> 
+        <Layer level="ARTWORK">
+            <FontString name="$parentText" font="Fonts\FRIZQT__.TTF" inherits="GameFontNormal">
+                <Anchors>
+                    <Anchor point="CENTER">
+                        <Offset>
+                           <AbsDimension x="0" y="25"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <FontHeight>
+                   <AbsValue val="18"/>
+                </FontHeight>
+                 <Shadow>
+                    <offset>
+                       <AbsDimension x="1" y="1"/>
+                    </offset>
+                    <color r="0" g="0" b="0"/>
+                </Shadow>
+            </FontString>
+            <FontString name="$parentText2" font="Fonts\FRIZQT__.TTF" inherits="GameFontNormal">
+                <Anchors>
+                    <Anchor point="CENTER">
+                        <Offset>
+                           <AbsDimension x="0" y="-19"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <FontHeight>
+                   <AbsValue val="6"/>
+                </FontHeight>
+                <color r="1" g="1" b="1"/>
+            </FontString>
+        </Layer>
+    </Layers>
+        <Frames>
+        <StatusBar name="$parent_Bar" frameStrata="LOW" inherits="TextStatusBar">
+            <Size x="35" y="8"/>
+            <Anchors>
+                <Anchor point="center" relativeTo="$parent">
+                    <Offset>
+                        <AbsDimension x="0" y="-19"/>
+                    </Offset>
+                </Anchor>
+            </Anchors>
+            <BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
+            <Scripts>
+                <OnLoad>
+                   self:SetStatusBarColor(1, 0.1, 0)
+                   self:SetMinMaxValues(0,4)
+                </OnLoad>
+            </Scripts>
+        </StatusBar>
+    </Frames>
+    <Scripts>
+        <OnLoad> 
+            self:RegisterForDrag("LeftButton"); 
+            self.TimeSinceLastUpdate = 0   
+        </OnLoad>
+	    <OnDragStart> MNLockFrames(self);</OnDragStart>
+	    <OnDragStop> self:StopMovingOrSizing(); self.isMoving = false; </OnDragStop>
+        <OnEnter> Monitors_OnEnter() </OnEnter>
+        <OnLeave> GameTooltip:Hide() </OnLeave>
+        <OnUpdate> 
+            MageNuggetsIgnite_OnUpdate(self, elapsed) 
+        </OnUpdate>
+    </Scripts>
+</Frame>
+
 
 <Frame name="MageNugClearcast_Frame" parent="UIParent" hidden="true" enableMouse="true" movable="true">
     <Size x="36" y="36" />
@@ -2471,7 +2604,7 @@
   </Frame>
 
 <Frame name="MNSpellSteal_Frame" parent="UIParent" hidden="true" enableMouse="true" movable="true">
-    <Size x="130" y="20" />
+    <Size x="150" y="70" />
     <Anchors>
          <Anchor point="CENTER"/>
     </Anchors>
@@ -2483,28 +2616,15 @@
             <AbsValue val="8"/>
         </EdgeSize>
         <BackgroundInsets>
-            <AbsInset left="1" right="1" top="1" bottom="-50"/>
+            <AbsInset left="1" right="1" top="1" bottom="1"/>
         </BackgroundInsets>
     </Backdrop>
     <Layers>
         <Layer level="ARTWORK">
-            <Texture name="$parentTexture" file="Interface\Icons\spell_arcane_arcane02">
-                <Size>
-                    <AbsDimension x="14" y="14"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="TOPLEFT">
-                        <Offset>
-                            <AbsDimension x="3" y="-3"/>
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                    <TexCoords left="0" right="1" top="0" bottom="1"/>
-            </Texture>
             <FontString name="$parentTitleText" font="Fonts\FRIZQT__.TTF" outline="THICK" inherits="GameFontNormal" text="S P E L L S T E A L">
                 <Anchors>
 			        <Anchor point="TOP" relativeTo="$parent">
-			           	<Offset><AbsDimension x="8" y="-5"/></Offset>
+			           	<Offset><AbsDimension x="0" y="-5"/></Offset>
                     </Anchor>
 			    </Anchors>
                 <FontHeight>
@@ -2514,11 +2634,11 @@
             <FontString name="$parentBuffText" font="Fonts\FRIZQT__.TTF" inherits="GameFontNormal">
                 <Anchors>
 			        <Anchor point="TOP" relativeTo="$parentTitleText">
-			           	<Offset><AbsDimension x="-10" y="-20"/></Offset>
+			           	<Offset><AbsDimension x="0" y="-15"/></Offset>
                     </Anchor>
 			    </Anchors>
                 <FontHeight>
-                   <AbsValue val="8"/>
+                   <AbsValue val="9"/>
                 </FontHeight>
             </FontString>
         </Layer>
@@ -3144,6 +3264,15 @@
                     </Anchor>
                 </Anchors>
             </FontString>
+            <FontString name="MNcheckboxIgniteString" inherits="GameFontNormal" text="Ignite Monitor">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent">
+                        <Offset>
+                            <AbsDimension x="265" y="-165"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
             <FontString name="MN_Slider2FontString" inherits="GameFontNormal">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="$parent">
@@ -3398,6 +3527,23 @@
                 </OnClick>
             </Scripts>
         </CheckButton>
+          <CheckButton name="$parent_IgniteCheckButton" inherits="OptionsCheckButtonTemplate">
+-               <Anchors>
+-                   <Anchor point="TOPLEFT">
+-                       <Offset>
+                            <AbsDimension x="240" y="-160" /> 
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+-               <Scripts>
+                    <OnLoad>
+                       
+                    </OnLoad> 
+                    <OnClick>
+                        MNigniteToggle();
+                    </OnClick> 
+                </Scripts>
+        </CheckButton>
         <CheckButton name="$parent_ABcastCheckButton" inherits="OptionsCheckButtonTemplate">
 -               <Anchors>
 -                   <Anchor point="TOPLEFT">
@@ -3469,12 +3615,14 @@
                     </OnValueChanged>
                     <OnMouseDown>
                         MageNugAB_Frame:Show();
+                        MageNugIgnite_Frame:Show();
                         MageNugLB_Frame:Show();
                         MageNugClearcast_Frame:Show();
                     </OnMouseDown>
                     <OnMouseUp>
                         MageNugAB_Frame:Hide();
                         MageNugLB_Frame:Hide();
+                        MageNugIgnite_Frame:Hide();
                         MageNugClearcast_Frame:Hide();
                     </OnMouseUp>
                 </Scripts>

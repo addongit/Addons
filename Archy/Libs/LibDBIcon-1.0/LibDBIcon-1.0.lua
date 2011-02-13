@@ -1,6 +1,6 @@
 --[[
 Name: DBIcon-1.0
-Revision: $Rev: 18 $
+Revision: $Rev: 15 $
 Author(s): Rabbit (rabbit.magtheridon@gmail.com)
 Description: Allows addons to register to recieve a lightweight minimap icon as an alternative to more heavy LDB displays.
 Dependencies: LibStub
@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 --
 
 local DBICON10 = "LibDBIcon-1.0"
-local DBICON10_MINOR = tonumber(("$Rev: 18 $"):match("(%d+)"))
+local DBICON10_MINOR = tonumber(("$Rev: 15 $"):match("(%d+)"))
 if not LibStub then error(DBICON10 .. " requires LibStub.") end
 local ldb = LibStub("LibDataBroker-1.1", true)
 if not ldb then error(DBICON10 .. " requires LibDataBroker-1.1.") end
@@ -165,11 +165,7 @@ local function createButton(name, object, db)
 	overlay:SetWidth(53); overlay:SetHeight(53)
 	overlay:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
 	overlay:SetPoint("TOPLEFT")
-	local background = button:CreateTexture(nil, "BACKGROUND")
-	background:SetWidth(20); background:SetHeight(20)
-	background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-	background:SetPoint("TOPLEFT", 7, -5)
-	local icon = button:CreateTexture(nil, "ARTWORK")
+	local icon = button:CreateTexture(nil, "BACKGROUND")
 	icon:SetWidth(20); icon:SetHeight(20)
 	icon:SetTexture(object.icon)
 	icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
@@ -221,9 +217,10 @@ if not lib.loggedIn then
 end
 
 function lib:Register(name, object, db)
+	if lib.disabled then return end
 	if not object.icon then error("Can't register LDB objects without icons set!") end
 	if lib.objects[name] or lib.notCreated[name] then error("Already registered, nubcake.") end
-	if not lib.disabled and (not db or not db.hide) then
+	if not db or not db.hide then
 		createButton(name, object, db)
 	else
 		lib.notCreated[name] = {object, db}
@@ -249,7 +246,7 @@ function lib:Refresh(name, db)
 	local button = lib.objects[name]
 	if db then button.db = db end
 	updatePosition(button)
-	if not button.db or not button.db.hide then
+	if not db or not db.hide then
 		button:Show()
 	else
 		button:Hide()
@@ -259,15 +256,9 @@ end
 function lib:EnableLibrary()
 	lib.disabled = nil
 	for name, object in pairs(lib.objects) do
-		if not object.db or not object.db.hide then
+		if not object.db or (object.db and not object.db.hide) then
 			object:Show()
 			updatePosition(object)
-		end
-	end
-	for name, data in pairs(lib.notCreated) do
-		if not data.db or not data.db.hide then
-			createButton(name, data[1], data[2])
-			lib.notCreated[name] = nil
 		end
 	end
 end

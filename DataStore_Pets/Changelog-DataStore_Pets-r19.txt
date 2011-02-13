@@ -1,0 +1,14 @@
+------------------------------------------------------------------------
+r19 | thaoky | 2010-10-15 13:21:59 +0000 (Fri, 15 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Pets.lua
+   M /trunk/DataStore_Pets.toc
+
+4.0.1 Update
+------------------------------------------------------------------------
+r18 | Thaoky | 2010-07-06 17:14:26 +0000 (Tue, 06 Jul 2010) | 1 line
+Changed paths:
+   M /trunk/Data/CompanionList.lua
+
+Minor fixes in the companion list.
+------------------------------------------------------------------------
