@@ -25,81 +25,7 @@
 		<Color r="1" g="1" b="1" />
 	</Font>
 
-	<Frame name="ArchyDigSiteContainer" virtual="true" movable="true" enableMouse="true" clampedToScreen="true">
-		<Size>
-			<AbsDimension x="340" y="200" />
-		</Size>
-		<Anchors>
-			<Anchor point="CENTER" relativeTo="UIParent" />
-		</Anchors>
-		<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-			<EdgeSize><AbsValue val="16" /></EdgeSize>
-			<TileSize><AbsValue val="32" /></TileSize>
-			<BackgroundInsets>
-				<AbsInset left="5" right="5" top="5" bottom="5" />
-			</BackgroundInsets>
-		</Backdrop>
-		<Frames>
-			<Frame name="$parentContainer" parentKey="container">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="5" y="-15" />
-					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-5" y="5" />
-				</Anchors>
-			</Frame>
-			<CheckButton name="$parentStyleButton" parentKey="styleButton" inherits="UICheckButtonTemplate" frameLevel="2">
-				<Size><AbsDimension x="18" y="18" /></Size>
-				<Anchors>
-					<Anchor point="RIGHT" relativeTo="$parent" relativePoint="TOPRIGHT" x="-5" y="-3" />
-				</Anchors>
-				<NormalTexture file="Interface\Buttons\UI-PlusButton-Up" />
-				<CheckedTexture file="Interface\Buttons\UI-MinusButton-Up" />
-				<Scripts>
-					<OnLoad>
-						self:SetChecked((Archy.db.profile.digsite.style == "Extended"))
-					</OnLoad>
-					<OnClick>
-						if (self:GetChecked()) then
-							Archy.db.profile.digsite.style = "Extended"
-						else
-							Archy.db.profile.digsite.style = "Compact"
-						end
-						Archy:UpdateDigSiteFrame()
-						Archy:RefreshDigSiteDisplay()
-					</OnClick>
-					<OnEnter>
-						if self.tooltip then
-							GameTooltip:SetOwner(self, "ANCHOR_LEFT");
-							GameTooltip:SetText(self.tooltip, nil, nil, nil, nil, 1);
-						end
-					</OnEnter>
-					<OnLeave>
-						GameTooltip:Hide()
-					</OnLeave>
-				</Scripts>
-			</CheckButton>
-		</Frames>
-		<Scripts>
-			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
-			<OnDragStart>
-				if (Archy.db.profile.general.locked == false) then
-					self:StartMoving()
-					self.isMoving = true
-				end
-			</OnDragStart>
-			<OnDragStop>
-				if (Archy.db.profile.general.locked == false) then
-					self:StopMovingOrSizing()
-					self.isMoving = false
-					self:SetUserPlaced(false)
-					self:SetFrameLevel(2)
-					
-					Archy:SaveFramePosition(self)
-				end
-			</OnDragStop>
-		</Scripts>
-	</Frame>
-
-	<StatusBar name="SkillBarTemplate" drawLayer="BACKGROUND" enableMouse="false" id="" virtual="true">
+	<StatusBar name="ArchySkillBarTemplate" drawLayer="BACKGROUND" enableMouse="false" id="" virtual="true">
 		<Size>
 			<AbsDimension x="300" y="20" />
 		</Size>
@@ -175,7 +101,7 @@
 		</Scripts>
 	</Button>
 
-	<Button name="KeystoneTemplate" virtual="true">
+	<Button name="ArchyKeystoneTemplate" virtual="true">
 		<Size x="25" y="28" />
 		<Layers>
 			<Layer level="OVERLAY">
@@ -233,7 +159,7 @@
 		</Scripts>
 	</Button>
 
-	<StatusBar name="FragmentBarComboTemplate" inherits="TextStatusBar" id="" virtual="true">
+	<StatusBar name="ArchyFragmentBarTemplate" inherits="TextStatusBar" id="" virtual="true">
 		<Size x="250" y="30" />
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -260,27 +186,27 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="$parentKeystone4" inherits="KeystoneTemplate" id="4" parentKey="keystone4" hidden="true">
+			<Button name="$parentKeystone4" inherits="ArchyKeystoneTemplate" id="4" parentKey="keystone4" hidden="true">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent" relativePoint="BOTTOM" x="50" y="-2"/>
 				</Anchors>
 			</Button>
-			<Button name="$parentKeystone3" inherits="KeystoneTemplate" id="3" parentKey="keystone3" hidden="true">
+			<Button name="$parentKeystone3" inherits="ArchyKeystoneTemplate" id="3" parentKey="keystone3" hidden="true">
 				<Anchors>
 					<Anchor point="RIGHT" relativeTo="$parentKeystone4" relativePoint="LEFT" x="5"/>
 				</Anchors>
 			</Button>
-			<Button name="$parentKeystone2" inherits="KeystoneTemplate" id="2" parentKey="keystone2" hidden="true">
+			<Button name="$parentKeystone2" inherits="ArchyKeystoneTemplate" id="2" parentKey="keystone2" hidden="true">
 				<Anchors>
 					<Anchor point="RIGHT" relativeTo="$parentKeystone3" relativePoint="LEFT" x="5"/>
 				</Anchors>
 			</Button>
-			<Button name="$parentKeystone1" inherits="KeystoneTemplate" id="1" parentKey="keystone1" hidden="true">
+			<Button name="$parentKeystone1" inherits="ArchyKeystoneTemplate" id="1" parentKey="keystone1" hidden="true">
 				<Anchors>
 					<Anchor point="RIGHT" relativeTo="$parentKeystone2" relativePoint="LEFT" x="5"/>
 				</Anchors>
 			</Button>
-			<Button name="$parentStackKeystone" inherits="KeystoneTemplate" id="99" parentKey="keystones" hidden="true">
+			<Button name="$parentStackKeystone" inherits="ArchyKeystoneTemplate" id="99" parentKey="keystones" hidden="true">
 				<Anchors>
 					<Anchor point="RIGHT" relativeTo="$parent" relativePoint="RIGHT" x="-5"/>
 				</Anchors>
@@ -349,6 +275,82 @@
 		</Scripts>
 	</Frame>
 	
+	<Frame name="ArchyDigSiteContainer" virtual="true" movable="true" enableMouse="true" clampedToScreen="true">
+		<Size>
+			<AbsDimension x="340" y="200" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER" relativeTo="UIParent" />
+		</Anchors>
+		<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<EdgeSize><AbsValue val="8" /></EdgeSize>
+			<TileSize><AbsValue val="8" /></TileSize>
+			<BackgroundInsets>
+				<AbsInset left="2" right="2" top="2" bottom="2" />
+			</BackgroundInsets>
+		</Backdrop>
+		<Frames>
+			<Frame name="$parentContainer" parentKey="container">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="5" y="-15" />
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-5" y="5" />
+				</Anchors>
+			</Frame>
+			<CheckButton name="$parentStyleButton" parentKey="styleButton" inherits="UICheckButtonTemplate" frameLevel="2">
+				<Size><AbsDimension x="18" y="18" /></Size>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parent" relativePoint="TOPRIGHT" x="-5" y="-3" />
+				</Anchors>
+				<NormalTexture file="Interface\Buttons\UI-PlusButton-Up" />
+				<CheckedTexture file="Interface\Buttons\UI-MinusButton-Up" />
+				<Scripts>
+					<OnLoad>
+						self:SetChecked((Archy.db.profile.digsite.style == "Extended"))
+						self:SetAlpha(0)
+					</OnLoad>
+					<OnClick>
+						if (self:GetChecked()) then
+							Archy.db.profile.digsite.style = "Extended"
+						else
+							Archy.db.profile.digsite.style = "Compact"
+						end
+						Archy:UpdateDigSiteFrame()
+						Archy:RefreshDigSiteDisplay()
+					</OnClick>
+					<OnEnter>
+						self:SetAlpha(1)
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_LEFT");
+							GameTooltip:SetText(self.tooltip, nil, nil, nil, nil, 1);
+						end
+					</OnEnter>
+					<OnLeave>
+						self:SetAlpha(0)
+						GameTooltip:Hide()
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+		</Frames>
+		<Scripts>
+			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
+			<OnDragStart>
+				if (Archy.db.profile.general.locked == false) then
+					self:StartMoving()
+					self.isMoving = true
+				end
+			</OnDragStart>
+			<OnDragStop>
+				if (Archy.db.profile.general.locked == false) then
+					self:StopMovingOrSizing()
+					self.isMoving = false
+					self:SetUserPlaced(false)
+					self:SetFrameLevel(2)
+					
+					Archy:SaveFramePosition(self)
+				end
+			</OnDragStop>
+		</Scripts>
+	</Frame>
 	<Frame name="ArchyDigSiteRowTemplate" id="" virtual="true">
 		<Size x="300" y="40" />
 		<Frames>
@@ -420,7 +422,7 @@
 				</Scripts>
 			</Button>
 			<Frame name="$parentDigCounter" parentKey="digCounter">
-				<Size x="50" y="24" />
+				<Size x="50" y="22" />
 				<Layers>
 					<Layer>
 						<Texture name="$parentIcon" parentKey="icon" file="Interface\Archeology\Arch-Icon-Marker.blp">
@@ -508,10 +510,10 @@
 			<Anchor point="CENTER" relativeTo="UIParent" />
 		</Anchors>
 		<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-			<EdgeSize><AbsValue val="16" /></EdgeSize>
-			<TileSize><AbsValue val="32" /></TileSize>
+			<EdgeSize><AbsValue val="8" /></EdgeSize>
+			<TileSize><AbsValue val="8" /></TileSize>
 			<BackgroundInsets>
-				<AbsInset left="5" right="5" top="5" bottom="5" />
+				<AbsInset left="2" right="2" top="2" bottom="2" />
 			</BackgroundInsets>
 		</Backdrop>
 		<Frames>
@@ -525,6 +527,7 @@
 				<Scripts>
 					<OnLoad>
 						self:SetChecked((Archy.db.profile.artifact.style == "Extended"))
+						self:SetAlpha(0)
 					</OnLoad>
 					<OnClick>
 						if (self:GetChecked()) then
@@ -536,17 +539,19 @@
 						Archy:RefreshRacesDisplay()
 					</OnClick>
 					<OnEnter>
+						self:SetAlpha(1)
 						if self.tooltip then
 							GameTooltip:SetOwner(self, "ANCHOR_LEFT");
 							GameTooltip:SetText(self.tooltip, nil, nil, nil, nil, 1);
 						end
 					</OnEnter>
 					<OnLeave>
+						self:SetAlpha(0)
 						GameTooltip:Hide()
 					</OnLeave>
 				</Scripts>
 			</CheckButton>
-			<StatusBar name="$parentSkillBar" parentKey="skillBar" inherits="SkillBarTemplate">
+			<StatusBar name="$parentSkillBar" parentKey="skillBar" inherits="ArchySkillBarTemplate">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="0" y="-15" />
 				</Anchors>
@@ -587,7 +592,6 @@
 			</OnDragStop>
 		</Scripts>
 	</Frame>
-
 	<Frame name="ArchyArtifactRowTemplate" id="" virtual="true">
 		<Size x="300" y="70" />
 		<Frames>
@@ -624,7 +628,7 @@
 					</OnLeave>
 				</Scripts>
 			</Button>
-			<StatusBar name="$parentFragmentBar" inherits="FragmentBarComboTemplate" parentKey="fragmentBar">
+			<StatusBar name="$parentFragmentBar" inherits="ArchyFragmentBarTemplate" parentKey="fragmentBar">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentIcon" relativePoint="TOPRIGHT" x="7" y="-3" />
 				</Anchors>
@@ -693,6 +697,369 @@
 		</Frames>
 	</Frame>
 
-	
-	
+	<Frame name="ArchyMinArtifactContainer" virtual="true" movable="true" enableMouse="true" clampedToScreen="true">
+		<Size>
+			<AbsDimension x="330" y="100" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER" relativeTo="UIParent" />
+		</Anchors>
+		<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<EdgeSize><AbsValue val="8" /></EdgeSize>
+			<TileSize><AbsValue val="8" /></TileSize>
+			<BackgroundInsets>
+				<AbsInset left="2" right="2" top="2" bottom="2" />
+			</BackgroundInsets>
+		</Backdrop>
+		<Frames>
+			<Frame name="$parentTitle" parentKey="title">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="0" y="-15" />
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" parentKey="text" inherits="GameFontNormal" justifyH="CENTER">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="25" y="0"/>
+							</Anchors>
+							<Color r="0.93" g="0.82" b="0" />
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+						GameTooltip:AddLine(ARCHAEOLOGY_RANK_TOOLTIP, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1);
+						GameTooltip:Show();
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Frame>
+			<Frame name="$parentContainer" parentKey="container">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentTitle" relativePoint="BOTTOM" x="0" y="-10" />
+				</Anchors>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
+			<OnDragStart>
+				if (Archy.db.profile.general.locked == false) then
+					self:StartMoving()
+					self.isMoving = true
+				end
+			</OnDragStart>
+			<OnDragStop>
+				if (Archy.db.profile.general.locked == false) then
+					self:StopMovingOrSizing()
+					self.isMoving = false
+					self:SetUserPlaced(false)
+					self:SetFrameLevel(2)
+					
+					Archy:SaveFramePosition(self)
+				end
+			</OnDragStop>
+		</Scripts>
+	</Frame>
+	<Frame name="ArchyMinArtifactRowTemplate" id="" virtual="true">
+		<Size x="272" y="22" />
+		<Frames>
+			<Frame name="$parentFragments" parentKey="fragments">
+				<Size x="50" y="22" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT" x="0" y="0" />
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString name="$parentText" inherits="GameFontNormal" justifyH="RIGHT" text="0/0" parentKey="text">
+							<Anchors>
+								<Anchor point="RIGHT" x="0" y="0" />
+							</Anchors>
+							<Color r="1" g="1" b="1"/>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:AddLine(self.tooltip, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1);
+							GameTooltip:Show();
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Frame>
+			<Frame name="$parentSockets" parentKey="sockets">
+				<Size x="30" y="22" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentFragments" relativePoint="RIGHT" x="3" y="0" />
+				</Anchors>
+				<Layers>
+					<Layer level="LOW">
+						<FontString name="$parentText" inherits="GameFontNormal" text="0" parentKey="text">
+							<Anchors>
+								<Anchor point="CENTER" x="0" y="0" />
+							</Anchors>
+							<Color r="1" g="1" b="0" />
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:AddLine(self.tooltip, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1);
+							GameTooltip:Show();
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Frame>
+
+			<Button name="$parentCrest" parentKey="crest" inherits="ArchyRacialCrestTemplate">
+				<Size x="32" y="32" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentSockets" relativePoint="RIGHT" x="0" y="0" />
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+					</OnLoad>
+					<OnClick>
+						if button == "LeftButton" then
+							SolveArtifact(self:GetParent():GetID(), false)
+						else
+							SolveArtifact(self:GetParent():GetID(), true)
+						end
+					</OnClick>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:AddLine(self.tooltip, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1);
+							GameTooltip:Show();
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Button>
+			<Button name="$parentArtifact" parentKey="artifact">
+				<Size x="160" y="22"/>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" inherits="GameFontNormal" justifyH="LEFT" text="ARTIFACTS" parentKey="text">
+							<Anchors>
+								<Anchor point="LEFT" x="0" y="0" />
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentCrest" relativePoint="RIGHT" x="10" y="0" />
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						if Archy:ShowArchaeology() then
+							ArchaeologyFrame_ShowArtifact(self:GetParent():GetID());
+						end
+					</OnClick>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:AddLine(self.tooltip, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1);
+							GameTooltip:Show();
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Button>
+			
+		</Frames>
+	</Frame>
+
+	<Frame name="ArchyMinDigSiteContainer" virtual="true" movable="true" enableMouse="true" clampedToScreen="true">
+		<Size>
+			<AbsDimension x="340" y="200" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER" relativeTo="UIParent" />
+		</Anchors>
+		<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<EdgeSize><AbsValue val="8" /></EdgeSize>
+			<TileSize><AbsValue val="8" /></TileSize>
+			<BackgroundInsets>
+				<AbsInset left="2" right="2" top="2" bottom="2" />
+			</BackgroundInsets>
+		</Backdrop>
+		<Frames>
+			<Frame name="$parentContainer" parentKey="container">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="5" y="-15" />
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-5" y="5" />
+				</Anchors>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>self:RegisterForDrag("LeftButton");</OnLoad>
+			<OnDragStart>
+				if (Archy.db.profile.general.locked == false) then
+					self:StartMoving()
+					self.isMoving = true
+				end
+			</OnDragStart>
+			<OnDragStop>
+				if (Archy.db.profile.general.locked == false) then
+					self:StopMovingOrSizing()
+					self.isMoving = false
+					self:SetUserPlaced(false)
+					self:SetFrameLevel(2)
+					
+					Archy:SaveFramePosition(self)
+				end
+			</OnDragStop>
+		</Scripts>
+	</Frame>
+
+	<Frame name="ArchyMinDigSiteRowTemplate" id="" virtual="true">
+		<Size x="360" y="22" />
+		<Frames>
+			<Frame name="$parentDigCounter" parentKey="digCounter">
+				<Size x="20" y="13" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT" x="0" y="0" />
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentValue" inherits="GameFontNormal" justifyH="CENTER" text="0/3" parentKey="value">
+							<Anchors><Anchor point="CENTER" /></Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+			<Frame name="$parentCrest" parentKey="crest">
+				<Size x="32" y="32" />
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture name="$parentIcon" parentKey="icon" file="Interface\Archeology\Arch-TempLogo">
+							<TexCoords left="0.0" right="0.5703" top="0.0" bottom="0.6484" />
+							<Size x="32" y="32" />
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER" x="0" y="0" />
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentDigCounter" relativePoint="RIGHT" x="3" y="0" />
+				</Anchors>
+				<Scripts>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:SetText(self.tooltip, NORMAL_FONT_COLOR[1], NORMAL_FONT_COLOR[2], NORMAL_FONT_COLOR[3], 1, true);
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Frame>
+			<Button name="$parentSite" parentKey="site">
+				<Size x="160" y="22" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentCrest" relativePoint="RIGHT" x="6" y="0" />
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentName" inherits="GameFontNormal" justifyH="LEFT" parentKey="name">
+							<Anchors><Anchor point="LEFT" x="0" y="0" /></Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						self:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+					</OnLoad>
+					<OnClick>
+						if (button == "LeftButton") then
+							ShowUIPanel(WorldMapFrame)
+							SetMapZoom(GetCurrentMapContinent(), self.zoneId)
+						elseif (button == "RightButton") then
+							Archy:ToggleSiteBlacklist(self.siteName)
+							if Archy:IsSiteBlacklisted(self.siteName) then
+								self.name:SetText("|cFFFF0000" .. self.siteName)
+							else
+								self.name:SetText("|cFFFFFFFF" .. self.siteName)
+							end
+						end
+						Archy:UpdateSiteDistances()
+						Archy:RefreshDigSiteDisplay()
+					</OnClick>
+					<OnEnter>
+						Archy:ShowDigSiteTooltip(self)
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Button>
+			<Frame name="$parentZone" parentKey="zone">
+				<Size x="160" y="14" />
+				<Layers>
+					<Layer>
+						<FontString name="$parentName" inherits="GameFontNormal" justifyH="LEFT" parentKey="name">
+							<Anchors><Anchor point="LEFT" /></Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+				<Anchors><Anchor point="LEFT" relativeTo="$parentSite" relativePoint="RIGHT" x="8" y="0" /></Anchors>
+				<Scripts>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:SetText(self.tooltip, NORMAL_FONT_COLOR[1], NORMAL_FONT_COLOR[2], NORMAL_FONT_COLOR[3], 1, true);
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Frame>
+			<Frame name="$parentDistance" parentKey="distance">
+				<Size x="50" y="14" />
+				<Layers>
+					<Layer>
+						<FontString name="$parentValue" inherits="GameFontNormal" justifyH="RIGHT" parentKey="value">
+							<Anchors><Anchor point="RIGHT" /></Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+				<Anchors><Anchor point="LEFT" relativeTo="$parentZone" relativePoint="RIGHT" x="8" y="0" /></Anchors>
+				<Scripts>
+					<OnEnter>
+						if self.tooltip then
+							GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT");
+							GameTooltip:SetText(self.tooltip, NORMAL_FONT_COLOR[1], NORMAL_FONT_COLOR[2], NORMAL_FONT_COLOR[3], 1, true);
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Frame>
+		</Frames>
+	</Frame>
 </Ui>
