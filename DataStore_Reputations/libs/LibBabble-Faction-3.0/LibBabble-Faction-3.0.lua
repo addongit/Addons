@@ -1,6 +1,6 @@
 --[[
 Name: LibBabble-Faction-3.0
-Revision: $Rev: 129 $
+Revision: $Rev: 135 $
 Maintainers: ckknight, nevcairiel, Ackis
 Website: http://www.wowace.com/projects/libbabble-faction-3-0/
 Dependencies: None
@@ -8,7 +8,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibBabble-Faction-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Rev: 129 $"):match("%d+"))
+local MINOR_VERSION = 90000 + tonumber(("$Rev: 135 $"):match("%d+"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub("LibBabble-3.0"):New(MAJOR_VERSION, MINOR_VERSION)
@@ -372,7 +372,7 @@ elseif GAME_LOCALE == "koKR" then
 	["The Ashen Verdict"] = "잿빛 선고단",
 	["The Consortium"] = "무역연합",
 	["The Defilers"] = "포세이큰 파멸단",
-	["The Earthen Ring"] = "대지의 고리회",
+	["The Earthen Ring"] = "대지 고리회",
 	["The Frostborn"] = "서릿결부족 드워프",
 	["The Hand of Vengeance"] = "복수의 대리인",
 	["The Kalu'ak"] = "칼루아크",
@@ -410,8 +410,8 @@ elseif GAME_LOCALE == "esES" then
 	["Argent Crusade"] = "Cruzada Argenta",
 	["Argent Dawn"] = "El Alba Argenta",
 	["Ashtongue Deathsworn"] = "Juramorte Lengua de ceniza",
-	-- ["Baradin's Wardens"] = "",
-	-- ["Bilgewater Cartel"] = "",
+	["Baradin's Wardens"] = "Celadores de Baradin",
+	["Bilgewater Cartel"] = "Cártel Pantoque",
 	["Bloodsail Buccaneers"] = "Bucaneros Velasangre",
 	["Booty Bay"] = "Bahía del Botín",
 	["Brood of Nozdormu"] = "Linaje de Nozdormu",
@@ -420,7 +420,7 @@ elseif GAME_LOCALE == "esES" then
 	["Darkmoon Faire"] = "Feria de la Luna Negra",
 	["Darkspear Trolls"] = "Trols Lanza Negra",
 	Darnassus = "Darnassus",
-	-- ["Dragonmaw Clan"] = "",
+	["Dragonmaw Clan"] = "Clan Faucedraco",
 	Everlook = "Vista Eterna",
 	Exalted = "Exaltado",
 	Exodar = "El Exodar",
@@ -430,11 +430,11 @@ elseif GAME_LOCALE == "esES" then
 	["Frostwolf Clan"] = "Clan Lobo Gélido",
 	Gadgetzan = "Gadgetzan",
 	["Gelkis Clan Centaur"] = "Centauros del clan Gelkis",
-	-- Gilneas = "",
-	-- Gnomeregan = "",
+	Gilneas = "Gilneas",
+	Gnomeregan = "Gnomeran",
 	["Gnomeregan Exiles"] = "Exiliados de Gnomeregan",
-	-- ["Guardians of Hyjal"] = "",
-	-- ["Hellscream's Reach"] = "",
+	["Guardians of Hyjal"] = "Guardianes de Hyjal",
+	["Hellscream's Reach"] = "Mando Grito Infernal",
 	["Honor Hold"] = "Bastión del Honor",
 	Honored = "Honorable",
 	Horde = "Horda",
@@ -451,7 +451,7 @@ elseif GAME_LOCALE == "esES" then
 	Neutral = "Neutral",
 	["Ogri'la"] = "Ogri'la",
 	Orgrimmar = "Orgrimmar",
-	-- Ramkahen = "",
+	Ramkahen = "Ramkahen",
 	Ratchet = "Trinquete",
 	Ravenholdt = "Ravenholdt",
 	Revered = "Reverenciado",
@@ -468,7 +468,7 @@ elseif GAME_LOCALE == "esES" then
 	["The Ashen Verdict"] = "El Veredicto Cinéreo",
 	["The Consortium"] = "El Consorcio",
 	["The Defilers"] = "Los Rapiñadores",
-	-- ["The Earthen Ring"] = "",
+	["The Earthen Ring"] = "Anillo de la Tierra",
 	["The Frostborn"] = "Los Natoescarcha",
 	["The Hand of Vengeance"] = "La Mano de la Venganza",
 	["The Kalu'ak"] = "Los Kalu'ak",
@@ -484,7 +484,7 @@ elseif GAME_LOCALE == "esES" then
 	["The Taunka"] = "Los Taunka",
 	["The Violet Eye"] = "El Ojo Violeta",
 	["The Wyrmrest Accord"] = "El Acuerdo del Reposo del Dragón",
-	-- Therazane = "",
+	Therazane = "Therazane",
 	["Thorium Brotherhood"] = "Hermandad del Torio",
 	Thrallmar = "Thrallmar",
 	["Thunder Bluff"] = "Cima del Trueno",
@@ -506,8 +506,8 @@ elseif GAME_LOCALE == "esMX" then
 	["Argent Crusade"] = "Cruzada Argenta",
 	["Argent Dawn"] = "Alba Argenta",
 	["Ashtongue Deathsworn"] = "Juramorte Lengua de ceniza",
-	-- ["Baradin's Wardens"] = "",
-	-- ["Bilgewater Cartel"] = "",
+	["Baradin's Wardens"] = "Baradin's Wardens", -- Needs review
+	["Bilgewater Cartel"] = "Bilgewater Cartel", -- Needs review
 	["Bloodsail Buccaneers"] = "Bucaneros Velasangre",
 	["Booty Bay"] = "Bahía del Botín",
 	["Brood of Nozdormu"] = "Linaje de Nozdormu",
@@ -516,7 +516,7 @@ elseif GAME_LOCALE == "esMX" then
 	["Darkmoon Faire"] = "Feria de la Luna Negra",
 	["Darkspear Trolls"] = "Trols Lanza Negra",
 	Darnassus = "Darnassus",
-	-- ["Dragonmaw Clan"] = "",
+	["Dragonmaw Clan"] = "Dragonmaw Clan", -- Needs review
 	Everlook = "Vista Eterna",
 	Exalted = "Exaltado",
 	Exodar = "Exodar",
@@ -526,11 +526,11 @@ elseif GAME_LOCALE == "esMX" then
 	["Frostwolf Clan"] = "Clan Lobo Gélido",
 	Gadgetzan = "Gadgetzan",
 	["Gelkis Clan Centaur"] = "Centauro del clan Gelkis",
-	-- Gilneas = "",
-	-- Gnomeregan = "",
+	Gilneas = "Gilneas", -- Needs review
+	Gnomeregan = "Gnomeregan", -- Needs review
 	["Gnomeregan Exiles"] = "Exiliados de Gnomeregan",
-	-- ["Guardians of Hyjal"] = "",
-	-- ["Hellscream's Reach"] = "",
+	["Guardians of Hyjal"] = "Guardians of Hyjal", -- Needs review
+	["Hellscream's Reach"] = "Hellscream's Reach", -- Needs review
 	["Honor Hold"] = "Bastión del Honor",
 	Honored = "Honorable",
 	Horde = "Horda",
@@ -547,7 +547,7 @@ elseif GAME_LOCALE == "esMX" then
 	Neutral = "Neutral",
 	["Ogri'la"] = "Ogri'la",
 	Orgrimmar = "Orgrimmar",
-	-- Ramkahen = "",
+	Ramkahen = "Ramkahen", -- Needs review
 	Ratchet = "Trinquete",
 	Ravenholdt = "Ravenholdt",
 	Revered = "Reverenciado",
@@ -561,10 +561,10 @@ elseif GAME_LOCALE == "esMX" then
 	Stormwind = "Ventormenta",
 	Syndicate = "La Hermandad",
 	["The Aldor"] = "Los Aldor",
-	-- ["The Ashen Verdict"] = "",
+	["The Ashen Verdict"] = "The Ashen Verdict", -- Needs review
 	["The Consortium"] = "El Consorcio",
 	["The Defilers"] = "Los Rapiñadores",
-	-- ["The Earthen Ring"] = "",
+	["The Earthen Ring"] = "The Earthen Ring", -- Needs review
 	["The Frostborn"] = "Los Natoescarcha",
 	["The Hand of Vengeance"] = "La Mano de la Venganza",
 	["The Kalu'ak"] = "Los Kalu'ak",
@@ -580,7 +580,7 @@ elseif GAME_LOCALE == "esMX" then
 	["The Taunka"] = "Los taunka",
 	["The Violet Eye"] = "El Ojo Violeta",
 	["The Wyrmrest Accord"] = "El Acuerdo del Reposo del Dragón",
-	-- Therazane = "",
+	Therazane = "Therazane", -- Needs review
 	["Thorium Brotherhood"] = "Hermandad del torio",
 	Thrallmar = "Thrallmar",
 	["Thunder Bluff"] = "Cima del Trueno",
@@ -698,8 +698,8 @@ elseif GAME_LOCALE == "zhCN" then
 	["Argent Crusade"] = "银色北伐军",
 	["Argent Dawn"] = "银色黎明",
 	["Ashtongue Deathsworn"] = "灰舌死誓者",
-	["Baradin's Wardens"] = "Baradin's Wardens", -- Needs review
-	["Bilgewater Cartel"] = "Bilgewater Cartel", -- Needs review
+	["Baradin's Wardens"] = "巴拉丁典狱官",
+	["Bilgewater Cartel"] = "锈水财阀",
 	["Bloodsail Buccaneers"] = "血帆海盗",
 	["Booty Bay"] = "藏宝海湾",
 	["Brood of Nozdormu"] = "诺兹多姆的子嗣",
@@ -708,7 +708,7 @@ elseif GAME_LOCALE == "zhCN" then
 	["Darkmoon Faire"] = "暗月马戏团",
 	["Darkspear Trolls"] = "暗矛巨魔",
 	Darnassus = "达纳苏斯",
-	["Dragonmaw Clan"] = "Dragonmaw Clan", -- Needs review
+	["Dragonmaw Clan"] = "龙喉氏族",
 	Everlook = "永望镇",
 	Exalted = "崇拜",
 	Exodar = "埃索达",
@@ -718,11 +718,11 @@ elseif GAME_LOCALE == "zhCN" then
 	["Frostwolf Clan"] = "霜狼氏族",
 	Gadgetzan = "加基森",
 	["Gelkis Clan Centaur"] = "吉尔吉斯半人马",
-	Gilneas = "Gilneas", -- Needs review
-	Gnomeregan = "Gnomeregan", -- Needs review
+	Gilneas = "吉尔尼斯",
+	Gnomeregan = "诺莫瑞根",
 	["Gnomeregan Exiles"] = "诺莫瑞根流亡者",
-	["Guardians of Hyjal"] = "Guardians of Hyjal", -- Needs review
-	["Hellscream's Reach"] = "Hellscream's Reach", -- Needs review
+	["Guardians of Hyjal"] = "海加尔守护者",
+	["Hellscream's Reach"] = "地狱咆哮近卫军",
 	["Honor Hold"] = "荣耀堡",
 	Honored = "尊敬",
 	Horde = "部落",
@@ -739,7 +739,7 @@ elseif GAME_LOCALE == "zhCN" then
 	Neutral = "中立",
 	["Ogri'la"] = "奥格瑞拉",
 	Orgrimmar = "奥格瑞玛",
-	Ramkahen = "Ramkahen", -- Needs review
+	Ramkahen = "拉穆卡恒",
 	Ratchet = "棘齿城",
 	Ravenholdt = "拉文霍德",
 	Revered = "崇敬",
@@ -756,7 +756,7 @@ elseif GAME_LOCALE == "zhCN" then
 	["The Ashen Verdict"] = "灰烬审判军",
 	["The Consortium"] = "星界财团",
 	["The Defilers"] = "污染者",
-	["The Earthen Ring"] = "The Earthen Ring", -- Needs review
+	["The Earthen Ring"] = "大地之环",
 	["The Frostborn"] = "霜脉矮人",
 	["The Hand of Vengeance"] = "复仇之手",
 	["The Kalu'ak"] = "卡鲁亚克",
@@ -772,7 +772,7 @@ elseif GAME_LOCALE == "zhCN" then
 	["The Taunka"] = "牦牛人",
 	["The Violet Eye"] = "紫罗兰之眼",
 	["The Wyrmrest Accord"] = "龙眠联军",
-	Therazane = "Therazane", -- Needs review
+	Therazane = "塞拉赞恩",
 	["Thorium Brotherhood"] = "瑟银兄弟会",
 	Thrallmar = "萨尔玛",
 	["Thunder Bluff"] = "雷霆崖",

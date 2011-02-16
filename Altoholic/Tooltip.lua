@@ -294,6 +294,7 @@ function addon:GetRecipeOwners(professionName, link, recipeLevel)
 	for characterName, character in pairs(DataStore:GetCharacters()) do
 		profession = DataStore:GetProfession(character, professionName)
 
+		isKnownByChar = nil
 		if profession then
 			if spellID then			-- if spell id is known, just find its equivalent in the professions
 				isKnownByChar = DataStore:IsCraftKnown(profession, spellID)
@@ -480,7 +481,8 @@ local function ProcessTooltip(tooltip, name, link)
 	
 	if itemType == BI["Miscellaneous"] then
 		if DataStore:IsModuleEnabled("DataStore_Pets") and addon:GetOption("TooltipPetInfo") == 1 then
-			if itemSubType == BI["Pet"] then
+			-- item sub type is "Pet" in english, and "Companion" in deDE ...
+			if itemSubType == BI["Pet"] or itemSubType == BI["Companion"] then
 				local companionID = DataStore:GetCompanionSpellID(itemID)
 				if companionID then
 					tooltip:AddLine(" ",1,1,1);	
@@ -652,48 +654,3 @@ function addon:GetItemCount(searchedID)
 	-- "public" for other addons using it
 	return GetItemCount(searchedID)
 end
-
--- not yet implemented, still needs testing, basic stuff works, but far from being optimized.
--- function addon.Tooltip.OnGameTooltipSetSpell(tooltip, ...)
-	-- local self = addon.Tooltip
-
-	-- if self.Orig_GameTooltip_SetSpell then
-		-- self.Orig_GameTooltip_SetSpell(tooltip, ...)
-	-- end
-
-	-- local _, _, spellID = tooltip:GetSpell()
-	-- if spellID then
-		-- local DS = DataStore
-		-- for characterName, character in pairs(DataStore:GetCharacters(realm)) do
-			-- for _, profession in pairs(DataStore:GetProfessions(character)) do
-				-- if DataStore:IsCraftKnown(profession, spellID) then
-					-- tooltip:AddLine(TEAL .. L["Already known by "] ..": ".. WHITE.. characterName, 1, 1, 1, 1);
-				-- end
-			-- end
-		-- end
-		-- self:AddPetOwners(spellID, "CRITTER", tooltip)
-		-- self:AddPetOwners(spellID, "MOUNT", tooltip)
-	-- end
--- end
-
--- function addon.Tooltip.OnItemRefTooltipSetSpell(tooltip, ...)
-	-- local self = addon.Tooltip
-
-	-- if self.Orig_ItemRefTooltip_SetSpell then
-		-- self.Orig_ItemRefTooltip_SetSpell(tooltip, ...)
-	-- end
-
-	-- local _, _, spellID = tooltip:GetSpell()
-	-- if spellID then
-		-- local DS = DataStore
-		-- for characterName, character in pairs(DataStore:GetCharacters(realm)) do
-			-- for _, profession in pairs(DataStore:GetProfessions(character)) do
-				-- if DataStore:IsCraftKnown(profession, spellID) then
-					-- tooltip:AddLine(TEAL .. L["Already known by "] ..": ".. WHITE.. characterName, 1, 1, 1, 1);
-				-- end
-			-- end
-		-- end
-		-- self:AddPetOwners(spellID, "CRITTER", tooltip)
-		-- self:AddPetOwners(spellID, "MOUNT", tooltip)
-	-- end
--- end

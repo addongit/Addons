@@ -553,9 +553,8 @@ function addon:GetModuleLastUpdateByKey(module, key)
 	if type(module) == "string" then
 		module = RegisteredModules[module]
 	end
-	
-	assert(type(module) == "table")
-	if key then
+
+	if key and type(module) == "table" then
 		return module.Characters[key].lastUpdate
 	end
 end

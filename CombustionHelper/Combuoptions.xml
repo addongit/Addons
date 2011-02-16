@@ -378,7 +378,7 @@
 				</Scripts>
 			</CheckButton>
 
-			<CheckButton name="CombuLBdownButton" inherits="ChatConfigCheckButtonTemplate">
+			<CheckButton name="CombuLBtargetButton" inherits="ChatConfigCheckButtonTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="CombuLBtrackerButton" relativePoint="LEFT">
 						<Offset>
@@ -388,30 +388,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						CombuLBdownButtonText:SetText("LB Tracker grow downward")
-					</OnLoad>
-					<OnShow>
-						if (combulbdown == true) then self:SetChecked(true)
-						else self:SetChecked(false)
-						end
-					</OnShow>
-					<OnClick>
-						CombustionLBdowntracker()
-					</OnClick>				
-				</Scripts>
-			</CheckButton>
-
-			<CheckButton name="CombuLBtargetButton" inherits="ChatConfigCheckButtonTemplate">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="CombuLBtrackerButton" relativePoint="BOTTOMLEFT">
-						<Offset>
-							<AbsDimension x="0" y="-5"/>
-						</Offset>
-					</Anchor>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						CombuLBtargetButtonText:SetText("Hide target's LB in tracker when only")
+						CombuLBtargetButtonText:SetText("Always show LB on target")
 					</OnLoad>
 					<OnShow>
 						if (combulbtarget == true) then self:SetChecked(true)
@@ -424,12 +401,111 @@
 				</Scripts>
 			</CheckButton>
 			
-	   <Frame name="AutohideInfo">
+	   <Frame name="LBtrackerPosition">
         <Size>
           <AbsDimension x="250" y="9" />
         </Size>
         <Anchors>
-		  <Anchor point="TOPLEFT" relativeTo="CombuLBtargetButton" relativePoint="TOPLEFT">
+		  <Anchor point="TOPLEFT" relativeTo="CombuLBtrackerButton" relativePoint="TOPLEFT">
+            <Offset>
+              <AbsDimension x="0" y="-35" />
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer>
+            <FontString name="$parentLabel" font="Fonts\FRIZQT__.TTF" text="LB tracker position :" justifyH="LEFT">
+              <Anchors>
+                <Anchor point="TOPLEFT" />
+                <Anchor point="BOTTOMRIGHT" />
+              </Anchors>
+              <FontHeight>
+                <AbsValue val="12" />
+              </FontHeight>
+              <Color r="1" g="1" b="1" />
+              <Shadow>
+                <Color r="0" g="0" b="0" />
+                <Offset>
+                  <AbsDimension x="1" y="-1" />
+                </Offset>
+              </Shadow>
+            </FontString>
+            </Layer>
+        </Layers>
+            </Frame>
+
+    <Frame name="LBtrackerDropDown" inherits="UIDropDownMenuTemplate">
+                <Size>
+                  <AbsDimension x="400" />
+                </Size>
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeTo="LBtrackerPosition" relativePoint="TOPLEFT">
+                    <Offset>
+                      <AbsDimension x="135" y="8" />
+                    </Offset>
+                  </Anchor>
+                </Anchors>
+               <Scripts>
+                  <OnLoad>
+
+   Lbposition = {
+   "Upward",
+   "Downward",
+   "Right Side",
+   "Left Side"
+}
+
+local function LBpositionOnClick(self)
+   UIDropDownMenu_SetSelectedID(LBtrackerDropDown, self:GetID())
+   
+   if (UIDropDownMenu_GetSelectedID(LBtrackerDropDown, self:GetID())  == 1) then combulbup,combulbdown,combulbright,combulbleft = true,false,false,false
+                                                                                     CombustionFrameresize()
+   elseif (UIDropDownMenu_GetSelectedID(LBtrackerDropDown, self:GetID())  == 2) then combulbup,combulbdown,combulbright,combulbleft = false,true,false,false
+                                                                                     CombustionFrameresize()
+   elseif (UIDropDownMenu_GetSelectedID(LBtrackerDropDown, self:GetID())  == 3) then combulbup,combulbdown,combulbright,combulbleft = false,false,true,false
+                                                                                     CombustionFrameresize()
+   elseif (UIDropDownMenu_GetSelectedID(LBtrackerDropDown, self:GetID())  == 4) then combulbup,combulbdown,combulbright,combulbleft = false,false,false,true
+                                                                                     CombustionFrameresize()
+   end
+   
+end   
+                
+local function initialize(self, level)
+   local info = UIDropDownMenu_CreateInfo()
+   for k,v in pairs(Lbposition) do
+      info = UIDropDownMenu_CreateInfo()
+      info.text = v
+      info.value = v
+      info.func = LBpositionOnClick
+      UIDropDownMenu_AddButton(info, level)
+   end
+end
+ 
+ 
+UIDropDownMenu_Initialize(LBtrackerDropDown, initialize)
+UIDropDownMenu_SetWidth(LBtrackerDropDown, 220);
+UIDropDownMenu_SetButtonWidth(LBtrackerDropDown, 124)
+
+UIDropDownMenu_JustifyText(LBtrackerDropDown, "LEFT")
+
+                </OnLoad>
+                <OnShow>
+                
+   if (combulbup == true) then UIDropDownMenu_SetText(LBtrackerDropDown, Lbposition[1])
+   elseif (combulbdown == true) then UIDropDownMenu_SetText(LBtrackerDropDown, Lbposition[2])
+   elseif (combulbright == true) then UIDropDownMenu_SetText(LBtrackerDropDown, Lbposition[3])
+   elseif (combulbleft == true) then UIDropDownMenu_SetText(LBtrackerDropDown, Lbposition[4])
+   end
+                </OnShow>
+                </Scripts>
+        </Frame>
+
+    <Frame name="AutohideInfo">
+        <Size>
+          <AbsDimension x="250" y="9" />
+        </Size>
+        <Anchors>
+		  <Anchor point="TOPLEFT" relativeTo="LBtrackerPosition" relativePoint="TOPLEFT">
             <Offset>
               <AbsDimension x="0" y="-35" />
             </Offset>

@@ -139,12 +139,15 @@ end
 -- *** Scanning functions ***
 local NUM_EQUIPMENT_SLOTS = 19
 
-function ScanInventory()
+local function ScanInventory()
 	local totalItemLevel = 0
 	local itemCount = 0	
 	
 	local inventory = addon.ThisCharacter.Inventory
 	wipe(inventory)
+	
+	local shirtSlot = GetInventorySlotInfo("ShirtSlot")
+	local tabardSlot = GetInventorySlotInfo("TabardSlot")
 	
 	for i = 1, NUM_EQUIPMENT_SLOTS do
 		local link = GetInventoryItemLink("player", i)
@@ -155,7 +158,7 @@ function ScanInventory()
 				inventory[i] = tonumber(link:match("item:(%d+)"))
 			end		
 			
-			if (i ~= 4) and (i ~= 19) then		-- InventorySlotId 4 = shirt, 19 = tabard, skip them
+			if (i ~= shirtSlot) and (i ~= tabardSlot) then
 				itemCount = itemCount + 1
 				totalItemLevel = totalItemLevel + tonumber(((select(4, GetItemInfo(link))) or 0))
 			end
