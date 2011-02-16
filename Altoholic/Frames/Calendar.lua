@@ -397,6 +397,17 @@ local function ClearExpiredEvents()
 					c.Timers[k] = nil
 				end
 			end
+			
+			-- Calendar events 
+			local today = date("%Y-%m-%d")
+			local now = date("%H:%M")
+			for k, v in pairs(c.Calendar) do
+				local eventDate, eventTime = strsplit("|", v)
+				
+				if eventDate < today or (eventDate == today and eventTime <= now) then
+					c.Calendar[k] = nil
+				end
+			end
 		end
 	end
 end
@@ -436,12 +447,12 @@ function Altoholic.Calendar:CheckEvents(elapsed)
 	for k, v in pairs(Altoholic.Calendar.Events.List) do
 		local numMin = floor(GetEventExpiry(v) / 60)
 
-		if numMin < 0 then
+		if numMin > -1440 and numMin < 0 then		-- expiry older than 1 day is ignored
 			hasEventExpired = true		-- at least one event has expired
 		elseif numMin == 0 then
 			ShowExpiryWarning(k, 0)
 			hasEventExpired = true		-- at least one event has expired
-		elseif numMin <= 30 then
+		elseif numMin > 0 and numMin <= 30 then
 			local warnings = addon:GetOption("WarningType"..EventToWarningType[v.eventType])		-- Gets something like "15|5|1"
 			for _, threshold in pairs(TimerThresholds) do
 				if threshold == numMin then			-- if snooze is allowed for this value
@@ -739,7 +750,8 @@ function Altoholic.Calendar.Events:BuildList()
 			
 			-- Calendar Events
 			for k, v in pairs(c.Calendar) do
-				local eventDate, eventTime = strsplit("|", v)
+				local eventDate, eventTime, _, _, _, reported = strsplit("|", v)
+				
 				-- TODO: do not add declined invitations
 				self:Add(CALENDAR_LINE, eventDate, eventTime, characterName, realm, k)
 			end
@@ -957,6 +969,9 @@ function Altoholic.Calendar:Scan()
 	local c = Altoholic.ThisCharacter
 	wipe(c.Calendar)
 	
+	local today = date("%Y-%m-%d")
+	local now = date("%H:%M")
+	
 	-- save this month (from today) + 6 following months
 	for monthOffset = 0, 6 do
 		local month, year, numDays = CalendarGetMonth(monthOffset)
@@ -970,9 +985,13 @@ function Altoholic.Calendar:Scan()
 					calendarType ~= "RAID_RESET" and inviteStatus ~= CALENDAR_INVITESTATUS_DECLINED then
 					-- don't save holiday events, they're the same for all chars, and would be redundant..who wants to see 10 fishing contests every sundays ? =)
 
-					table.insert(c.Calendar, format("%s|%s|%s|%d|%d",
-						format("%04d-%02d-%02d", year, month, day), format("%02d:%02d", hour, minute),
-						title, eventType, inviteStatus ))
+					local eventDate = format("%04d-%02d-%02d", year, month, day)
+					local eventTime = format("%02d:%02d", hour, minute)
+
+					-- Only add events older than "now"
+					if eventDate > today or (eventDate == today and eventTime > now) then
+						table.insert(c.Calendar, format("%s|%s|%s|%d|%d", eventDate, eventTime, title, eventType, inviteStatus ))
+					end
 				end
 			end
 		end

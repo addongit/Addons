@@ -7,6 +7,8 @@ function Combustion_OnLoad(CombustionFrame)
                                                
     if select(2, UnitClass("player")) ~= "MAGE" then CombustionFrame:Hide() return end
     
+    
+    
 	CombustionFrame:RegisterForDrag("LeftButton")
 	CombustionFrame:RegisterEvent("PLAYER_LOGIN")
 	CombustionFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
@@ -57,8 +59,11 @@ function Combustion_OnLoad(CombustionFrame)
     if (combutrack == nil) then combutrack = true end -- set combustion dot tracker upon very first launch
     if (combuchat==nil) then combuchat = true end -- set status report upon very first launch 
     if (combulbtracker==nil) then combulbtracker = true end -- set living bomb tracker upon very first launch 
-    if (combulbdown==nil) then combulbdown = false end -- set lb tracker going downward upon very first launch 
     if (combulbtarget==nil) then combulbtarget = false end -- set lb tracker complete mode upon very first launch 
+    if (combulbup==nil) then combulbup = true end -- set lb tracker upward upon very first launch 
+    if (combulbdown==nil) then combulbdown = false end -- set lb tracker upward upon very first launch 
+    if (combulbright==nil) then combulbup = false end -- set lb tracker upward upon very first launch 
+    if (combulbleft==nil) then combulbup = false end -- set lb tracker upward upon very first launch 
 	combupyrogain = 0
    	combupyrorefresh = 0
    	combupyrocast = 0
@@ -227,18 +232,6 @@ function Combustioncrit()
 end
 
 -------------------------------
--- living bomb tracker downward mode function for option panel
-function CombustionLBdowntracker()
-
-	if CombuLBdownButton:GetChecked(true) then combulbdown = true 
-                                             CombuLBdownButton:SetChecked(true)
-	else combulbdown = false 
-         CombuLBdownButton:SetChecked(false)
-	end
-    CombustionFrameresize()
-end
-
--------------------------------
 -- living bomb tracker target mode function for option panel
 function CombustionLBtargettracker()
 
@@ -291,6 +284,7 @@ function CombustionFrameresize()
          CritTypeFrameLabel:SetPoint("TOPLEFT",StatusTextFrameLabel,"BOTTOMLEFT",0,0)
          CritTextFrameLabel:Hide()
          CritTextFrameLabel:SetPoint("TOPLEFT",StatusTextFrameLabel,"BOTTOMLEFT",0,0)
+         Critbar:Hide()
          critheight = 0
     end    
     
@@ -326,21 +320,45 @@ function CombustionFrameresize()
 		 CritTextFrameLabel:SetWidth(86)
 	end
 	
-	if (combulbtracker == true) and (combulbdown == false)
-		then LBtrackFrame:Show()
-             LBtrackdownFrame:Hide()
-             LBtrackFrame:SetFrameLevel((CombustionFrame:GetFrameLevel())-1)
-			 LBtrackFrame:SetWidth((CombustionFrame:GetWidth())-10)
-    elseif (combulbtracker == true) and (combulbdown == true)
-		then LBtrackFrame:Hide()
-             LBtrackdownFrame:Show()
-             LBtrackdownFrame:SetFrameLevel((CombustionFrame:GetFrameLevel())-1)
-			 LBtrackdownFrame:SetWidth((CombustionFrame:GetWidth())-10)
+	if (combulbtracker == true) then 
+        if (combulbup == true)
+            then LBtrackFrame:Show()
+                 LBtrackdownFrame:Hide()
+                 LBtrackFrame:SetFrameLevel((CombustionFrame:GetFrameLevel())-1)
+                 LBtrackFrame:SetWidth((CombustionFrame:GetWidth())-10)
+        elseif (combulbdown == true)
+            then LBtrackFrame:Hide()
+                 LBtrackdownFrame:Show()
+                 LBtrackdownFrame:SetFrameLevel((CombustionFrame:GetFrameLevel())-1)
+                 LBtrackdownFrame:SetWidth((CombustionFrame:GetWidth())-10)
+                 LBtrackdownFrame:ClearAllPoints()
+                 LBtrackdownFrame:SetPoint("TOP",CombustionFrame,"BOTTOM",0,6)
+        elseif (combulbright == true)
+            then LBtrackFrame:Hide()
+                 LBtrackdownFrame:Show()
+                 LBtrackdownFrame:SetFrameLevel((CombustionFrame:GetFrameLevel())-1)
+                 LBtrackdownFrame:SetWidth(88)
+                 LBtrackdownFrame:ClearAllPoints()
+                 LBtrackdownFrame:SetPoint("TOPLEFT",CombustionFrame,"TOPRIGHT",-6,0)
+        elseif (combulbleft == true)
+            then LBtrackFrame:Hide()
+                 LBtrackdownFrame:Show()
+                 LBtrackdownFrame:SetFrameLevel((CombustionFrame:GetFrameLevel())-1)
+                 LBtrackdownFrame:SetWidth(88)
+                 LBtrackdownFrame:ClearAllPoints()
+                 LBtrackdownFrame:SetPoint("TOPRIGHT",CombustionFrame,"TOPLEFT",6,0)
+        end
     else LBtrackFrame:Hide()
          LBtrackdownFrame:Hide()
 	end
 	
-
+    if (combulbup == true) 
+        then lbframeprefix = "LBtrack"
+    else lbframeprefix = "LBtrackdown"
+    end
+    
+    for i = 1,3 do _G[lbframeprefix..i]:SetWidth(_G[lbframeprefix.."Frame"]:GetWidth()-33) end
+    
 end
 
 -------------------------------
@@ -374,7 +392,10 @@ function Combustionreset ()
         combutrack = true
         combuchat = true
         combulbtracker = true
+        combulbup = true
         combulbdown = false
+        combulbright = false
+        combulbleft = false
         combulbtarget = true
         ChatFrame1:AddMessage("|cff00ffffCombustionHelper Savedvariables have been resetted, you can logout now.|r")
 end
@@ -459,7 +480,7 @@ local CombuCritMeta = {
 
 -------------------------------
 --empty table for living bomb tracking
-local LBtrackertable = {}
+LBtrackertable = {}
 
 -------------------------------
 --Helper function for living bomb tracking expiration time collecting
@@ -567,9 +588,9 @@ function CombuLBtrackerUpdate()
 
     lbtrackerheight = 0
     
-    if (combulbdown == true) 
-        then lbframeprefix = "LBtrackdown"
-    else lbframeprefix = "LBtrack"
+    if (combulbup == true) 
+        then lbframeprefix = "LBtrack"
+    else lbframeprefix = "LBtrackdown"
     end
     
     for i = 1,3 do
@@ -579,7 +600,7 @@ function CombuLBtrackerUpdate()
                  _G[lbframeprefix..i.."Timer"]:SetText("")
                  _G[lbframeprefix..i.."Bar"]:Hide()
                  _G[lbframeprefix.."Frame"]:Hide()
-        elseif (#LBtrackertable == 1) and (UnitGUID("target") == (LBtrackertable[1])[1]) and (combulbtarget == true)
+        elseif (#LBtrackertable == 1) and (UnitGUID("target") == (LBtrackertable[1])[1]) and (combulbtarget == false)
             then _G[lbframeprefix..i]:SetText("")
                  _G[lbframeprefix..i.."Timer"]:SetText("")
                  _G[lbframeprefix..i.."Bar"]:Hide()
@@ -622,6 +643,10 @@ end
 function Combustion_OnEvent(self, event, ...)
 
     if (event == "PLAYER_LOGIN") then
+    
+    if (CombustionFrame:GetFrameLevel() == 0) then
+        CombustionFrame:SetFrameLevel(1) -- fix when frame is at FrameLevel 0
+    end
     
     if (combuchat==true) then ChatFrame1:AddMessage("|cff00ffffCombustion Helper is loaded. Interface Panel -> Addons for Config.|r") end
     
@@ -1004,7 +1029,7 @@ function Combustion_OnUpdate(self, elapsed)
             CombustionUp = 1
             ImpactUp = 0
             combufadeout = false
-            if (combureportvalue <= (combulbdamage + combupyrodamage + combuigndamage + combuffbdamage)) and combureportthreshold then
+            if (combureportvalue <= (combulbdamage + combupyrodamage + combuigndamage + combuffbdamage)) and (combureportthreshold == true) then
                 StatusTextFrameLabel:SetText(format("|cff00ff00Total : %.0f - CB Up|r", combulbdamage + combupyrodamage + combuigndamage + combuffbdamage))
             else StatusTextFrameLabel:SetText(format("|cffffcc00Total : %.0f - CB Up|r", combulbdamage + combupyrodamage + combuigndamage + combuffbdamage))
             end
@@ -1098,21 +1123,33 @@ function Combustion_OnUpdate(self, elapsed)
     end
     
 --------------------------------
--- Background colors settings
-    if (LBTime == 1) 
+-- Background/border colors settings
+    if (combureportthreshold == true) and (CombustionUp == 1) and (combureportvalue <= (combulbdamage + combupyrodamage + combuigndamage + combuffbdamage)) 
+        then CombustionFrame:SetBackdropColor(0,0.7,0) --Green background for frame when threshold is met and combustion are up
+             CombustionFrame:SetBackdropBorderColor(0,0.7,0)
+    elseif (LBTime == 1) --Green background for frame when dots and combustion are up
         and (FFBTime == 1) 
         and (IgnTime == 1) 
         and (PyroTime == 1) 
         and (CombustionUp == 1)
         then CombustionFrame:SetBackdropColor(0,0.7,0) --Green background for frame when dots and combustion are up
-    elseif (LBTime == 1) 
+             CombustionFrame:SetBackdropBorderColor(0,0.7,0)
+    elseif (combureportthreshold == true) and (CombustionUp == 0) and (ImpactUp == 1) and (combureportvalue <= (combulbdamage + combupyrodamage + combuigndamage + combuffbdamage)) 
+        then CombustionFrame:SetBackdropColor(1,0.82,0.5) --yellow background for frame when threshold is met and impact are up
+             CombustionFrame:SetBackdropBorderColor(1,0.82,0)
+    elseif (LBTime == 1) --Yellow background for frame when dots and Impact are up
         and (FFBTime == 1) 
         and (IgnTime == 1) 
         and (PyroTime == 1) 
         and (ImpactUp == 1)
-        and (CombustionUp == 0) --Yellow background for frame when dots and Impact are up
+        and (CombustionUp == 0) 
         then CombustionFrame:SetBackdropColor(1,0.82,0.5)
+             CombustionFrame:SetBackdropBorderColor(1,0.82,0)
+    elseif (k7 == 64343) -- yellow border when impact is up
+        then CombustionFrame:SetBackdropColor(0.25,0.25,0.25)
+             CombustionFrame:SetBackdropBorderColor(1,0.82,0)
     else CombustionFrame:SetBackdropColor(0.25,0.25,0.25)
+         CombustionFrame:SetBackdropBorderColor(0.67,0.67,0.67)
     end
     
 --------------------------------

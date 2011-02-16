@@ -149,12 +149,13 @@ end
 
 -- *** Utility functions ***
 local headersState = {}
+local inactive = {}
 
 local function SaveHeaders()
 	local headerCount = 0		-- use a counter to avoid being bound to header names, which might not be unique.
 	
 	for i = GetNumFactions(), 1, -1 do		-- 1st pass, expand all categories
-		local _, _, _, _, _, _, _,	_, isHeader, isCollapsed = GetFactionInfo(i)
+		local name, _, _, _, _, _, _,	_, isHeader, isCollapsed = GetFactionInfo(i)
 		if isHeader then
 			headerCount = headerCount + 1
 			if isCollapsed then
@@ -163,12 +164,26 @@ local function SaveHeaders()
 			end
 		end
 	end
+	
+	-- If a header faction, like alliance or horde, has all child factions set to inactive, it will not be visible, so activate it, and deactivate it after the scan (thanks Zaphon for this)
+	for i = GetNumFactions(), 1, -1 do
+		if IsFactionInactive(i) then
+			local name = GetFactionInfo(i)
+			inactive[name] = true
+			SetFactionActive(i)
+		end
+	end
 end
 
 local function RestoreHeaders()
 	local headerCount = 0
 	for i = GetNumFactions(), 1, -1 do
-		local _, _, _, _, _, _, _,	_, isHeader = GetFactionInfo(i)
+		local name, _, _, _, _, _, _,	_, isHeader = GetFactionInfo(i)
+		
+		if inactive[name] then
+			SetFactionInactive(i)
+		end
+		
 		if isHeader then
 			headerCount = headerCount + 1
 			if headersState[headerCount] then

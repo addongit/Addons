@@ -423,6 +423,11 @@ end
 
 local function ScanProfessionInfo(index, mainIndex)
 	local char = addon.ThisCharacter
+
+	if char and mainIndex and not index then
+		char["Prof"..mainIndex] = nil			-- profession may have been cleared, nil it
+	end
+
 	if not char or not index then return end
 	
 	local profName, texture, rank, maxRank = GetProfessionInfo(index);
@@ -595,6 +600,11 @@ local function OnChatMsgSystem(self, msg)
 				wipe(char.Professions[skillName])
 				char.Professions[skillName] = nil
 			end
+			
+			-- this won't help, as GetProfessions does not return the right values right after the profession has been abandonned.
+			-- The problem of listing Prof1 & Prof2 with potentially the same value fixes itself after the next logon though.
+			-- Until I find more time to work around this issue, we will live with it .. it's not like players are abandonning professions 100x / day :)
+			-- ScanProfessionLinks()	
 		end
 	end
 end

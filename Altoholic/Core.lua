@@ -4,7 +4,7 @@ _G[addonName] = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "A
 
 local addon = _G[addonName]
 
-addon.Version = "v4.0.005b"
+addon.Version = "v4.0.005c"
 addon.VersionNum = 400005
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
@@ -288,14 +288,22 @@ function addon.Tabs:OnClick(index)
 	self.Columns.prefix = addonName.."Tab"..tabList[index].."_Sort"
 	
 	if index >= 2 and index <= 5 then
-		SafeLoadAddOn(format("%s_%s", addonName, tabList[index]))		-- make this part a bit more generic once we'll have more LoD parts
+		local moduleName = format("%s_%s", addonName, tabList[index])
+		SafeLoadAddOn(moduleName)		-- make this part a bit more generic once we'll have more LoD parts
 		
 		local parentLevel = AltoholicFrame:GetFrameLevel()
 		local childName = format("%sTab%s", addonName, tabList[index])
-		local childLevel = _G[ childName ]:GetFrameLevel()
+
+		local tabFrame = _G[ childName ]
 		
-		if childLevel <= parentLevel then	-- if for any reason a child frame has a level lower or equal to its parent, fix it
-			_G[ childName ]:SetFrameLevel(parentLevel+1)
+		if tabFrame then
+			local childLevel = tabFrame:GetFrameLevel()
+			
+			if childLevel <= parentLevel then	-- if for any reason a child frame has a level lower or equal to its parent, fix it
+				tabFrame:SetFrameLevel(parentLevel+1)
+			end
+		else
+			addon:Print(format("%s is disabled.", moduleName))
 		end
 	end
 	

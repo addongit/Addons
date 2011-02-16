@@ -25,6 +25,9 @@ local NUM_GLYPH_SLOTS = 9
 
 local AddonDB_Defaults = {
 	global = {
+		Reference = {
+			GlyphNames = {},		-- ex: Arcane Barrage
+		},
 		Guilds = {
 			['*'] = {			-- ["Account.Realm.Name"] 
 				Members = {
@@ -71,7 +74,7 @@ local ReferenceDB_Defaults = {
 	}
 }
 
-local TALENT_ICON_PATH = "Interface\\Icons\\"
+local UI_ICONS_PATH = "Interface\\Icons\\"
 local BACKGROUND_PATH = "Interface\\TalentFrame\\"
 
 -- *** Utility functions ***
@@ -211,8 +214,8 @@ local function ScanTalentReference(ref)
 			if nameTalent then
 				-- all paths start with this prefix, let's hope blue does not change this :)
 				-- saves a lot of memory not to keep the full path for each talent (about 16k in total for all classes)
-				iconPath = string.gsub(iconPath, TALENT_ICON_PATH, "")
-				iconPath = string.gsub(iconPath, string.upper(TALENT_ICON_PATH), "")
+				iconPath = string.gsub(iconPath, UI_ICONS_PATH, "")
+				iconPath = string.gsub(iconPath, string.upper(UI_ICONS_PATH), "")
 				
 				local link = GetTalentLink(tabNum, talentNum)
 				local id = tonumber(link:match("talent:(%d+)"))
@@ -246,8 +249,8 @@ local function ScanTalentReference(ref)
 		
 		
 			local ti = ref.Trees[name]		-- ti for talent info
-			ti.icon = string.gsub(icon, TALENT_ICON_PATH, "")
-			ti.icon = string.gsub(ti.icon, string.upper(TALENT_ICON_PATH), "")
+			ti.icon = string.gsub(icon, UI_ICONS_PATH, "")
+			ti.icon = string.gsub(ti.icon, string.upper(UI_ICONS_PATH), "")
 		end
 	end
 end
@@ -292,7 +295,7 @@ local function ScanGlyphSockets()
 			if enabled then
 				link = GetGlyphLink(i, specNum)
 				if link then
-					_, glyphID = link:match("glyph:(%d+):(%d+)")
+					glyphID = link:match("glyph:(%d+)")
 					if glyphID then
 						attrib = attrib + LeftShift(glyphID, 23)
 					end
@@ -314,30 +317,32 @@ local function ScanGlyphList()
 		ToggleGlyphFilter(7)			-- so toggle again to make sure all categories are expanded
 	end
 	
+	local NamesRef = addon.db.global.Reference.GlyphNames
 	local glyphs = addon.ThisCharacter.GlyphList
 	wipe(glyphs)
 	
 	local attrib
 	for index = 1, GetNumGlyphs() do
-		local name, group, isKnown, _, spellID = GetGlyphInfo(index)
+		local name, group, isKnown, _, glyphID = GetGlyphInfo(index)
 		
 		-- bit 0 : isHeader
 		-- bits 1-2 : group (value = 1 2 or 3)
 		-- bit 3: isKnown
-		-- bits 4- : spellID
+		-- bits 4- : glyphID
 		
 		if name == "header" then
 			attrib = 1
 			isKnown = 1
-			spellID = 0
+			glyphID = 0
 		else
 			attrib = 0
 			isKnown = (isKnown == true) and 1 or 0
+			NamesRef[glyphID] = name
 		end
 		
 		attrib = attrib + LeftShift(group, 1)
 		attrib = attrib + LeftShift(isKnown, 3)
-		attrib = attrib + LeftShift(spellID, 4)
+		attrib = attrib + LeftShift(glyphID, 4)
 		
 		glyphs[index] = attrib
 	end
@@ -406,7 +411,7 @@ local function _GetTreeInfo(class, tree)
 	local t = _GetTreeReference(class, tree)
 	
 	if t then
-		return TALENT_ICON_PATH..t.icon, BACKGROUND_PATH .. t.background
+		return UI_ICONS_PATH..t.icon, BACKGROUND_PATH .. t.background
 	end
 end
 
@@ -444,7 +449,7 @@ local function _GetTalentInfo(class, tree, index)
 	
 	local id, name, icon, tier, column, maximumRank	= strsplit("|", talentInfo)
 	
-	return tonumber(id), name, TALENT_ICON_PATH..icon, tonumber(tier), tonumber(column), tonumber(maximumRank)
+	return tonumber(id), name, UI_ICONS_PATH..icon, tonumber(tier), tonumber(column), tonumber(maximumRank)
 end
 
 local function _GetTalentRank(character, tree, specNum, index)
@@ -502,13 +507,14 @@ local function _GetGlyphSocketInfo(character, specNum, index)
 	return enabled, glyphType, spell, icon, glyphID, tooltipIndex
 end
 	
-local function _GetGlyphLink(id, spell, glyphID)
-	if not spell then return end
-	
-	local name = GetSpellInfo(spell)
-	if not name then return end
-	
-	return format("|cff66bbff|Hglyph:2%s:%s|h[%s]|h|r", id, glyphID, name)
+local function _GetGlyphLink(glyphID)
+	local spellID = addon.GlyphIDToSpellID[glyphID]
+	if spellID then
+		local name = GetSpellInfo(spellID)
+		if name then
+			return format("|cff66bbff|Hglyph:%s|h[%s]|h|r", glyphID, name)
+		end
+	end
 end
 
 local function _GetNumGlyphs(character)
@@ -533,14 +539,26 @@ local function _GetGlyphInfo(character, index)
 	local isKnown = bAnd(RightShift(glyph, 3), 1)
 	isKnown = (isKnown == 1) and true or nil
 	
-	local spell = RightShift(glyph, 4)
+	local glyphID = RightShift(glyph, 4)
 	
-	return isHeader, isKnown, group, spell
+	return isHeader, isKnown, group, glyphID
 end
 
-local function _GetGlyphSpellID(itemID)
-	-- returns nil if  id is not in the DB, returns the spellID otherwise
-	return addon.GlyphToSpellID[itemID]
+local function _GetGlyphInfoByID(glyphID)
+	local NamesRef = addon.db.global.Reference.GlyphNames
+
+	local spellID = addon.GlyphIDToSpellID[glyphID]
+	local name, icon, link
+	if spellID then
+		name, _, icon = GetSpellInfo(spellID)
+		
+		if name then
+			link = format("|cff66bbff|Hglyph:%s|h[%s]|h|r", glyphID, name)
+		end
+	end
+	
+	-- name, icon, link
+	return NamesRef[glyphID], icon or "", link
 end
 
 local function _IsGlyphKnown(character, itemID)
@@ -550,14 +568,14 @@ local function _IsGlyphKnown(character, itemID)
 		3) return true, true : knows the glyph
 	--]]
 	
-	local glyphSpell = addon.GlyphToSpellID[itemID]
-	if not glyphSpell then return end
+	local glyphID = addon.ItemIDToGlyphID[itemID]
+	if not glyphID then return end
 	
-	local spell
+	local id
 	for index, glyph in ipairs(character.GlyphList) do
-		spell = RightShift(glyph, 4)
+		id = RightShift(glyph, 4)
 
-		if spell == glyphSpell then
+		if id == glyphID then
 			local isKnown = bAnd(RightShift(glyph, 3), 1)
 			return (isKnown == 1) and true or nil, true
 		end
@@ -659,7 +677,7 @@ local PublicMethods = {
 	GetGlyphLink = _GetGlyphLink,
 	GetNumGlyphs = _GetNumGlyphs,
 	GetGlyphInfo = _GetGlyphInfo,
-	GetGlyphSpellID = _GetGlyphSpellID,
+	GetGlyphInfoByID = _GetGlyphInfoByID,
 	IsGlyphKnown = _IsGlyphKnown,
 	RequestGuildMemberTalents = _RequestGuildMemberTalents,
 	GetGuildMemberTalentRank = _GetGuildMemberTalentRank,

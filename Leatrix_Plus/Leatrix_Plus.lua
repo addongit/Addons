@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------
--- 	Leatrix Plus 4.09
--- 	Last updated: 7th February 2011
+-- 	Leatrix Plus 4.10
+-- 	Last updated: 14th February 2011
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
@@ -21,26 +21,6 @@
 	local frame = CreateFrame("FRAME", "Leatrix_Plus");
 	frame:RegisterEvent("ADDON_LOADED");
 	frame:RegisterEvent("PLAYER_LOGOUT");
-
--- 	Hook world map function
-	--WorldMapFrameSizeUpButton:HookScript("OnClick", function()
-		--if LeaPlusOptionsLC["LeaPlusMapTrack"] == "On" then
-			--local LeaPlusQuestObj = WorldMapQuestShowObjectives:GetChecked();
-			--if LeaPlusQuestObj then
-				--WorldMapQuestShowObjectives:Click();
-				--LeaFramesWhee = 1;
-			--end
-		--end
-	--end)
-
-	--WorldMapFrameSizeDownButton:HookScript("OnClick", function()
-		--if LeaPlusOptionsLC["LeaPlusMapTrack"] == "On" then
-			--if LeaFramesWhee then
-				--WorldMapQuestShowObjectives:Click();
-				--LeaFramesWhee = nil;
-			--end
-		--end
-	--end)
 
 ----------------------------------------------------------------------
 --	Chat filters
@@ -207,7 +187,6 @@
 			if LeaPlusOptionsDB["LeaPlusDualSpec"] 			== nil then LeaPlusOptionsLC["LeaPlusDualSpec"] 		= "On"	else LeaPlusOptionsLC["LeaPlusDualSpec"] 		= LeaPlusOptionsDB["LeaPlusDualSpec"] 		end 
 			if LeaPlusOptionsDB["LeaPlusDisBP"] 			== nil then LeaPlusOptionsLC["LeaPlusDisBP"] 			= "On"	else LeaPlusOptionsLC["LeaPlusDisBP"] 			= LeaPlusOptionsDB["LeaPlusDisBP"] 			end 
 			if LeaPlusOptionsDB["LeaPlusPlayerGold"] 		== nil then LeaPlusOptionsLC["LeaPlusPlayerGold"] 		= "On"	else LeaPlusOptionsLC["LeaPlusPlayerGold"] 		= LeaPlusOptionsDB["LeaPlusPlayerGold"] 	end 
-			if LeaPlusOptionsDB["LeaPlusMapTrack"] 			== nil then LeaPlusOptionsLC["LeaPlusMapTrack"] 		= "On"	else LeaPlusOptionsLC["LeaPlusMapTrack"] 		= LeaPlusOptionsDB["LeaPlusMapTrack"] 		end 
 			if LeaPlusOptionsDB["LeaPlusGlowEffect"] 		== nil then LeaPlusOptionsLC["LeaPlusGlowEffect"] 		= "Off"	else LeaPlusOptionsLC["LeaPlusGlowEffect"] 		= LeaPlusOptionsDB["LeaPlusGlowEffect"] 	end 
 			if LeaPlusOptionsDB["LeaPlusNetherEffect"] 		== nil then LeaPlusOptionsLC["LeaPlusNetherEffect"] 	= "On"	else LeaPlusOptionsLC["LeaPlusNetherEffect"] 	= LeaPlusOptionsDB["LeaPlusNetherEffect"] 	end 
 
@@ -228,7 +207,6 @@
 			LeaPlusOptionsDB["LeaPlusDualSpec"] 		= LeaPlusOptionsLC["LeaPlusDualSpec"]
 			LeaPlusOptionsDB["LeaPlusDisBP"] 			= LeaPlusOptionsLC["LeaPlusDisBP"]
 			LeaPlusOptionsDB["LeaPlusPlayerGold"] 		= LeaPlusOptionsLC["LeaPlusPlayerGold"]
-			LeaPlusOptionsDB["LeaPlusMapTrack"] 		= LeaPlusOptionsLC["LeaPlusMapTrack"]
 			LeaPlusOptionsDB["LeaPlusGlowEffect"] 		= LeaPlusOptionsLC["LeaPlusGlowEffect"]
 			LeaPlusOptionsDB["LeaPlusNetherEffect"] 	= LeaPlusOptionsLC["LeaPlusNetherEffect"]
 		end
@@ -278,7 +256,7 @@
 	local function slashCommand(str)
 		if str == '' then
 			InterfaceOptionsFrame_OpenToCategory("Leatrix Plus");
-		elseif str == 'help' then DEFAULT_CHAT_FRAME:AddMessage("Leatrix Plus\n/lp - Show options panel\n/lp hiderc - Hides Choose your Role window\n/lp frame - Toggles frame Information\n/lp reload - Reload the UI\n/lp restart - Restarts the graphics engine", r,g,b)
+		elseif str == 'help' then DEFAULT_CHAT_FRAME:AddMessage("Leatrix Plus\n/lp - Show options panel\n/lp hiderc - Hides Choose your Role window\n/lp timer - Shows dungeon cooldown\n/lp frame - Toggles frame Information\n/lp reload - Reload the UI\n/lp restart - Restarts the graphics engine", r,g,b)
 		elseif str == "hiderc" then
 			LFDRoleCheckPopup:Hide()
 		elseif str == "frame" then
@@ -287,6 +265,8 @@
 			ReloadUI();
 		elseif str == "restart" then
 			RestartGx();
+		elseif str == "timer" then
+			LFDQueueFrameCooldownFrame:Show();
 		else
 			DEFAULT_CHAT_FRAME:AddMessage("Invalid command.  Type '/lp help' for help.",  r,g,b)
 		end
@@ -407,16 +387,17 @@
 		LeaPlusCheckbox("LeaPlusNormalRes",		"Resurrect", 					16, -192, 	"If checked, resurrection attempts cast on you will be automatically accepted.")
 
 		OptionsText("Miscellaneous", 16, -232);
-		LeaPlusCheckbox("LeaPlusDeathEffect", 	"Hide death effect", 			16, -252, 	"If checked, the death effect (grey glow) will not be shown when you are a ghost.")
-		LeaPlusCheckbox("LeaPlusNetherEffect", 	"Hide netherworld effect", 		16, -272, 	"If checked, the netherworld effect (such as mage Invisibility) will not be shown.")
-		LeaPlusCheckbox("LeaPlusGlowEffect", 	"Hide drunken haze effect", 	16, -292, 	"If checked, the drunken haze effect (blurry screen) will not be shown.  Note that checking this option will reduce overall graphics quality, so you should only use it when required.")
-		LeaPlusCheckbox("LeaPlusDisBP", 		"Prevent bag automation",		16, -312, 	"If checked, bags will not be opened and closed automatically when using a vendor or mailbox, allowing you to open and close them freely at your command.")
-		LeaPlusCheckbox("LeaPlusPlayerGold", 	"Show elite chain",				16, -332, 	"If checked, your player portrait will have an elite gold chain around it.")
-		--LeaPlusCheckbox("LeaPlusMapTrack", 		"Hide map quest tracking",		16, -312, 	"If checked, the world map will be shown full screen even with the quest objectives setting on.")
+		LeaPlusCheckbox("LeaPlusDisBP", 		"Prevent bag automation",		16, -252, 	"If checked, bags will not be opened and closed automatically when using a vendor or mailbox, allowing you to open and close them freely at your command.")
+		LeaPlusCheckbox("LeaPlusPlayerGold", 	"Show elite chain",				16, -272, 	"If checked, your player portrait will have an elite gold chain around it.")
 
-		OptionsText("Chat Spam", 200, -72);
-		LeaPlusCheckbox("LeaPlusDuelMessage", 	"Hide duel messages in chat", 	200, -92, 	"If checked, duel messages will be blocked unless you took part in the duel.")
-		LeaPlusCheckbox("LeaPlusDualSpec", 		"Hide dual-spec messages", 		200, -112, 	"If checked, switching specs will not flood your chat window with dual-spec spam.")
+		OptionsText("Graphics", 200, -72);
+		LeaPlusCheckbox("LeaPlusDeathEffect", 	"Hide death effect", 			200, -92, 	"If checked, the death effect (grey glow) will not be shown when you are a ghost.")
+		LeaPlusCheckbox("LeaPlusNetherEffect", 	"Hide netherworld effect", 		200, -112, 	"If checked, the netherworld effect (such as mage Invisibility) will not be shown.")
+		LeaPlusCheckbox("LeaPlusGlowEffect", 	"Remove full screen glow", 		200, -132, 	"If checked, the full screen glow will not be shown.  Note that checking this option will reduce overall graphics quality, but you can use it when required to hide the drunken haze (blurry screen).")
+
+		OptionsText("Chat Spam", 200, -172);
+		LeaPlusCheckbox("LeaPlusDuelMessage", 	"Hide duel messages in chat", 	200, -192, 	"If checked, duel messages will be blocked unless you took part in the duel.")
+		LeaPlusCheckbox("LeaPlusDualSpec", 		"Hide dual-spec messages", 		200, -212, 	"If checked, switching specs will not flood your chat window with dual-spec spam.")
 
 		local LeaPlusDeflt = CreateFrame("Button", "LeaPlusDeflt", self, "UIPanelButtonTemplate") 
 		LeaPlusDeflt:SetWidth(130)
@@ -438,7 +419,6 @@
 			LeaPlusOptionsDB["LeaPlusDualSpec"]			= "On"
 			LeaPlusOptionsLC["LeaPlusDisBP"] 			= "On"
 			LeaPlusOptionsLC["LeaPlusPlayerGold"] 		= "On"
-			LeaPlusOptionsLC["LeaPlusMapTrack"] 		= "On"
 			LeaPlusOptionsLC["LeaPlusGlowEffect"] 		= "Off"
 			LeaPlusOptionsLC["LeaPlusNetherEffect"] 	= "On"
 
@@ -451,6 +431,20 @@
 		-- Add panel to interface options    
 		InterfaceOptions_AddCategory(self) 
 	end
+
+		local LeaPlusTimer = CreateFrame("Button", "LeaPlusTimer", LFDQueueFrame, "UIPanelButtonTemplate") 
+		LeaPlusTimer:SetWidth(40)
+		LeaPlusTimer:SetHeight(25) 
+		LeaPlusTimer:SetAlpha(1.0)
+		LeaPlusTimer:SetPoint("TOPLEFT", 30, -128)
+		LeaPlusTimer:SetText("Time") 
+		LeaPlusTimer:RegisterForClicks("AnyUp") 
+		LeaPlusTimer.tiptext = "Shows your random dungeon cooldown."
+		LeaPlusTimer:SetScript("OnEnter", ShowTooltip)		
+		LeaPlusTimer:SetScript("OnLeave", HideTooltip)
+		LeaPlusTimer:SetScript("OnClick", function() 
+			LFDQueueFrameCooldownFrame:Show();
+		end)
 
 	-- 	Show panel
 	LeaPlusOptionsPanel:OptionsPanel();

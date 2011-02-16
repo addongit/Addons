@@ -16,24 +16,35 @@ local currentSchool, currentGlyphType
 local currentPage
 
 function ns:OnEnter(frame)
-	local id = frame.spellID
-	if id then 
+
+	if frame.spellID then 
 		AltoTooltip:SetOwner(frame, "ANCHOR_LEFT");
 		AltoTooltip:ClearLines();
-		AltoTooltip:SetHyperlink("spell:" ..id);
+		AltoTooltip:SetHyperlink("spell:" ..frame.spellID);
+		AltoTooltip:Show();
+	elseif frame.glyphID then 
+		AltoTooltip:SetOwner(frame, "ANCHOR_LEFT");
+		AltoTooltip:ClearLines();
+		AltoTooltip:SetGlyphByID(frame.glyphID);
 		AltoTooltip:Show();
 	end
 end
 
 function ns:OnClick(frame, button)
-	if frame.spellID and ( button == "LeftButton" ) and ( IsShiftKeyDown() ) then
-		local chat = ChatEdit_GetLastActiveWindow()
-		if chat:IsShown() then
-			local link = DataStore:GetCompanionLink(frame.spellID)
-			if link then
-				chat:Insert(link)
-			end
-		end
+	if button ~= "LeftButton" or not IsShiftKeyDown() then return end
+	
+	local chat = ChatEdit_GetLastActiveWindow()
+	if not chat:IsShown() then return end
+	
+	local link
+	if frame.spellID then
+		link = DataStore:GetCompanionLink(frame.spellID)
+	elseif frame.glyphID then
+		_, _, link = DataStore:GetGlyphInfoByID(frame.glyphID)
+	end
+	
+	if link then
+		chat:Insert(link)
 	end
 end
 
@@ -110,6 +121,7 @@ function ns:Update()
 			itemName = parent .. "_SpellIcon" .. index
 			itemButton = _G[itemName]
 			itemButton.spellID = spellID
+			itemButton.glyphID = nil
 	
 			local name, info, icon = GetSpellInfo(spellID)
 			
@@ -176,7 +188,7 @@ function ns:UpdateKnownGlyphs()
 	end
 	
 	local itemName, itemButton
-	local isHeader, isKnown, group, spellID
+	local isHeader, isKnown, group, glyphID
 	
 	local maxGlyphs = DataStore:GetNumGlyphs(character)
 	local offset = (currentPage-1) * SPELLS_PER_PAGE
@@ -185,7 +197,7 @@ function ns:UpdateKnownGlyphs()
 	
 	local index = 1
 	while index <= SPELLS_PER_PAGE do
-		isHeader, isKnown, group, spellID = DataStore:GetGlyphInfo(character, glyphIndex)
+		isHeader, isKnown, group, glyphID = DataStore:GetGlyphInfo(character, glyphIndex)
 		
 		if not isHeader and (group == currentGlyphType) then		-- not a header and right group ? process
 		
@@ -194,9 +206,10 @@ function ns:UpdateKnownGlyphs()
 			else
 				itemName = parent .. "_SpellIcon" .. index
 				itemButton = _G[itemName]
-				itemButton.spellID = spellID
+				itemButton.glyphID = glyphID
+				itemButton.spellID = nil
 				
-				local name, _, icon = GetSpellInfo(spellID)
+				local name, icon = DataStore:GetGlyphInfoByID(glyphID)
 				
 				addon:SetItemButtonTexture(itemName, icon, 30, 30)
 				_G[itemName .. "SpellName"]:SetText(name)

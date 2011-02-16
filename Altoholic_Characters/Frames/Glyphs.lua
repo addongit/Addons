@@ -144,7 +144,7 @@ function ns:Button_OnEnter(frame)
 		return 
 	end
 
-	local link = DataStore:GetGlyphLink(id, spell, glyphID)
+	local link = DataStore:GetGlyphLink(glyphID)
 	if link then 
 		AltoTooltip:SetHyperlink(link);
 	end
@@ -161,7 +161,7 @@ function ns:Button_OnClick(frame, button)
 	if ( button == "LeftButton" ) and ( IsShiftKeyDown() ) then
 		local chat = ChatEdit_GetLastActiveWindow()
 		if chat:IsShown() then
-			local link = DataStore:GetGlyphLink(id, spell, glyphID)
+			local link = DataStore:GetGlyphLink(glyphID)
 			if link then
 				chat:Insert(link)
 			end

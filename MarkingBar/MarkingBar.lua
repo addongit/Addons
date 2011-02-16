@@ -110,7 +110,7 @@ MB_mainFrame:SetBackdropColor(0,0,0,0)
 MB_mainFrame:EnableMouse(true)
 MB_mainFrame:SetMovable(true)
 MB_mainFrame:SetUserPlaced(true)
-MB_mainFrame:SetSize(190,35)
+MB_mainFrame:SetSize(210,35)
 MB_mainFrame:SetPoint("TOP", UIParent, "TOP")
 MB_mainFrame:SetClampedToScreen(false)
 
@@ -133,7 +133,7 @@ iconFrame:SetBackdrop(defaultBackdrop)
 iconFrame:SetBackdropColor(0.1,0.1,0.1,0.7)
 iconFrame:EnableMouse(true)
 iconFrame:SetMovable(true)
-iconFrame:SetSize(190,35)
+iconFrame:SetSize(210,35)
 iconFrame:SetPoint("LEFT", MB_mainFrame, "LEFT")
 local iconSkull = CreateFrame("Button", "iconSkull", iconFrame)
 iconSkull:SetSize(20,20)
@@ -218,25 +218,37 @@ lockIcon:SetScript("OnClick", function(self) MB_lockToggle("main") end)
 lockIcon:SetScript("OnEnter", function(self) if (MBDB.tooltips==true) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Lock/Unlock Icons",0.88,0.65,0); GameTooltip:Show() end end)
 lockIcon:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 
+local clearIcon = CreateFrame("Button", "clearIcon", iconFrame)
+clearIcon:SetSize(20,20)
+clearIcon:SetPoint("LEFT", lockIcon , "RIGHT")
+clearIcon:SetNormalTexture("interface\\glues\\loadingscreens\\dynamicelements")
+clearIcon:GetNormalTexture():SetTexCoord(0,0.5,0,0.5)
+clearIcon:EnableMouse(true)
+clearIcon:SetScript("OnClick", function(self) for i=8, 0, -1 do SetRaidTarget("player",i) end  repeat SetRaidTargetIcon("player",0) until (GetRaidTargetIndex("player") == nil) end)
+clearIcon:SetScript("OnEnter", function(self) if (MBDB.tooltips==true) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Clear All Icons",0.88,0.65,0); GameTooltip:Show() end end)
+clearIcon:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
+
+
+
 -------------------------------------------------------
 -- MB Control Frame
 -------------------------------------------------------
 
-local MB_controlFrame = CreateFrame("Frame", "MB_controlFrame", UI_Parent)
+local MB_controlFrame = CreateFrame("Frame", "MB_controlFrame", UIParent)
 MB_controlFrame:SetBackdrop(defaultBackdrop)
 MB_controlFrame:SetBackdropColor(0.1,0.1,0.1,0.7)
 MB_controlFrame:EnableMouse(true)
 MB_controlFrame:SetMovable(true)
-    MB_controlFrame:SetSize(100,30)
+MB_controlFrame:SetSize(100,35)
 if MBDB.ctrlLock then
-    MB_controlFrame:SetSize(80,30)
+    MB_controlFrame:SetSize(80,35)
 end
 MB_controlFrame:SetPoint("LEFT", MB_iconFrame, "RIGHT",5,0)
 
 local announceIcon  = CreateFrame("Button", "announceIcon ", MB_controlFrame)
 announceIcon :SetSize(20,20)
 announceIcon :SetPoint("LEFT", MB_controlFrame, "LEFT",10,0)
-announceIcon :SetNormalTexture("Interface\\WorldMap\\ChatBubble_64Grey")
+announceIcon :SetNormalTexture("Interface\\AddOns\\MarkingBar\\announce")
 announceIcon :GetNormalTexture():SetTexCoord(0,1,0,1)
 announceIcon :EnableMouse(true)
 announceIcon :SetScript("OnClick", function(self) MB_Announce() end)
@@ -259,7 +271,8 @@ optIcon:SetPoint("LEFT", readyCheck , "RIGHT")
 optIcon:SetNormalTexture("interface\\WorldMap\\Gear_64")
 optIcon:GetNormalTexture():SetTexCoord(0,.5,0,.5)
 optIcon:EnableMouse(true)
-optIcon:SetScript("OnClick", function(self) InterfaceOptionsFrame_OpenToCategory(MarkingBarOpt.panel) end )
+optIcon:RegisterForClicks("AnyDown")
+optIcon:SetScript("OnClick", function(self,button) if ( button == "RightButton" ) then InterfaceOptionsFrame_OpenToCategory(MarkingBarOpt.childpanel4) else InterfaceOptionsFrame_OpenToCategory(MarkingBarOpt.childpanel1) end end )
 optIcon:SetScript("OnEnter", function(self) if (MBCtrlDB.tooltips==true) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Options",0.88,0.65,0); GameTooltip:Show() end end)
 optIcon:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 
@@ -273,27 +286,19 @@ ctrlLockIcon:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 ctrlLockIcon:SetPoint("LEFT", optIcon , "RIGHT")
 ctrlLockIcon:SetAlpha(1)
 ctrlLockIcon:EnableMouse(true)
-if MBDB.ctrlLock then
-    ctrlLockIcon:ClearAllPoints()
-    ctrlLockIcon:SetAlpha(0)
-    ctrlLockIcon:EnableMouse(false)
-end
 
 local moverRight = CreateFrame("Frame", "moverRight", MB_controlFrame)
 moverRight:SetBackdrop(defaultBackdrop)
 moverRight:SetBackdropColor(0.1,0.1,0.1,0.7)
-moverRight:SetSize(20,30)
+moverRight:SetSize(20,35)
 moverRight:SetMovable(true)
 moverRight:SetScript("OnMouseDown", function(self,button) if (button=="LeftButton") then MB_controlFrame:StartMoving() end end)
 moverRight:SetScript("OnMouseUp", function(self) MB_controlFrame:StopMovingOrSizing() end)
 moverRight:SetPoint("LEFT", MB_controlFrame , "RIGHT")
 moverRight:SetAlpha(1)
 moverRight:EnableMouse(true)
-if MBDB.ctrlLock then
-    moverRight:ClearAllPoints()
-    moverRight:SetAlpha(0)
-    moverRight:EnableMouse(false)
-end
+
+
 -------------------------------------------------------
 -- MBFlares Main Frame and Movers
 -------------------------------------------------------
@@ -316,15 +321,6 @@ MBFlares_moverLeft:SetSize(20,30)
 MBFlares_moverLeft:SetPoint("RIGHT", MBFlares_mainFrame, "LEFT")
 MBFlares_moverLeft:SetScript("OnMouseDown", function(self,button) if (button=="LeftButton") then MBFlares_mainFrame:StartMoving() end end)
 MBFlares_moverLeft:SetScript("OnMouseUp", function(self) MBFlares_mainFrame:StopMovingOrSizing() end)
-local MBFlares_moverRight = CreateFrame("Frame", "MBFlares_moverRight", MBFlares_mainFrame)
-MBFlares_moverRight:SetBackdrop(defaultBackdrop)
-MBFlares_moverRight:SetBackdropColor(0.1,0.1,0.1,0.7)
-MBFlares_moverRight:EnableMouse(true)
-MBFlares_moverRight:SetMovable(true)
-MBFlares_moverRight:SetSize(20,30)
-MBFlares_moverRight:SetPoint("LEFT", MBFlares_mainFrame, "RIGHT")
-MBFlares_moverRight:SetScript("OnMouseDown", function(self,button) if (button=="LeftButton") then MBFlares_mainFrame:StartMoving() end end)
-MBFlares_moverRight:SetScript("OnMouseUp", function(self) MBFlares_mainFrame:StopMovingOrSizing() end)
 
 -------------------------------------------------------
 -- The Actual Flares
@@ -336,7 +332,7 @@ flareBlue:GetNormalTexture():SetTexCoord(0.75,0.875,0,0.25)
 flareBlue:SetPoint("TOPLEFT", MBFlares_mainFrame, "TOPLEFT",5,-5)
 flareBlue:SetAttribute("type", "macro")
 flareBlue:SetAttribute("macrotext1", "/click CompactRaidFrameManagerDisplayFrameLeaderOptionsRaidWorldMarkerButton\n/click DropDownList1Button1")
-flareBlue:SetScript("OnEnter", function(self) if (MBFlaresDB.tooltips==true) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Blue world marker",0.88,0.65,0); GameTooltip:Show() end end)
+flareBlue:SetScript("OnEnter", function(self) if (MBFlaresDB.tooltips==true and MBFlares_mainFrame:GetAlpha()==1) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Blue world marker",0.88,0.65,0); GameTooltip:Show() end end)
 flareBlue:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 local flareGreen = CreateFrame("Button", "flareGreen", MBFlares_mainFrame, "SecureActionButtonTemplate")
 flareGreen:SetSize(20,20)
@@ -345,7 +341,7 @@ flareGreen:GetNormalTexture():SetTexCoord(0.25,0.375,0,0.25)
 flareGreen:SetPoint("LEFT", flareBlue, "RIGHT")
 flareGreen:SetAttribute("type", "macro")
 flareGreen:SetAttribute("macrotext1", "/click CompactRaidFrameManagerDisplayFrameLeaderOptionsRaidWorldMarkerButton\n/click DropDownList1Button2")
-flareGreen:SetScript("OnEnter", function(self) if (MBFlaresDB.tooltips==true) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Green world marker",0.88,0.65,0); GameTooltip:Show() end end)
+flareGreen:SetScript("OnEnter", function(self) if (MBFlaresDB.tooltips==true and MBFlares_mainFrame:GetAlpha()==1) then GameTooltip:SetOwner(self, "ANCHOR_CURSOR"); GameTooltip:ClearLines(); GameTooltip:AddLine("Green world marker",0.88,0.65,0); GameTooltip:Show() end end)
 flareGreen:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 local flarePurple = CreateFrame("Button", "flarePurple", MBFlares_mainFrame, "SecureActionButtonTemplate")
 flarePurple:SetSize(20,20)
@@ -415,14 +411,14 @@ end
 
 function MB_Announce_to_Chat(ChatType)
 	if (MBDB.announce_intro) then SendChatMessage(MBDB.msg_intro,ChatType,nil); end
-	if (MBDB.announce_skull) then	SendChatMessage("{rt8}: " .. MBDB.msg_skull,ChatType,nil); end
-	if (MBDB.announce_cross) then SendChatMessage("{rt7}: " .. MBDB.msg_cross,ChatType,nil); end
-	if (MBDB.announce_square) then SendChatMessage("{rt6}: " .. MBDB.msg_square,ChatType,nil); end
-	if (MBDB.announce_moon) then SendChatMessage("{rt5}: " .. MBDB.msg_moon,ChatType,nil); end
-	if (MBDB.announce_triangle) then SendChatMessage("{rt4}: " .. MBDB.msg_triangle,ChatType,nil); end
-	if (MBDB.announce_diamond) then SendChatMessage("{rt3}: " .. MBDB.msg_diamond,ChatType,nil); end
-	if (MBDB.announce_circle) then SendChatMessage("{rt2}: " .. MBDB.msg_circle,ChatType,nil); end
-	if (MBDB.announce_star) then SendChatMessage("{rt1}: " .. MBDB.msg_star,ChatType,nil); end
+	if (MBDB.announce_skull) then	SendChatMessage(MBDB.msg_skull .. " {rt8}.",ChatType,nil); end
+	if (MBDB.announce_cross) then SendChatMessage(MBDB.msg_cross .. " {rt7}.",ChatType,nil); end
+	if (MBDB.announce_square) then SendChatMessage(MBDB.msg_square .. " {rt6}.",ChatType,nil); end
+	if (MBDB.announce_moon) then SendChatMessage(MBDB.msg_moon .. " {rt5}.",ChatType,nil); end
+	if (MBDB.announce_triangle) then SendChatMessage(MBDB.msg_triangle .. " {rt4}.",ChatType,nil); end
+	if (MBDB.announce_diamond) then SendChatMessage(MBDB.msg_diamond .. " {rt3}.",ChatType,nil); end
+	if (MBDB.announce_circle) then SendChatMessage(MBDB.msg_circle .. " {rt2}.",ChatType,nil); end
+	if (MBDB.announce_star) then SendChatMessage(MBDB.msg_star .. " {rt1}.",ChatType,nil); end
     if (MBDB.announce_footer) then SendChatMessage(MBDB.msg_footer,ChatType,nil); end
     
     if ( ChatType == "RAID") then
@@ -568,8 +564,6 @@ function MB_lock(DB)
         MBFlaresDB.locked = true
     	MBFlares_moverLeft:SetAlpha(0)
         MBFlares_moverLeft:EnableMouse(false)
-        MBFlares_moverRight:SetAlpha(0)
-        MBFlares_moverRight:EnableMouse(false)
         flarelockIcon:GetNormalTexture():SetTexCoord(0, 0.25, 0, 1)
     end
 end
@@ -589,8 +583,6 @@ function MB_unlock(DB)
         MBFlaresDB.locked = false
         MBFlares_moverLeft:SetAlpha(1)
         MBFlares_moverLeft:EnableMouse(true)
-        MBFlares_moverRight:SetAlpha(1)
-        MBFlares_moverRight:EnableMouse(true)
         flarelockIcon:GetNormalTexture():SetTexCoord(0.25, 0.50, 0, 1)
     end
 end
@@ -738,6 +730,7 @@ function MB_flip(dir)
 	iconCircle:ClearAllPoints()
 	iconStar:ClearAllPoints()
 	lockIcon:ClearAllPoints()
+	clearIcon:ClearAllPoints()
 	moverLeft:ClearAllPoints()
 	iconFrame:ClearAllPoints()
     announceIcon:ClearAllPoints()
@@ -755,8 +748,9 @@ function MB_flip(dir)
 		iconCircle:SetPoint("LEFT", iconDiamond, "RIGHT")
 		iconStar:SetPoint("LEFT", iconCircle, "RIGHT")
 		lockIcon:SetPoint("LEFT", iconStar , "RIGHT")
-        MB_mainFrame:SetSize(190,35)
-		iconFrame:SetSize(190,35)
+        clearIcon:SetPoint("LEFT", lockIcon , "RIGHT")
+        MB_mainFrame:SetSize(210,35)
+		iconFrame:SetSize(210,35)
 		iconFrame:SetPoint("LEFT", MB_mainFrame, "LEFT")
         moverLeft:SetSize(20,35)
 		moverLeft:SetPoint("RIGHT", MB_mainFrame, "LEFT")
@@ -770,8 +764,9 @@ function MB_flip(dir)
 		iconCross:SetPoint("LEFT", iconSquare, "RIGHT")
 		iconSkull:SetPoint("LEFT", iconCross, "RIGHT")
 		lockIcon:SetPoint("LEFT", iconSkull , "RIGHT")
-        MB_mainFrame:SetSize(190,35)
- 		iconFrame:SetSize(190,35)
+        clearIcon:SetPoint("LEFT", lockIcon , "RIGHT")
+        MB_mainFrame:SetSize(210,35)
+ 		iconFrame:SetSize(210,35)
 		iconFrame:SetPoint("LEFT", MB_mainFrame, "LEFT")
 		moverLeft:SetSize(20,35)
 		moverLeft:SetPoint("RIGHT", MB_mainFrame, "LEFT")
@@ -785,8 +780,9 @@ function MB_flip(dir)
 		iconCircle:SetPoint("TOP", iconDiamond, "BOTTOM")
 		iconStar:SetPoint("TOP", iconCircle, "BOTTOM")
 		lockIcon:SetPoint("TOP", iconStar , "BOTTOM")
-        MB_mainFrame:SetSize(35,190)
-		iconFrame:SetSize(35,190)
+        clearIcon:SetPoint("TOP", lockIcon , "BOTTOM")
+        MB_mainFrame:SetSize(35,210)
+		iconFrame:SetSize(35,210)
 		iconFrame:SetPoint("TOP", MB_mainFrame, "TOP")
 		moverLeft:SetSize(35,20)
 		moverLeft:SetPoint("BOTTOM", MB_mainFrame, "TOP")
@@ -800,8 +796,9 @@ function MB_flip(dir)
 		iconCross:SetPoint("TOP", iconSquare, "BOTTOM")
 		iconSkull:SetPoint("TOP", iconCross, "BOTTOM")
 		lockIcon:SetPoint("TOP", iconSkull , "BOTTOM")
-        MB_mainFrame:SetSize(35,190)
-		iconFrame:SetSize(35,190)
+        clearIcon:SetPoint("TOP", lockIcon , "BOTTOM")
+        MB_mainFrame:SetSize(35,210)
+		iconFrame:SetSize(35,210)
 		iconFrame:SetPoint("TOP", MB_mainFrame, "TOP")
 		moverLeft:SetSize(35,20)
 		moverLeft:SetPoint("BOTTOM", MB_mainFrame, "TOP")
@@ -813,22 +810,21 @@ function MB_flip(dir)
 		optIcon:SetPoint("TOP", readyCheck , "BOTtOM")
 		if MBDB.ctrlLock then
             MB_controlFrame:ClearAllPoints()
-            MB_controlFrame:SetSize(30,80)
+            MB_controlFrame:SetSize(35,80)
             ctrlLockIcon:SetAlpha(0)
             ctrlLockIcon:EnableMouse(false)
             moverRight:SetAlpha(0)
             moverRight:EnableMouse(false)
+            MB_controlFrame:SetParent(MB_mainFrame)
             MB_controlFrame:SetPoint("TOP", MB_iconFrame, "BOTTOM",0,5)
         else
-            MB_controlFrame:SetSize(30,100)
+            MB_controlFrame:SetSize(35,100)
             ctrlLockIcon:SetAlpha(1)
             ctrlLockIcon:EnableMouse(true)
+            MB_controlFrame:SetParent(UIParent)
             ctrlLockIcon:SetPoint("TOP", optIcon , "BOTTOM")
-            moverRight:SetSize(30,20)
-            moverRight:ClearAllPoints()
+            moverRight:SetSize(35,20)
             moverRight:SetPoint("TOP", MB_controlFrame, "BOTTOM")
-            moverRight:SetAlpha(1)
-            moverRight:EnableMouse(true)
         end
     else
             -- and stuff for control options horizontally
@@ -837,21 +833,19 @@ function MB_flip(dir)
 		optIcon:SetPoint("LEFT", readyCheck , "RIGHT")
  		if MBDB.ctrlLock then
             MB_controlFrame:ClearAllPoints()
-            MB_controlFrame:SetSize(80,30)
+            MB_controlFrame:SetSize(80,35)
             ctrlLockIcon:SetAlpha(0)
             ctrlLockIcon:EnableMouse(false)
             moverRight:SetAlpha(0)
             moverRight:EnableMouse(false)
             MB_controlFrame:SetPoint("LEFT", MB_iconFrame, "RIGHT",5,0)
         else
-            MB_controlFrame:SetSize(100,30)
+            MB_controlFrame:SetSize(100,35)
             ctrlLockIcon:SetAlpha(1)
             ctrlLockIcon:EnableMouse(true)
             ctrlLockIcon:SetPoint("LEFT", optIcon , "RIGHT")
-            moverRight:SetSize(20,30)
+            moverRight:SetSize(20,35)
             moverRight:SetPoint("LEFT", MB_controlFrame , "RIGHT")
-            moverRight:SetAlpha(1)
-            moverRight:EnableMouse(true)
         end 
     end
 end
@@ -878,7 +872,6 @@ function MB_flareflip(dir)
 	flarelockIcon:ClearAllPoints()
 	MBFlares_mainFrame:ClearAllPoints()
 	MBFlares_moverLeft:ClearAllPoints()
-	MBFlares_moverRight:ClearAllPoints()
 	if (dir==1) then -- Normal
 		flareBlue:SetPoint("TOPLEFT", MBFlares_mainFrame, "TOPLEFT",5,-5)
 		flareGreen:SetPoint("LEFT", flareBlue, "RIGHT")
@@ -891,8 +884,6 @@ function MB_flareflip(dir)
 		MBFlares_mainFrame:SetPoint("TOP", UIParent, "TOP",0,-40)
 		MBFlares_moverLeft:SetSize(20,30)
 		MBFlares_moverLeft:SetPoint("RIGHT", MBFlares_mainFrame, "LEFT")
-		MBFlares_moverRight:SetSize(20,30)
-		MBFlares_moverRight:SetPoint("LEFT", MBFlares_mainFrame, "RIGHT")
 	elseif (dir==2) then -- Backwards
 		flareYellow:SetPoint("TOPLEFT", MBFlares_mainFrame, "TOPLEFT",5,-5)
 		flareRed:SetPoint("LEFT", flareYellow, "RIGHT")
@@ -905,8 +896,6 @@ function MB_flareflip(dir)
 		MBFlares_mainFrame:SetPoint("TOP", UIParent, "TOP",0,-40)
 		MBFlares_moverLeft:SetSize(20,30)
 		MBFlares_moverLeft:SetPoint("RIGHT", MBFlares_mainFrame, "LEFT")
-		MBFlares_moverRight:SetSize(20,30)
-		MBFlares_moverRight:SetPoint("LEFT", MBFlares_mainFrame, "RIGHT")
 	elseif (dir==3) then -- Normal vertical
 		flareBlue:SetPoint("TOPLEFT", MBFlares_mainFrame, "TOPLEFT",5,-5)
 		flareGreen:SetPoint("TOP", flareBlue, "BOTTOM")
@@ -919,8 +908,6 @@ function MB_flareflip(dir)
 		MBFlares_mainFrame:SetPoint("TOP", UIParent, "TOP",0,-40)
 		MBFlares_moverLeft:SetSize(30,20)
 		MBFlares_moverLeft:SetPoint("BOTTOM", MBFlares_mainFrame, "TOP")
-		MBFlares_moverRight:SetSize(30,20)
-		MBFlares_moverRight:SetPoint("TOP", MBFlares_mainFrame, "BOTTOM")
 	elseif (dir==4) then -- Backwards vertical
 		flareYellow:SetPoint("TOPLEFT", MBFlares_mainFrame, "TOPLEFT",5,-5)
 		flareRed:SetPoint("TOP", flareYellow, "BOTTOM")
@@ -933,8 +920,6 @@ function MB_flareflip(dir)
 		MBFlares_mainFrame:SetPoint("TOP", UIParent, "TOP",0,-40)
 		MBFlares_moverLeft:SetSize(30,20)
 		MBFlares_moverLeft:SetPoint("BOTTOM", MBFlares_mainFrame, "TOP")
-		MBFlares_moverRight:SetSize(30,20)
-		MBFlares_moverRight:SetPoint("TOP", MBFlares_mainFrame, "BOTTOM")
 	end
 end
 
@@ -1781,15 +1766,10 @@ MB_OnUpdate:SetScript("OnEvent", function(self,event,addon,...)
 		MB_targetChecker("main")
         MB_targetChecker("ctrl")
         if ( not InCombatLockdown() ) then
-        MB_targetChecker("flare")
+            MB_targetChecker("flare")
         end
     end
-    if (event=="PLAYER_REGEN_DISABLED") then
-        MBFlares_mainFrame:SetAlpha(0)
-        MBFlares_mainFrame:EnableMouse(false)
-    elseif (event=="PLAYER_REGEN_ENABLED") then
-        MBFlares_mainFrame:SetAlpha(1)
-        MBFlares_mainFrame:EnableMouse(true)
+    if (event=="PLAYER_REGEN_ENABLED") then
         MB_targetChecker("flare")
     end
 end

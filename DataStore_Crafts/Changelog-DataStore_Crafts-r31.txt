@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+r31 | thaoky | 2011-02-15 13:14:50 +0000 (Tue, 15 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/DataStore_Crafts.lua
+
+Fixed a minor bug when abandoning a profession.
+------------------------------------------------------------------------
 r30 | thaoky | 2011-02-11 14:47:05 +0000 (Fri, 11 Feb 2011) | 1 line
 Changed paths:
    M /trunk/DataStore_Crafts.lua

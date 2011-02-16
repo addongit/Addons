@@ -453,7 +453,7 @@ function ns:OnClick(frame, button)
 	if ( button == "LeftButton" ) and ( IsShiftKeyDown() ) then
 		local chat = ChatEdit_GetLastActiveWindow()
 		if chat:IsShown() then
-			chat:Insert(format(L["%s is %s with %s (%d/%d)"], charName, status, faction, currentLevel, maxLevel))
+			chat:Insert(format(L["%s is %s with %s (%d/%d)"], DataStore:GetCharacterName(character), status, faction, currentLevel, maxLevel))
 		end
 	end	
 end

@@ -8,6 +8,21 @@ IMPORTANT NOTE: If you're upgrading from 3.x :
 - Make sure you delete the addon's databases in SavedVariables. ie: Altoholic.lua and all DataStore*.lua.
 - Make sure to delete the old addon directories (Altoholic & all DataStore modules) as many files have changed/moved. A patch like this one is always a good opportunity for a fresh install.
 
+4.0.005c (15/02/2011)
+
+- Fixed all glyph related issues. There may remain issues with specific glyphs (1 or 2), if you spot one, please mention which glyph caused a problem.
+- Added missing achievements in some categories (LK Raid, Feats of Strength)
+- Added missing mounts.
+- Added missing pets.
+- Fixed a minor bug in the recipe tooltip, displaying an invalid list of crafters for recipes not in the addon's database.
+- Fixed a bug where pet owners were not displayed in the tooltip on deDE clients.
+- Fixed the old calendar events that kept being reported at login. You will see them displayed one last time the first time you log in with this version.
+- Fixed a minor bug when abandonning a profession.
+- Fixed a Lua error when linking a reputation.
+- Fixed a Lua error in DataStore to make Altoholic more tolerant to disabled DataStore modules.
+
+note: I've addressed a lot of issues that had accumulated during my absence, but there are still quite a few that need my attention. Since most are not quick fixes, patience is required.
+
 4.0.005b (11/02/2011)
 
 - Fixed a Lua error in the achievement pane.
