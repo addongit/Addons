@@ -1,0 +1,52 @@
+## Interface: 40000
+#@non-alpha@
+## Title: Blood|cffffffffSurge|r
+#@end-non-alpha@
+#@alpha@
+# ## Title: Blood|cffffffffSurge|r DEV: v1.3.4
+#@end-alpha@
+## Notes: Instant SLAM! notification
+## Author: Erik L. Vonderscheer
+## X-Date: 2011-02-13T20:51:51Z
+## X-Credits: yheen
+## X-eMail: evonder AT gmail DOT com
+## X-License: BSD
+## X-Website: http://www.wowace.com/addons/bloodsurge/
+## X-Category: Buffs
+## X-Localizations: enUS, frFR, zhCN, zhTW
+## X-Curse-Packaged-Version: v1.3.4
+## X-Curse-Project-Name: BloodSurge
+## X-Curse-Project-ID: bloodsurge
+## X-Curse-Repository-ID: wow/bloodsurge/mainline
+
+## OptionalDeps: Ace3, LibAboutPanel, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, ButtonFacade
+## Version: v1.3.4
+
+## SavedVariables: BloodSurgeDB
+
+## LoadManagers: AddonLoader
+## X-LoadOn-Always: delayed
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceConsole-3.0\AceConsole-3.0.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\LibSharedMedia-3.0\lib.xml
+libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+libs\AceLocale-3.0\AceLocale-3.0.xml
+libs\AceConfig-3.0\AceConfig-3.0.xml
+libs\LibButtonFacade\LibButtonFacade.xml
+libs\LibAboutPanel\LibAboutPanel.lua
+#@end-no-lib-strip@
+
+## Locale ##
+BloodSurgeLocale.lua
+
+## Core ##
+BloodSurge.lua
+BloodSurgeOptions.lua
