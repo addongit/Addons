@@ -1,0 +1,49 @@
+------------------------------------------------------------------------
+r67 | sylvanaar | 2010-10-12 19:42:17 +0000 (Tue, 12 Oct 2010) | 1 line
+Changed paths:
+   A /tags/3.3.8 (from /trunk:66)
+
+Tagging as 3.3.8
+------------------------------------------------------------------------
+r66 | sylvanaar | 2010-10-12 17:31:36 +0000 (Tue, 12 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.toc
+
+TOC 40000
+------------------------------------------------------------------------
+r65 | sylvanaar | 2010-09-30 14:40:51 +0000 (Thu, 30 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.lua
+
+ran the code formatter
+------------------------------------------------------------------------
+r64 | sylvanaar | 2010-09-27 00:04:24 +0000 (Mon, 27 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.lua
+
+ran the code formatter on the source
+------------------------------------------------------------------------
+r62 | sylvanaar | 2010-09-18 06:40:34 +0000 (Sat, 18 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.xml
+
+fix self anchoring error
+------------------------------------------------------------------------
+r60 | sylvanaar | 2010-09-18 03:10:14 +0000 (Sat, 18 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.xml
+
+insert the addon button by taking the anchor from the macro button and making it the anchor of the addon button, then replacing the anchor of the macro button with an anchor to the addon button. This will hopefully help with compatibility with other addons that add buttons to the menu.
+------------------------------------------------------------------------
+r59 | sylvanaar | 2010-09-18 02:45:13 +0000 (Sat, 18 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.xml
+
+fix an error in the button positioning. we were not properly anchoring the macro button beneath us on the menu
+------------------------------------------------------------------------
+r57 | sylvanaar | 2010-09-05 19:46:26 +0000 (Sun, 05 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/ACP.lua
+
+fixed another leaked global. removed all getglobal usages
+------------------------------------------------------------------------
