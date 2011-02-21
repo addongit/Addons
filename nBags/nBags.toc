@@ -1,0 +1,8 @@
+## Interface: 40000
+## Title: |c60ffffff n|rBags
+## Notes: Simply bag styling addon.
+## Author: Game92
+## RequiredDeps: !Beautycase
+
+nBagsButtons.lua
+nBags.lua
