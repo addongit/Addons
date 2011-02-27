@@ -1,0 +1,46 @@
+4.0.0.8-Beta
+    Add PallyPower™
+    BOLLOCKS!
+    Arcane Missles!
+
+commit e6b4e1f269ad026bbfbb5be2f49910b5fb96e9dd
+Author: tekkub <tekkub@gmail.com>
+Date:   Tue Nov 2 02:42:49 2010 -0600
+
+    Remove 3.0 backcompat
+
+4.0.0.7-Beta
+    First stab at 4.0 updates
+    Let me know what new spells/talents/procs you want to see!
+
+3.3.0.6-Beta
+    Goddamn eclipse
+    zhTW maelstrom localization
+
+3.2.0.5-Beta
+    Sword and Board off my ass
+
+3.2.0.4-Beta
+    Add Predator's Swiftness
+    Blizzard, consistantly inconsistant.
+
+commit 2b4fa22f732166ab6f61f96cf0bc11e929ae51c9
+Author: tekkub <tekkub@gmail.com>
+Date:   Thu Sep 24 00:45:01 2009 -0600
+
+    Add Improved Steady Shot
+
+    Closes #8
+
+3.2.0.3-Beta
+    Add sound
+    Add custom text for lunar/solar eclipse
+    Bum, fucking embeds
+    <bender>eeehehehehehe</bender>
+
+3.2.0.2-Beta
+    Dur, I forgetted an embed
+
+3.2.0.1-Beta
+    And so it begins...
+
