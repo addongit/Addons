@@ -1,0 +1,22 @@
+## Interface: 40000
+
+## Title: GoodNewsEveryone
+## Notes: I've invented a device that tells you when reactive abilities are available!
+## Author: Tekkub Stoutwrithe
+## Version: 4.0.0.8
+## X-Website: http://tekkub.net/
+## X-Email: tekkub-wow@googlegroups.com
+## X-Category: Misc
+
+## SavedVariables: GoodNewsEveryoneDB
+
+## LoadManagers: AddonLoader
+## X-LoadOn-Always: delayed
+## X-LoadOn-LDB-Launcher: Interface\AddOns\GoodNewsEveryone\icon
+
+tekKonfig\tekKonfig.xml
+CallbackHandler-1.0.lua
+LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+GoodNewsEveryone.lua
+Config.lua
