@@ -1,0 +1,13 @@
+tag v4.0.1-release
+9f4f90ffb7f23c4f7068759a500c29f28659c798
+PProvost <peter@provost.org>
+2010-10-16 21:43:26 -0600
+
+Tagging v4.0.1-release
+
+
+--------------------
+
+PProvost:
+	- Updated for patch 4.0.1
+	- Tweak to README
