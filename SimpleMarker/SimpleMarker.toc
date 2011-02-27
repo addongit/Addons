@@ -1,0 +1,27 @@
+## Interface: 40000
+## Title: Simple Marker
+## Notes: A simple raid target marking frame. Put it wherever you want and click to assign marks.
+## Author: Quaiche
+## Version: v4.0.1-release
+## SavedVariables: SimpleMarkerDB
+## X-Curse-Packaged-Version: v4.0.1-release
+## X-Curse-Project-Name: SimpleMarker
+## X-Curse-Project-ID: simplemarker
+## X-Curse-Repository-ID: wow/simplemarker/mainline
+
+## X-Category: Interface Enhancements
+## X-License: Apache 2.0
+## X-Credits: FamFam Silk for the LDB Launcher icon (http://www.famfamfam.com/lab/icons/silk/)
+## X-Usage: Type /simplemarker and follow the usage instructions
+
+## LoadManagers: AddonLoader
+## X-LoadOn-Group: true
+## X-LoadOn-Slash: /simplemarker
+
+libs\LibStub.lua
+libs\CallbackHandler-1.0.lua
+libs\LibDataBroker-1.1.lua
+libs\tekKonfigAboutPanel.lua
+
+SimpleMarker.lua
+
