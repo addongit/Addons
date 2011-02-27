@@ -1,9 +1,0 @@
-## Interface: 40000
-## Title: Marking|cff69ccf0Bar |cffffffff v2.0.4
-## Notes: Quickly and easily add raid icons and world flairs.
-## Author: Vilandra
-## Dependencies: 
-## Version: 2.0.4
-## SavedVariablesPerCharacter: MBDB, MBCtrlDB, MBFlaresDB
-
-MarkingBar.lua
