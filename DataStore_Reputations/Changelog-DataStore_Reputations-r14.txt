@@ -1,0 +1,13 @@
+------------------------------------------------------------------------
+r14 | thaoky | 2011-02-15 13:17:02 +0000 (Tue, 15 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/DataStore_Reputations.lua
+
+Scanning routine now takes inactive factions headers into account.
+------------------------------------------------------------------------
+r13 | thaoky | 2010-12-03 12:56:35 +0000 (Fri, 03 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Reputations.lua
+
+Added Cataclysm factions.
+------------------------------------------------------------------------
