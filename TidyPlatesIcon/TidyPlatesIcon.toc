@@ -1,8 +1,0 @@
-## Interface: 40000
-## Title: Tidy Plates Icon
-## Notes: Creates a moveable configuration button for Tidy Plates 
-## Author: A very very foolish man
-## SavedVariables: TidyPlatesButtonFrameSavedVariables
-## Dependencies: TidyPlates
-
-TidyPlatesButtonFrame.lua
