@@ -1,0 +1,16 @@
+﻿## Interface: 40000
+## Title: XBar
+## Author: Dr Doom
+## Version: 4.08
+## Notes: Custom bar framework for XBar mods
+## Notes-esES: Una armazón costumbre de XBar
+## Notes-deDE: Die Sittestab Modellrahmen für XBar staben
+## Notes-frFR: Un rang de boutons pour charmes
+## Notes-zhTW: 顯示額外的技能/法術按鈕介面, 需安裝其相對應的支援模組
+## URL:
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: XBarData
+## OptionalDeps: ButtonFacade
+XBarConfig.xml
+XBar.xml
