@@ -1,0 +1,8 @@
+## Interface: 40000
+## Author: Safturento
+## Version: 1.0
+## Title: |cffe76a6ast|rMedia
+## Notes: Media files for all of my other addons
+
+stMedia.lua
+
