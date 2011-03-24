@@ -1,9 +1,0 @@
-## Interface: 40000
-## Title: |cff00a2ffm|rMenu
-## Notes: Dropdown Addon Menu
-## Author: magges
-## Version: 1.28
-## OptionalDeps: Tukui, VuhDo, Grid, Grid2, TinyDPS, Healbot, Omen, Skada, Numeration, AtlasLoot, Recount, Cascade, Tukui_ConfigUI, TukuiMarkBar, DBM-Core, ElvUI_ConfigUI, ElvUI, Arh, WIM, Altoholic
-config.lua
-core.lua
-games.lua
