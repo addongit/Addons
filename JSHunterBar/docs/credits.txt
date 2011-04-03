@@ -1,0 +1,11 @@
+Just giving credit where credit is due, with a gracious thanks!
+
+Thanks to the team at DBM for code used to create my options panel, a few functions were copied and changed.
+- Under the following conditions:
+- * Attribution. You must attribute the work in the manner specified by the author or licensor
+    (but not in any way that suggests that they endorse you or your use of the work).
+    (A link to http://www.deadlybossmods.com is sufficient)
+- * Noncommercial. You may not use this work for commercial purposes.
+
+Thank You All,
+JS

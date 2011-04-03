@@ -1,0 +1,28 @@
+## Interface: 40000
+## Title: |cffabd473JS' Hunter Bar|r
+## Author: Jeff Sorrentino - JS on US-Blackhand
+## Version: 40000.2.0
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## OptionalDeps: LibSharedMedia-3.0, Tukui, ElvUI, Grid, nUI
+## SavedVariables: JSHB_SavedOptionsGlobal
+## SavedVariablesPerCharacter: JSHB_SavedOptions
+
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+libs\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
+
+locale\enUS.lua
+locale\deDE.lua
+locale\esES.lua
+locale\esMX.lua
+locale\frFR.lua
+locale\koKR.lua
+locale\ruRU.lua
+locale\zhCN.lua
+locale\zhTW.lua
+
+variables\variables.lua
+
+main\core.lua
+
