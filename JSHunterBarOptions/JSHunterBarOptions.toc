@@ -1,0 +1,9 @@
+## Interface: 40000
+## Title: |cffabd473JS' Hunter Bar|r [Options]
+## Author: Jeff Sorrentino - JS on US-Blackhand
+## Version: 40000.2.0
+## DefaultState: Enabled
+## LoadOnDemand: 1
+## RequiredDeps: JSHunterBar
+
+options.lua
