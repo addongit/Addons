@@ -1,0 +1,24 @@
+JS' License
+
+Copyright 2010 - JS - US-Blackhand Server - www.transcended.us
+
+The contents of this addon, excluding third-party resources, are
+copyrighted to their authors with all rights reserved.
+
+The author of this addon hereby grants you the following rights:
+
+1. You may make modifications to this addon for private use only except
+   if you publish your edited version via www.transcended.org,
+   www.curse.com, wowinterface.com or if you ask authors permission
+   before uploading it somewhere else.
+	
+2. Do not modify the name of this addon, including the addon folders
+   without express permission from the author.
+
+3. This copyright notice shall be included in all copies or substantial 
+   portions of the Software.
+	
+
+All rights not explicitly addressed in this license are reserved by
+the copyright holders.
+
