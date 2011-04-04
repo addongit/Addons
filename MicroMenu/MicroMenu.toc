@@ -1,0 +1,22 @@
+## Interface: 40000
+## Author: Vrul
+## Version: 1.1.4
+## Title: MicroMenu
+## Notes: The micro buttons as an independant bar or as a plugin to either FuBar or Titan Panel.
+## OptionalDeps: Ace3, CallbackHandler-1.0, FuBar, LibOptionsAssist-1.0, LibStub, Titan
+## SavedVariables: MicroMenuSettings
+## X-Category: Interface
+## X-WoWI-ID: 18329
+## X-AllowPlugin: true
+
+Libs\LibStub.lua
+Libs\CallbackHandler-1.0.lua
+Libs\AceDB-3.0.lua
+Libs\LibOptionsAssist-1.0.lua
+
+Core.lua
+Buttons.lua
+
+Titan.lua
+FuBar.lua
+Standalone.lua
