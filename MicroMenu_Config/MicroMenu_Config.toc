@@ -1,0 +1,17 @@
+## Interface: 40000
+## Author: Vrul
+## Title: MicroMenu Config
+## Notes: Configuration support for MicroMenu.
+## LoadOnDemand: 1
+## Dependencies: MicroMenu
+## DefaultState: Disabled
+## X-Child-Of: MicroMenu
+
+Libs\AceConfigRegistry-3.0.lua
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfigDialog-3.0.lua
+Libs\AceDBOptions-3.0.lua
+
+Locales\deDE.lua
+
+Core.lua
