@@ -1,0 +1,14 @@
+## Interface: 40000
+## Author: Safturento
+## Version: 3.2
+## Title: |cffe76a6ast|rExperienceBar
+## Notes: Minimalist experience & reputation bar
+## RequiredDeps: stMedia
+## OptionalDeps: Tukui
+## OptionalDeps: ElvUI
+
+Config.lua
+tukui.lua
+global.lua
+player.lua
+guild.lua
