@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="URBANACHIEVER_TOGGLE" description="BINDING_NAME_URBANACHIEVER_TOGGLE" header="URBANACHIEVER">
+		UrbanAchiever:ToggleFrame()
+	</Binding>
+</Bindings>
