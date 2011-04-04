@@ -1,0 +1,11 @@
+## Title: Flourish
+## Version: 1.5
+## Author: spAnser
+## Interface: 40000
+## SavedVariablesPerCharacter: flourishOptions, flourishChecked
+
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
+Core.lua
