@@ -1,0 +1,3 @@
+DBM:RegisterMapSize("Mana-Tombs",
+	1, 763.285003662109, 508.856811523438
+)
