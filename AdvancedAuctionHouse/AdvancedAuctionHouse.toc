@@ -1,0 +1,27 @@
+## Title: Advanced AuctionHouse
+## Author: Mavoc, Graves
+## Version: v2.9.1
+## Build: 216
+## X-Website: http://rom.curse.com/downloads/rom-addons/details/advancedauctionhouse.aspx
+## X-Category: Auction & Economy
+## X-Curse-Packaged-Version: v2.9.1
+## X-Curse-Project-Name: Advanced AuctionHouse
+## X-Curse-Project-ID: advancedauctionhouse
+## X-Curse-Repository-ID: rom/advancedauctionhouse/mainline
+/Lua/AAH_Main.lua
+##/Lua/AAH_Hooks.lua
+/Lua/AAH_Tools.lua
+/Lua/AAH_Browse.lua
+/Lua/AAH_Bid.lua
+/Lua/AAH_Sell.lua
+/Lua/AAH_Settings.lua
+/Lua/AAH_History.lua
+/Lua/AAH_Filters.lua
+/Xml/AAH_Templates.xml
+/Xml/AAH_Exchange.xml
+/Xml/AAH_Main.xml
+/Xml/AAH_Browse.xml
+/Xml/AAH_Bid.xml
+/Xml/AAH_Sell.xml
+/Xml/AAH_Settings.xml
+/Xml/AAH_History.xml
