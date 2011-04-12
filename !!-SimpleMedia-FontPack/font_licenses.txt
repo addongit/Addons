@@ -1,0 +1,44 @@
+font_licenses.txt
+=================
+
+    Here is a list of all the fonts included in this SimpleMediaLib Font Pack and their associated licenses. All fonts were originally downloaded from www.dafont.com and therefore can be acquired there. Where this list gives a license of "freeware (unspecified)", there was no license given for the font in question, though it was marked as free on the download site. Freeware in this case means that all copyrights are reserved by the author, but you are free to copy, distribute, and/or use the font for personal or commercial use.
+    
+    Where appropriate/required, the original license file(s) have been included in the appropriate font folders.
+    
+    If a font has been erroneously included in this pack, or if a license would restrict its inclusion for use in the Runes of Magic MMORPG game, then it will be removed upon notification of such.
+    
+
+Category        Font Name                           License
+-------------   ---------------------------------   --------------------------------------------------------------------------------------
+Cartoon         Aklatanic TSO                       freeware (unspecified)
+Cartoon         Cartoon Regular                     freeware (unspecified)
+Cartoon         GoodDog Plain                       freeware (see GOODDOGP.TXT for details)
+Cartoon         GoodDog Cool                        freeware (see GOODDOGC.TXT for details)
+Comic           Komika Display                      freeware/donation to charity (see Komika.txt)
+Comic           Kronika                             freeware (unspecified)
+Comic           Suplexmentary Comic NC              freeware (unspecified)
+Celtic          Duralith                            freeware (unspecified) [[text file that comes with font does not specify]]
+Celtic          Stonehenge Regular                  freeware (unspecified)
+Celtic          Yataghan                            freeware (unspecified)
+Eroded          Licinia 'Aged'                      freeware (unspecified)
+Fixed Width     Bitstream Vera Sans Mono            Copyright Bitstream Inc. Effectively freeware. See COPYRIGHT.TXT for license details.
+Fixed Width     saxMono                             freeware (unspecified)
+Horror          Lycanthrope                         freeware (see Lycanthrope Font Info and ReadMe.txt)
+Medieval        Dark11                              freeware (unspecified)
+Sans Serif      Asenine                             freeware (unspecified)
+Sans Serif      Bitstream Vera Sans                 Copyright Bitstream Inc. Effectively freeware. See COPYRIGHT.TXT for license details.
+Sans Serif      Bitstream Vera Sans Oblique         Copyright Bitstream Inc. Effectively freeware. See COPYRIGHT.TXT for license details.
+Sans Serif      Bolonewt                            freeware (see README.TXT)
+Sans Serif      hlmt-rounded                        freeware (see readme-HeatherTaylor-hlmt-rounded-TOU.txt)
+Sans Serif      Sansation                           freeware (see Sansation.txt)
+Sans Serif      Sansumi-DemiBold                    freeware (unspecified)
+Sans Serif      Tin Birdhouse                       freeware/DESIGN SCIENCE LICENSE (see legal_tb.txt) (italic version not included in this pack)
+Sci-Fi          Neuropol X Free                     freeware (see Typodermic Freeware EULA.html)
+Script          Verona Script                       freeware (unspecified)
+Serif           Bitstream Vera Serif                Copyright Bitstream Inc. Effectively freeware. See COPYRIGHT.TXT for license details.
+Serif           Lymphatic                           freeware (unspecified)
+Serif           OldTypefaces                        freeware (unspecified)
+Typewriter      OldNewspaperTypes                   freeware (unspecified)
+Various         Capsuula Regular                    freeware (unspecified)
+Various         kawoszeh                            SIL Open Font License v1.1 (see OFL_License.txt)
+Various         Twilight New Moon                   freeware (see twilight new moon font.txt)
