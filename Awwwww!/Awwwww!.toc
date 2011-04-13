@@ -1,0 +1,11 @@
+## Interface: 40000
+## Title: Awwwww!
+## Author: Seerah
+## Version: 1.2
+## Notes: Plays the losing horns from The Price is Right when you die.
+## SavedVariables: AwwwwwDB
+
+libs\LibStub\LibStub.lua
+libs\tekKonfigDropdown.lua
+
+awww.lua
