@@ -1,3 +1,0 @@
-WoW uses the .ogg format now for sound files.  You can read about this file format and find how to play these files on your computer at the following website:
-
-http://www.vorbis.com/
