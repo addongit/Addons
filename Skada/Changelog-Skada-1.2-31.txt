@@ -1,0 +1,29 @@
+------------------------------------------------------------------------
+r312 | zarnivoop | 2010-12-24 12:57:07 +0000 (Fri, 24 Dec 2010) | 1 line
+Changed paths:
+   A /tags/1.2-31 (from /trunk:311)
+
+Tagging as 1.2-31
+------------------------------------------------------------------------
+r311 | zarnivoop | 2010-12-23 23:05:05 +0000 (Thu, 23 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/BarDisplay.lua
+   M /trunk/Options.lua
+   M /trunk/Skada.lua
+   M /trunk/changelog.txt
+   M /trunk/locale/enUS.lua
+
+added clickthrough option
+------------------------------------------------------------------------
+r310 | gnarfoz | 2010-12-10 20:54:01 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/Bindings.xml
+
+Fix FrameXML.log errors, the Skada keybinding header was defined multiple times instead of just once.
+------------------------------------------------------------------------
+r309 | zarnivoop | 2010-10-28 19:34:21 +0000 (Thu, 28 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/Skada.lua
+
+fix for ticket #150, #152
+------------------------------------------------------------------------
