@@ -1,8 +1,0 @@
-﻿## Interface: 40000
-## Title: Professions Database
-## Notes: For those that do not wish to Wowhead everything!
-## Author: Vladinator
-## Version: 1.2
-## DefaultState: enabled
-## SavedVariables: ProfessionsDatabaseCache
-core.lua
