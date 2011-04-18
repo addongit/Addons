@@ -1,8 +1,0 @@
-## Interface: 3.0.9.2371
-## Title: SimpleMediaLib
-## Notes: A simple library to register and share media files across add-ons.
-## Version: 1.0
-## Author: Peryl
-
-LibStub.lua
-SimpleMediaLib.lua
