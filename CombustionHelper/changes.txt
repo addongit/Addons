@@ -1,0 +1,9 @@
+2.8
+
+added auto clean for living bomb tracker 
+Fix for 4.1 compatibility
+Scale to 50%
+Tooltips in options panel
+Ignite munching
+Ignite predicter
+Flamestrike tracker
