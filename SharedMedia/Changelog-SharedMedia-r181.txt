@@ -1,0 +1,21 @@
+------------------------------------------------------------------------
+r181 | gnarfoz | 2010-12-10 20:42:38 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/.pkgmeta
+   M /trunk/SharedMedia.toc
+
+Clean up externals that resulted in superfluous library copies being present on disk and adjust TOC accordingly.
+------------------------------------------------------------------------
+r180 | gnarfoz | 2010-12-10 20:26:33 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/SharedMedia.toc
+
+Fix FrameXML.log error, include path for CBH was wrong. This is merely a band-aid, the externals setup for this addon needs to be cleaned up.
+------------------------------------------------------------------------
+r179 | elkano | 2010-11-05 10:28:48 +0000 (Fri, 05 Nov 2010) | 1 line
+Changed paths:
+   M /trunk/.pkgmeta
+   M /trunk/SharedMedia.toc
+
+updated TOC and externals
+------------------------------------------------------------------------
