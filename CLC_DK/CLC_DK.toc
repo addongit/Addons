@@ -1,0 +1,19 @@
+## Interface: 40000
+## Author: Nu7a (Threk)
+## Version: 4.0.6g
+## Title: CLC DK
+## Notes: Death Knight Helper.
+## SavedVariablesPerCharacter: CLCDK_Settings
+
+# Embeds
+#@no-lib-strip@
+Libs\LibStub\Libstub.lua
+#@end-no-lib-strip@
+
+Localization\localization.lua
+Localization\localization.de.lua
+Localization\localization.cn.lua
+Localization\localization.tw.lua
+
+CLC_DK_Options.xml
+CLC_DK.lua
