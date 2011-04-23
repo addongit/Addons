@@ -1,0 +1,125 @@
+------------------------------------------------------------------------
+r341 | Whitetooth | 2011-04-22 08:45:53 +0000 (Fri, 22 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster-Locale-enUS.lua
+
+- enUS: Added a resilience pattern
+------------------------------------------------------------------------
+r340 | whitetooth | 2011-04-21 16:45:28 +0000 (Thu, 21 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster.lua
+
+- Remove debugging code
+------------------------------------------------------------------------
+r339 | Whitetooth | 2011-04-21 14:22:39 +0000 (Thu, 21 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/About RatingBuster.txt
+   M /trunk/RatingBuster-Locale-deDE.lua
+   M /trunk/RatingBuster-Locale-enUS.lua
+   M /trunk/RatingBuster-Locale-esES.lua
+   M /trunk/RatingBuster-Locale-frFR.lua
+   M /trunk/RatingBuster-Locale-koKR.lua
+   M /trunk/RatingBuster-Locale-ruRU.lua
+   M /trunk/RatingBuster-Locale-zhCN.lua
+   M /trunk/RatingBuster-Locale-zhTW.lua
+   M /trunk/RatingBuster.lua
+
+- New: Option to Enable Subtract Equipped Stats for calculation of mana regen from intellect and spirit, and diminishing stats like dodge, parry, resilience. Replaces the old option Enable Avoidance Diminishing Returns.
+------------------------------------------------------------------------
+r338 | whitetooth | 2011-04-20 21:15:03 +0000 (Wed, 20 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster.lua
+
+- Support for Haste mods
+------------------------------------------------------------------------
+r337 | whitetooth | 2011-04-19 20:06:59 +0000 (Tue, 19 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/About RatingBuster.txt
+   M /trunk/RatingBuster.lua
+
+- Use :GetHealthFromSta API
+------------------------------------------------------------------------
+r336 | whitetooth | 2011-04-19 17:20:11 +0000 (Tue, 19 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/About RatingBuster.txt
+   M /trunk/RatingBuster.lua
+
+- Fix: Stat Breakdown: Removed duplicate code and fix heal calculations for Mental Quickness and Sheath of Light (Thanks to Belechannas)
+------------------------------------------------------------------------
+r335 | whitetooth | 2011-04-18 15:49:42 +0000 (Mon, 18 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster-Locale-deDE.lua
+   M /trunk/RatingBuster-Locale-enUS.lua
+   M /trunk/RatingBuster-Locale-esES.lua
+   M /trunk/RatingBuster-Locale-frFR.lua
+   M /trunk/RatingBuster-Locale-koKR.lua
+   M /trunk/RatingBuster-Locale-ruRU.lua
+   M /trunk/RatingBuster-Locale-zhCN.lua
+   M /trunk/RatingBuster-Locale-zhTW.lua
+   M /trunk/RatingBuster.lua
+
+- Added localizable space for some localizations like zhTW look better without a space.
+------------------------------------------------------------------------
+r334 | whitetooth | 2011-04-18 12:51:40 +0000 (Mon, 18 Apr 2011) | 2 lines
+Changed paths:
+   M /trunk/RatingBuster-Locale-deDE.lua
+   M /trunk/RatingBuster-Locale-esES.lua
+   M /trunk/RatingBuster-Locale-frFR.lua
+   M /trunk/RatingBuster-Locale-koKR.lua
+   M /trunk/RatingBuster-Locale-ruRU.lua
+   M /trunk/RatingBuster-Locale-zhCN.lua
+   M /trunk/RatingBuster-Locale-zhTW.lua
+
+- zhTW: New option strings
+- Added new strings that needs to be localized to all locale files.
+------------------------------------------------------------------------
+r333 | whitetooth | 2011-04-18 12:41:32 +0000 (Mon, 18 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster-Locale-enUS.lua
+   M /trunk/RatingBuster.lua
+
+- Removed the hackish and buggy code that removed the blizzard item level text, instead offer to customize the color of the item level text and an option to display item level on all items.
+------------------------------------------------------------------------
+r332 | whitetooth | 2011-04-18 09:50:28 +0000 (Mon, 18 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster-Locale-esES.lua
+   M /trunk/RatingBuster-Locale-frFR.lua
+   M /trunk/RatingBuster-Locale-ruRU.lua
+   M /trunk/RatingBuster-Locale-zhCN.lua
+   M /trunk/RatingBuster-Locale-zhTW.lua
+
+- Locale: Fixed L["$value Parry"] (Thanks to foolkids)
+------------------------------------------------------------------------
+r331 | Whitetooth | 2011-04-17 19:05:03 +0000 (Sun, 17 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster.lua
+
+- Fixed Ticket 115 - "RatingBuster has already been added to the Blizzard Options Window with the given path"
+------------------------------------------------------------------------
+r330 | Whitetooth | 2011-04-17 18:46:27 +0000 (Sun, 17 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/About RatingBuster.txt
+   M /trunk/RatingBuster-Locale-deDE.lua
+   M /trunk/RatingBuster-Locale-enUS.lua
+   M /trunk/RatingBuster-Locale-esES.lua
+   M /trunk/RatingBuster-Locale-frFR.lua
+   M /trunk/RatingBuster-Locale-koKR.lua
+   M /trunk/RatingBuster-Locale-ruRU.lua
+   M /trunk/RatingBuster-Locale-zhCN.lua
+   M /trunk/RatingBuster-Locale-zhTW.lua
+   M /trunk/RatingBuster.lua
+
+- New: Option to Hide Blizzard Item Level
+------------------------------------------------------------------------
+r329 | Whitetooth | 2011-04-17 15:59:20 +0000 (Sun, 17 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster-Locale-frFR.lua
+
+- Ticket 149 - new frFR fix
+------------------------------------------------------------------------
+r327 | archarodim | 2011-01-28 22:04:19 +0000 (Fri, 28 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/RatingBuster-Locale-frFR.lua
+
+- Include Tixu's fixes to frFR (RatingBuster's ticket #131) (thanks to Cremor for the notice)
+------------------------------------------------------------------------
