@@ -1,0 +1,12 @@
+## Interface: 40000
+## Title: DungeonReady 
+## Notes: Plays a sound when dungeon finder found a group
+## Author: DarkStarX
+## Version: 1.11
+## X-Curse-Packaged-Version: v1.11
+## X-Curse-Project-Name: Dungeon Ready
+## X-Curse-Project-ID: dungeonready
+## X-Curse-Repository-ID: wow/dungeonready/mainline
+
+DungeonReady.xml
+
