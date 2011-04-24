@@ -1,0 +1,25 @@
+------------------------------------------------------------------------
+r3 | darkstarx | 2011-02-21 10:02:51 +0000 (Mon, 21 Feb 2011) | 1 line
+Changed paths:
+   A /tags/v1.11 (from /trunk:2)
+
+removed the sound work around its no more needed
+------------------------------------------------------------------------
+r2 | darkstarx | 2011-02-21 10:02:09 +0000 (Mon, 21 Feb 2011) | 1 line
+Changed paths:
+   A /trunk/DungeonReady.lua
+   A /trunk/DungeonReady.toc
+   A /trunk/DungeonReady.xml
+   A /trunk/dungeonready.mp3
+   A /trunk/pvpready.mp3
+
+initial submit
+------------------------------------------------------------------------
+r1 | root | 2011-02-21 09:59:31 +0000 (Mon, 21 Feb 2011) | 1 line
+Changed paths:
+   A /branches
+   A /tags
+   A /trunk
+
+"dungeonready/mainline: Initial Import"
+------------------------------------------------------------------------
