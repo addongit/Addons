@@ -1,9 +1,0 @@
-## Interface: 40000
-## Title: ButtonFacade|c0000FF00:|r|cffa335ee Renaitre|r 
-## Version: v4.1beta2
-## Notes: Renaitre's Skins for ButtonFacade.
-## Author: Limb0 (Renaitre, US Burning Blade)
-## Credits: StormFX and JJ Sheets (the creators of ButtonFacade), Sairen (creator of cyCircled)
-## Dependencies: ButtonFacade
-
-Skins.lua
