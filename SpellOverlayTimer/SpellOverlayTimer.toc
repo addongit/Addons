@@ -1,8 +1,0 @@
-## Interface: 40000
-## Title: Spell Overlay Timer
-## Author: UnknownX
-## Version: 1.12
-## Notes: Shows a timer below the Blizzard Spell Overlay
-## SavedVariables: SpellOverlayTimer_Config
-SpellOverlayTimer.lua
-SpellOverlayTimerConfig.lua
