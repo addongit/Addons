@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="XBAR_CONFIG" header="XBAR_TITLE">
-		XBarConfig:Show();
-	</Binding>
-</Bindings>
