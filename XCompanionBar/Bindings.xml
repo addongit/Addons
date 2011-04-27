@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="CLICK XCompanionBarButtonToggle:LeftButton" header="XBAR_TITLE">
-		-- Show/hide the bar
-	</Binding>
-</Bindings>
