@@ -1,0 +1,14 @@
+﻿## Interface: 40100
+## Title: XBuffBar |cffff7f7f -XBar-|r
+## Author: Dr Doom
+## Version: 4.03
+## Notes: A row of buttons for player buffs
+## Notes-esES: Una fila de botones para habilidades
+## Notes-deDE: Eine Reihe der Kn\195\182pfe f\195\188r Hilfreiche F\195\164higkeiten
+## Notes-frFR: Un rang de boutons pour les charmes serviables
+## Notes-zhTW: XBar 全職業Buff模組
+## URL:
+## Dependencies: XBar
+## DefaultState: Enabled
+## LoadOnDemand: 0
+XBuffBar.xml
