@@ -1,0 +1,14 @@
+﻿## Interface: 40100
+## Title: XSealBar |cffff7f7f -XBar-|r
+## Author: Dr Doom
+## Version: 4.01
+## Notes: A row of buttons for paladin seals
+## Notes-esES: Una fila de botones para habilidades de Sellas de Palad\195\173nes
+## Notes-deDE: Eine Reihe der Kn\195\182pfe f\195\188r Paladin Siegel
+## Notes-frFR: Un rang de boutons pour les sceaus de paladin
+## Notes-zhTW: XBar 聖騎聖印模組
+## URL:
+## Dependencies: XBar
+## DefaultState: Enabled
+## LoadOnDemand: 0
+XSealBar.xml
