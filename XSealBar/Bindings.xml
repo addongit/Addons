@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="CLICK XSealBarButtonToggle:LeftButton" header="XBAR_TITLE">
+		-- Show/hide the bar
+	</Binding>
+</Bindings>
