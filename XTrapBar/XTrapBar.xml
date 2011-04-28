@@ -1,0 +1,24 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+
+<Script file="localization.en.lua"/>
+<Script file="localization.es.lua"/>
+<Script file="localization.de.lua"/>
+<Script file="localization.fr.lua"/>
+<Script file="localization.tw.lua"/>
+<Script file="XTrapBar.lua"/>
+
+<Frame name="XTrapBar" inherits="XBarTemplate">
+	<Anchors>
+		<Anchor point="CENTER"/>
+	</Anchors>
+	<Scripts>
+		<OnLoad>
+			XTrapBar_OnLoad(self);
+		</OnLoad>
+		<OnEvent>
+			XBar_StdEventHandler("XTrapBar",event,arg1);
+		</OnEvent>
+	</Scripts>
+</Frame>
+</Ui>
