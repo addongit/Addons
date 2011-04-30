@@ -1,0 +1,607 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+
+<Script file="localization.en.lua"/>
+<Script file="XCustomBar.lua"/>
+
+<Frame name="XCustomLoaderBar" inherits="XBarTemplate" visible="false">
+	<Scripts>
+		<OnLoad>
+			XCustomLoaderBar_OnLoad(self);
+		</OnLoad>
+		<OnEvent>
+			XCustomLoaderBar_OnEvent(self,event,...);
+		</OnEvent>
+	</Scripts>
+</Frame>
+<Frame name="XCustomBarConfig" toplevel="true" parent="UIParent" frameStrata="FULLSCREEN" hidden="true" enableMouse="true" movable="true">
+	<Size><AbsDimension x="750" y="305"/></Size>
+	<Anchors>
+		<Anchor point="CENTER"/>
+	</Anchors>
+	<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+		<BackgroundInsets>
+			<AbsInset left="11" right="12" top="12" bottom="11"/>
+		</BackgroundInsets>
+		<TileSize>
+			<AbsValue val="32"/>
+		</TileSize>
+		<EdgeSize>
+			<AbsValue val="32"/>
+		</EdgeSize>
+	</Backdrop>
+	<Layers>
+		<Layer level="ARTWORK">
+			<Texture name="$parentChatFrameBackground">
+				<Color r="0.0" g="0.0" b="0.0" a="0.7"/>
+				<Size>
+					<AbsDimension x="225" y="70"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$parent">
+						<Offset>
+							<AbsDimension x="-35" y="45"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Texture>
+			<Texture file="Interface\DialogFrame\UI-DialogBox-Header">
+				<Size>
+					<AbsDimension x="300" y="64"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset><AbsDimension x="0" y="12"/></Offset>
+					</Anchor>
+				</Anchors>
+			</Texture>
+		</Layer>
+		<Layer level="OVERLAY">
+			<Texture name="$parentTextureShow">
+				<Size>
+					<AbsDimension x="100" y="100"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parent" relativePoint="TOPRIGHT">
+						<Offset><AbsDimension x="-25" y="-40"/></Offset>
+					</Anchor>
+				</Anchors>
+			</Texture>
+			<FontString inherits="GameFontNormal" text="BINDING_NAME_XCUSTOMBAR_CONFIG">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parent"/>
+				</Anchors>
+			</FontString>
+			<FontString inherits="GameFontNormal" text="XCUSTOMBAR_LABEL1">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="20" y="-20"/>
+					</Anchor>
+				</Anchors>			</FontString>
+			<FontString inherits="GameFontNormal" text="XCUSTOMBAR_LABEL2">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="180" y="-20"/>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString inherits="GameFontNormal" text="XCUSTOMBAR_LABEL3">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="340" y="-20"/>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentActionMenuLabel" inherits="GameFontNormal" text="XCUSTOMBAR_LABEL4">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeto="$parent">
+						<Offset x="510" y="-40"/>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentActionLabel" inherits="GameFontNormal" text="">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentActionMenuLabel">
+						<Offset x="-16" y="-20"/>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentNewButtonLabel" inherits="GameFontNormal" text="">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent">
+						<Offset x="200" y="-225"/>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentChatLabel" inherits="GameFontNormal" text="">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentActionLabel">
+						<Offset x="0" y="-70"/>
+					</Anchor>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+	<TitleRegion>
+		<Size>
+			<AbsDimension x="150" y="30"/>
+		</Size>
+		<Anchors>
+			<Anchor point="TOP">
+				<Offset>
+					<AbsDimension x="0" y="8"/>
+				</Offset>
+			</Anchor>
+		</Anchors>
+	</TitleRegion>
+	<Scripts>
+		<OnLoad>
+			tinsert(UISpecialFrames,self:GetName());
+		</OnLoad>
+		<OnHide>
+			PlaySound("igCharacterInfoClose");
+			self:StopMovingOrSizing();
+		</OnHide>
+		<OnShow>
+			PlaySound("igCharacterInfoOpen");
+			XCustomBarConfig_OnShow();
+		</OnShow>
+	</Scripts>
+	<Frames>
+		<Button name="$parentBtnHelp" inherits="OptionsButtonTemplate" text="XBAR_HELP_TITLE">
+			<Size><AbsDimension x="50" y="20"/></Size>
+			<Anchors>
+				<Anchor point="TOPRIGHT" relativeTo="$parent" relativepoint="TOPRIGHT">
+					<Offset><AbsDimension x="-10" y="-10"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XBarConfigGUI.BtnHelp_OnClick(self,"CUSTOMCONFIG");
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentButtonClose" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="150" y="23"/></Size>
+			<Anchors>
+				<Anchor point="BOTTOMRIGHT">
+					<Offset><AbsDimension x="-13" y="13"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_SAVE.." + "..XBAR_CLOSEBTN);
+				</OnLoad>
+				<OnClick>
+					ReloadUI();
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Frame name="$parentScrollBars" inherits="XBarScrollFrameTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT">
+					<Offset x="20" y="-40"/>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					XCustomBarConfigScrollBars_OnLoad(self);
+				</OnLoad>
+			</Scripts>
+		</Frame>
+		<EditBox name="$parentNewBar" autoFocus="false" inherits="InputBoxTemplate">
+			<Size><AbsDimension x="114" y="20"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentScrollBars" relativepoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="7" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					self:SetMaxLetters(14);
+				</OnLoad>
+				<OnShow>
+					self:SetText("");
+				</OnShow>
+			</Scripts>
+		</EditBox>
+		<Button name="$parentNewBarBtn" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentNewBar" relativepoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="-5" y="-1"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_NEW);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigNewBarBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentDelBarBtn" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeto="$parentNewBarBtn" relativepoint="RIGHT">
+					<Offset><AbsDimension x="2" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_DELETE);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigDelBarBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Frame name="$parentScrollButtons" inherits="XBarScrollFrameTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentScrollBars" relativepoint="TOPRIGHT">
+					<Offset x="30" y="0"/>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					XCustomBarConfigScrollButtons_OnLoad(self);
+				</OnLoad>
+			</Scripts>
+		</Frame>
+		<Button name="$parentNewButtonBtn" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentScrollButtons" relativepoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="0" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_NEW);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigNewButtonBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentDelButtonBtn" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeto="$parentNewButtonBtn" relativepoint="RIGHT">
+					<Offset><AbsDimension x="2" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_DELETE);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigDelButtonBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Frame name="$parentScrollActions" inherits="XBarScrollFrameTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentScrollButtons" relativepoint="TOPRIGHT">
+					<Offset x="30" y="0"/>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					XCustomBarConfigScrollActions_OnLoad(self);
+				</OnLoad>
+			</Scripts>
+		</Frame>
+		<Button name="$parentNewActionBtn" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentScrollActions" relativepoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="0" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_NEW);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigNewActionBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentDelActionBtn" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeto="$parentNewActionBtn" relativepoint="RIGHT">
+					<Offset><AbsDimension x="2" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_DELETE);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigDelActionBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Frame name="$parentActionMenuFrame" inherits="UIDropDownMenuTemplate"/>
+		<Button name="$parentActionMenu" inherits="OptionsButtonTemplate" text="+">
+			<Size><AbsDimension x="15" y="15"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentActionMenuLabel">
+					<Offset><AbsDimension x="-16" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XCustomBarConfigActionMenu_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentButtonMoveUp" inherits="OptionsButtonTemplate" text="-">
+			<Size><AbsDimension x="15" y="15"/></Size>
+			<Anchors>
+				<Anchor point="BOTTOMRIGHT" relativeto="$parentScrollButtons" relativepoint="TOPRIGHT">
+					<Offset><AbsDimension x="-17" y="2"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XCustomBarConfigButtonMoveUp_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentButtonMoveDown" inherits="OptionsButtonTemplate" text="+">
+			<Size><AbsDimension x="15" y="15"/></Size>
+			<Anchors>
+				<Anchor point="BOTTOMRIGHT" relativeto="$parentScrollButtons" relativepoint="TOPRIGHT">
+					<Offset><AbsDimension x="0" y="2"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XCustomBarConfigButtonMoveDown_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<EditBox name="$parentActionText" autoFocus="false" inherits="InputBoxTemplate">
+			<Size><AbsDimension x="114" y="20"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentActionLabel" relativepoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="5" y="-2"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					self:SetMaxLetters(50);
+					self:SetText("");
+				</OnLoad>
+			</Scripts>
+		</EditBox>
+		<Button name="$parentActionSave" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentActionText">
+					<Offset><AbsDimension x="-5" y="-20"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					self:SetText(XCUSTOMBAR_SAVE);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigActionSave_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Frame name="$parentNewButtonMenuFrame" inherits="UIDropDownMenuTemplate"/>
+		<Button name="$parentNewButtonMenu" inherits="OptionsButtonTemplate" text="+">
+			<Size><AbsDimension x="15" y="15"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentNewButtonLabel">
+					<Offset><AbsDimension x="-16" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XCustomBarConfigNewButtonMenu_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<ScrollFrame name="$parentChatScrollFrame" inherits="UIPanelScrollFrameTemplate">
+			<Size>
+				<AbsDimension x="225" y="70"/>
+			</Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentChatFrameBackground" relativePoint="TOPLEFT"/>
+			</Anchors>
+			<ScrollChild>
+				<EditBox name="$parentText" multiLine="true" letters="255" autoFocus="false">
+					<Size>
+						<AbsDimension x="225" y="70"/>
+					</Size>
+					<Scripts>
+						<OnTextChanged>
+							ScrollingEdit_OnTextChanged(self, self:GetParent());
+						</OnTextChanged>
+						<OnCursorChanged>
+							ScrollingEdit_OnCursorChanged(self, x, y, w, h);
+						</OnCursorChanged>
+						<OnUpdate>
+							ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());
+						</OnUpdate>
+						<OnEscapePressed>
+							self:ClearFocus();
+						</OnEscapePressed>
+					</Scripts>
+					<FontString inherits="GameFontHighlightSmall"/>
+				</EditBox>
+			</ScrollChild>
+		</ScrollFrame>
+		<Button name="$parentChatSave" inherits="OptionsButtonTemplate">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="BOTTOMLEFT" relativeTo="$parentChatScrollFrame" relativePoint="TOPLEFT">
+					<Offset><AbsDimension x="5" y="3"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					self:SetText(XCUSTOMBAR_SAVE);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigChatSave_OnClick();
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentTexturePrev" inherits="OptionsButtonTemplate" text="-">
+			<Size><AbsDimension x="15" y="15"/></Size>
+			<Anchors>
+				<Anchor point="BOTTOMLEFT" relativeto="$parentTextureShow" relativepoint="TOPLEFT">
+					<Offset><AbsDimension x="0" y="2"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XCustomBarConfigTexturePrev_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentTextureNext" inherits="OptionsButtonTemplate" text="+">
+			<Size><AbsDimension x="15" y="15"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentTexturePrev" relativepoint="TOPRIGHT">
+					<Offset><AbsDimension x="2" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					XCustomBarConfigTextureNext_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentTextureSave" inherits="OptionsButtonTemplate" text="">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentTextureNext" relativepoint="TOPRIGHT">
+					<Offset><AbsDimension x="2" y="5"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					self:SetText(XCUSTOMBAR_SAVE);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigTextureSave_OnClick(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentImportBarBtn" inherits="OptionsButtonTemplate" text="">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeto="$parentNewBarBtn" relativepoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="0" y="-1"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_IMPORT);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigImportBarBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<Button name="$parentExportBarBtn" inherits="OptionsButtonTemplate" text="">
+			<Size><AbsDimension x="60" y="23"/></Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeto="$parentImportBarBtn" relativepoint="RIGHT">
+					<Offset><AbsDimension x="1" y="0"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					getfenv()[self:GetName().."Text"]:SetText(XCUSTOMBAR_EXPORT);
+				</OnLoad>
+				<OnClick>
+					XCustomBarConfigExportBarBtn_Click(self);
+				</OnClick>
+			</Scripts>
+		</Button>
+		<EditBox name="$parentPortBox" autoFocus="false" inherits="InputBoxTemplate">
+			<Size><AbsDimension x="550" y="20"/></Size>
+			<Anchors>
+				<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="20" y="15"/></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnLoad>
+					self:SetMaxLetters(1000);
+					self:SetText("Paste config here to import");
+				</OnLoad>
+			</Scripts>
+		</EditBox>
+	</Frames>
+</Frame>
+<Frame name="XCustomBarOptionsGUI">
+	<Layers>
+		<Layer level="ARTWORK">
+			<FontString name="$parentTitle" text="BINDING_NAME_XCUSTOMBAR_CONFIG" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="16" y="-16"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentSubText" text="XCUSTOMBAR_SUB_TEXT" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
+				<Size>
+					<AbsDimension y="32" x="0"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-8"/>
+						</Offset>
+					</Anchor>
+					<Anchor point="RIGHT">
+						<Offset>
+							<AbsDimension x="-32" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+	<Scripts>
+		<OnLoad>
+			XCustomBarOptionsGUI_OnLoad(self);
+		</OnLoad>
+	</Scripts>
+	<Frames>
+		<Button name="$parentXBar" inherits="UIPanelButtonTemplate" text="BINDING_NAME_XCUSTOMBAR_CONFIG">
+			<Size>
+				<AbsDimension x="135" y="25"/>
+			</Size>
+			<Anchors>
+				<Anchor point="TOPRIGHT" relativeTo="$parentSubText" relativePoint="BOTTOMRIGHT">
+					<Offset>
+						<AbsDimension x="-48" y="-12"/>
+					</Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					PlaySound("gsTitleOptionOK");
+					XCustomBarConfig:Show();
+				</OnClick>
+			</Scripts>
+			<NormalFont inherits="GameFontNormalSmall"/>
+			<HighlightFont inherits="GameFontHighlightSmall"/>				
+		</Button>
+	</Frames>
+</Frame>
+</Ui>
