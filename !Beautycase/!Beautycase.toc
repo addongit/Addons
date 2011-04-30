@@ -1,6 +1,0 @@
-## Interface: 40000
-## Title: !Beautycase
-## Anchor: Neav aka Neal
-## Notes: Awsome Skin AddOn, that you command over.
-
-!Beautycase.lua

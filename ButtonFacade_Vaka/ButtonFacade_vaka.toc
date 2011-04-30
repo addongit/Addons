@@ -1,6 +1,0 @@
-﻿## Interface: 30000
-## Title: ButtonFacade: vaka
-## DefaultState: enabled
-## OptionalDeps: LibButtonFacade, ButtonFacade
-
-ButtonFacade_vaka.lua
