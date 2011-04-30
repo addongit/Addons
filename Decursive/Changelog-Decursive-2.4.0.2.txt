@@ -1,0 +1,43 @@
+tag 2.4.0.2
+90a74bf2e045c03ba8caa687511baab2ba57bd0f
+Archarodim <Archarodim@teaser.fr>
+2009-04-07 02:06:07 +0200
+
+2.4 final release
+
+
+--------------------
+
+Archarodim:
+	Decursive 2.4 by Archarodim  (2009-04-06)
+	Changes from Decursive 2.3.1 to Decursive 2.4
+	
+	- New feature: The cool down of the curing spell to be used is displayed
+	  (clock) on afflicted MUFs.
+	
+	- Decursive uses AceLocal-3.0 ; localization is now made using this interface:
+	  http://wow.curseforge.com/projects/decursive/localization/
+	
+	- Miscellaneous localization updates in various languages.
+	
+	- Re-implemented the max unit to show option.
+	
+	- Added a warning when the user disables Decusive and an explanation on how to
+	  re-enable it (/dcr standby)
+	
+	- Translations for key bindings descriptions (WoW key binding interface)
+	
+	- It's no longer possible to map the button 1 and 2 of the mouse to Decursive's
+	  macro by accident.
+	
+	- Fixes a problem if the game is loaded without any "saved variables" where the
+	  API GetCurrentBindingSet() would return incorrect values unusable with the
+	  API SaveBindings() preventing Decursive from initializing correctly.
+	
+	- Bug fix: Charmed unit detection wasn't working if the player himself was charmed.
+	
+	- Bug fix: The focus MUF was not added at the end but just before pets.
+	
+	- Bug fix: The stick to right option (concerning the MUFs positions) was broken.
+	
+	- Some other minor bug fixes.
