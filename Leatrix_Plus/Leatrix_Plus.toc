@@ -1,7 +1,0 @@
-## Interface: 40100
-## Title: Leatrix Plus
-## Notes: Version 4.1.23.  It's Leatrix Plus!
-## Version: 4.1.23
-## Author: Leatrix
-## SavedVariables: LeaPlusOptionsDB
-Leatrix_Plus.lua
