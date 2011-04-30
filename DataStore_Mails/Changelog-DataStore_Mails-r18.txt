@@ -1,0 +1,25 @@
+------------------------------------------------------------------------
+r18 | thaoky | 2010-10-15 17:25:29 +0000 (Fri, 15 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Mails.lua
+
+Added a check to prevent errors caused by other mail addons.
+------------------------------------------------------------------------
+r17 | thaoky | 2010-10-15 13:21:42 +0000 (Fri, 15 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/DataStore_Mails.toc
+
+4.0.1 Update
+------------------------------------------------------------------------
+r16 | pompachomp | 2010-02-19 18:56:35 +0000 (Fri, 19 Feb 2010) | 3 lines
+Changed paths:
+   M /trunk/DataStore_Mails.toc
+   A /trunk/Locales (from /trunk/Locals:15)
+   D /trunk/Locals
+   D /trunk/local.xml
+   A /trunk/locale.xml (from /trunk/local.xml:15)
+
+Locals->Locales
+local.xml->locale.xml
+
+------------------------------------------------------------------------
