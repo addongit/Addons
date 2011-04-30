@@ -1,2 +1,0 @@
-LibQueue-1.0.0: Initial release by DrDoom
-LibQueue-1.0.1: Fixed an error with duplicate checking.  Updated Put function to compare simple (one level) tables more effectively.
