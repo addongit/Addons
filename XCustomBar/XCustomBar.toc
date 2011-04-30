@@ -1,0 +1,11 @@
+﻿## Interface: 40100
+## Title: XCustomBar |cffff7f7f -XBar-|r
+## Author: Dr Doom
+## Version: 4.02
+## Notes: Creates custom bars for XBar
+## URL:
+## Dependencies: XBar
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: XCustomBarData
+XCustomBar.xml
