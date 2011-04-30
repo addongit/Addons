@@ -1,0 +1,10 @@
+﻿## Interface: 40100
+## Title: XMountBar |cffff7f7f -XBar-|r
+## Author: Dr Doom
+## Version: 4.01
+## Notes: A row of buttons for Mounts
+## URL:
+## Dependencies: XBar
+## DefaultState: Enabled
+## LoadOnDemand: 0
+XMountBar.xml
