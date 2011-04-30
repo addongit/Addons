@@ -1,0 +1,13 @@
+## Interface: 40100
+## Title: SharedMedia|c0000FF00:|r|cffa335ee Renaitre|r 
+## Version: 4.1
+## Notes: Renaitre's media for customizing UIs via LibSharedMedia.
+## Author: Limb0 (Renaitre, US Burning Blade)
+## Credits: Elkano and Seerah (SharedMedia)
+## OptionalDeps: LibSharedMedia-3.0
+
+libs\LibStub.lua
+libs\CallbackHandler-1.0.lua
+libs\LibSharedMedia-3.0.lua
+
+SharedMediaRenaitre.lua
