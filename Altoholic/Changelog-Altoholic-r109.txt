@@ -1,0 +1,32 @@
+------------------------------------------------------------------------
+r109 | thaoky | 2011-04-03 05:49:26 +0000 (Sun, 03 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/Altoholic.toc
+   M /trunk/Altoholic.xml
+   D /trunk/Frames/TabXelerated.lua
+   D /trunk/Frames/TabXelerated.xml
+   D /trunk/Images
+
+Repack of 4.0.006b
+------------------------------------------------------------------------
+r108 | thaoky | 2011-04-01 18:05:51 +0000 (Fri, 01 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/Altoholic.toc
+   M /trunk/Altoholic.xml
+   M /trunk/Core.lua
+   M /trunk/Frames/TabOptions.lua
+   A /trunk/Frames/TabXelerated.lua
+   A /trunk/Frames/TabXelerated.xml
+   A /trunk/Images
+   A /trunk/Images/Xelerated.tga
+   M /trunk/Modules/Altoholic_Search/Search.xml
+   M /trunk/changelog.txt
+
+4.0.006b commit, see changelog.txt for details.
+------------------------------------------------------------------------
+r107 | thaoky | 2011-03-02 13:49:27 +0000 (Wed, 02 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/changelog.txt
+
+changelog.txt omitted in previous commit.
+------------------------------------------------------------------------
