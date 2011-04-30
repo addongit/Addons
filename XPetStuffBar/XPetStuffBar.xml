@@ -1,0 +1,74 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+
+<Script file="localization.en.lua"/>
+<Script file="localization.es.lua"/>
+<Script file="localization.de.lua"/>
+<Script file="localization.fr.lua"/>
+<Script file="localization.tw.lua"/>
+<Script file="XPetStuffBar.lua"/>
+
+<Frame name="XPetStuffBar" inherits="XBarTemplate">
+	<Anchors>
+		<Anchor point="CENTER"/>
+	</Anchors>
+	<Scripts>
+		<OnLoad>
+			XPetStuffBar_OnLoad(self);
+		</OnLoad>
+		<OnEvent>
+			XPetStuffBar_OnEvent(self,event,...);
+		</OnEvent>
+	</Scripts>
+</Frame>
+
+<Frame name="XPetStuffXP" movable="true" hidden="true" parent="UIParent">
+	<Size>
+		<AbsDimension x="50" y="50"/>
+	</Size>
+	<Anchors>
+		<Anchor point="CENTER"/>
+	</Anchors>
+	<Frames>
+		<StatusBar name="$parentBar" inherits="TextStatusBar">
+			<Size>
+				<AbsDimension x="320" y="11"/>
+			</Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT"/>
+			</Anchors>
+			<Layers>
+				<Layer level="OVERLAY">
+					<Texture name="$parentSeg1"/>
+					<Texture name="$parentSeg2"/>
+					<FontString name="$parentText" inherits="TextStatusBarText">
+						<Anchors>
+							<Anchor point="CENTER">
+								<Offset>
+									<AbsDimension x="0" y="0"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+					</FontString>
+				</Layer>
+			</Layers>
+			<Scripts>
+				<OnEnter>
+					XPetStuffXPBar_OnEnter(self);
+				</OnEnter>
+				<OnLeave>
+					XPetStuffXPBar_OnLeave(self);
+				</OnLeave>
+				<OnMouseDown>
+					securecall(XBarCore.OnMouseDown,self,button);
+				</OnMouseDown>
+				<OnMouseUp>
+					securecall(XBarCore.OnMouseUp,self,button);
+				</OnMouseUp>
+			</Scripts>
+			<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
+			<BarColor r="0.58" g="0.0" b="0.55"/>
+		</StatusBar>
+	</Frames>
+</Frame>
+</Ui>
