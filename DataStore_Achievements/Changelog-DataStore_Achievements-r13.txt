@@ -1,8 +1,0 @@
-------------------------------------------------------------------------
-r13 | thaoky | 2010-10-15 13:19:33 +0000 (Fri, 15 Oct 2010) | 1 line
-Changed paths:
-   M /trunk/DataStore_Achievements.lua
-   M /trunk/DataStore_Achievements.toc
-
-4.0.1 Update
-------------------------------------------------------------------------
