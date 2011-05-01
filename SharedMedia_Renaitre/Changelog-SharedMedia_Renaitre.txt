@@ -1,0 +1,10 @@
+v4.1
+-updated TOC to 40100
+-added black versions (blk) of the "Fade" borders since certain addons do not recolor the border
+
+v4.1beta
+-added Beveled Borders
+-renamed Fade Borders
+
+v4.0.6
+-initial release
