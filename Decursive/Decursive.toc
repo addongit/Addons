@@ -1,43 +1,53 @@
-## Interface: 30000
-## X-Curse-Packaged-Version: 2.4.0.2
+## Interface: 40100
+## X-Curse-Packaged-Version: 2.7.0.1
 ## X-Curse-Project-Name: Decursive
 ## X-Curse-Project-ID: decursive
 ## X-Curse-Repository-ID: wow/decursive/mainline
 
-## Title: Decursive |cff7fff7f -Ace2-|r
-## Notes: Affliction display and cleaning for solo, group and raids with advanced filtering and priority system.
-## Notes-ruRU: Отображение и лечение недугов с расширенной фильтрацией и системой приоритетов.
-## Notes-zhTW: 提供驅魔輔助功能，包含進階的顯示及過濾功能
-## Notes-frFR: Affichage et guérison des afflictions avec un système évolué de filtrage et de priorité.
+## Title: Decursive |cffff00ff -Ace3-|r
+## Notes: Afflictions display and cleaning for solo, group and raid with advanced filtering and priority system.
+## Notes-frFR: Affichage et guérison des affections avec un système évolué de filtrage et de priorité.
+## Notes-deDE: Anzeige und Reinigung von Gebrechen für Solo, Gruppe und Schlachtzug mit erweitertem Filter- und Prioritäten-System.
+## Notes-esES: Afflictions display and cleaning for solo, group and raid with advanced filtering and priority system.
+## Notes-esMX: Afflictions display and cleaning for solo, group and raid with advanced filtering and priority system.
+## Notes-koKR: 쏠로, 파티, 공격대를 위한 고급화된 필터링과 시스템 우선권으로 고통들의 표시와 제거를 합니다.
+## Notes-ruRU: Отображение и инструменты для развеивания дебаффов для одиночной игры, игры в группе и рейде, с развитой системой фильтрации и приоритетов.
+## Notes-zhCN: 当单独、小队和团队时清除有害状态，并可使用高级过滤和优先等级系统。
+## Notes-zhTW: 當單獨、小隊和團隊時清除有害狀態，並可使用高級過濾和優先等級系統。
 
-## SavedVariablesPerCharacter: DcrCharDB
-## SavedVariables: DcrDB
+## X-Compatible-With: 40100
+## X-Max-Interface: 40100
+## X-Min-Interface: 30300
 
-## Version: 2.4.0.2
+## SavedVariables: DecursiveDB
+
+## Version: 2.7.0.1
 ## Author: Archarodim
 
-## X-License: GNU GPL
+## X-License: All Rights Reserved
 
-## OptionalDeps: Ace2, LibBabble-Class-3.0, DewdropLib, Waterfall-1.0, TabletLib, LibDataBroker-1.1, LibDBIcon-1.0, CallbackHandler-1.0
-## X-Embeds: Ace2, LibBabble-Class-3.0, DewdropLib, Waterfall-1.0, TabletLib, LibDataBroker-1.1, LibDBIcon-1.0, CallbackHandler-1.0
+## OptionalDeps: Ace3, LibQTip-1.0, LibDataBroker-1.1, LibDBIcon-1.0, !BugGrabber
 
-## X-ReleaseDate: "2009-04-07T00:05:07Z"
+## LoadManagers: AddonLoader
+## X-LoadOn-Class: Mage, Priest, Paladin, Druid, Hunter, Warlock, Shaman
+## X-LoadOn-Slash: /decursive, /dcr
+
+
+## X-Embeds: Ace3, LibQTip-1.0, LibDataBroker-1.1, LibDBIcon-1.0, !BugGrabber
+
+## X-ReleaseDate: "2011-04-27T08:35:16Z"
 ## X-Category: Combat
-## X-Website: http://www.2072productions.com/?to=decursive.php
-## X-Credits: Sylvin (Full french translation), Peter Sun (ZhTW translation), Fenlis (koKR translation)
+## X-Website: http://www.2072productions.com/to/decursive.php
+## X-Credits: Sylvin (Full french translation), Peter Sun, Ananhaid (ZhTW and zhCN translation), Fenlis, Chkid (koKR translation), Hemathio, Swix, Athariel, StingerSoft (Russian Translation), Freydis88, Floyddotnet, Vilogity, Dessa, Farook (German translation)
 
-## X-RelSite-WoWI: 4937
-## X-RelSite-Curse: 3011
-## X-RelSite-UI.WoW: 2506
 ## X-AceForum: 4195
 
 ## X-eMail: archarodim@teaser.fr
 
-LibStub\LibStub.lua
-
 embeds.xml
 
 Dcr_DIAG.lua
+Dcr_DIAG.xml
 
 Localization\load.xml
 
