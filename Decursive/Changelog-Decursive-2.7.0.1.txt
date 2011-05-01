@@ -1,0 +1,13 @@
+tag 2.7.0.1
+c7fe951cf380ae79a7d0bd9c505bc198ef1aa480
+Archarodim <Archarodim@teaser.fr>
+2011-04-27 10:36:54 +0200
+
+Tagging as 2.7.0.1
+
+
+--------------------
+
+Archarodim:
+	- - Decursive was including errors happening in embedded libraries in its own debug report.
+	- Fix ticket #84 (Secursives sound back to the Master channel as before 4.1)

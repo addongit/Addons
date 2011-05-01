@@ -1,6 +1,6 @@
 --[[
 Name: DBIcon-1.0
-Revision: $Rev: 8 $
+Revision: $Rev: 18 $
 Author(s): Rabbit (rabbit.magtheridon@gmail.com)
 Description: Allows addons to register to recieve a lightweight minimap icon as an alternative to more heavy LDB displays.
 Dependencies: LibStub
@@ -8,7 +8,7 @@ License: GPL v2 or later.
 ]]
 
 --[[
-Copyright (C) 2008-2009 Rabbit
+Copyright (C) 2008-2010 Rabbit
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -33,13 +33,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 --
 
 local DBICON10 = "LibDBIcon-1.0"
-local DBICON10_MINOR = tonumber(("$Rev: 8 $"):match("(%d+)"))
+local DBICON10_MINOR = tonumber(("$Rev: 18 $"):match("(%d+)"))
 if not LibStub then error(DBICON10 .. " requires LibStub.") end
-local lib = LibStub:NewLibrary(DBICON10, DBICON10_MINOR)
-if not lib then return end
 local ldb = LibStub("LibDataBroker-1.1", true)
 if not ldb then error(DBICON10 .. " requires LibDataBroker-1.1.") end
+local lib = LibStub:NewLibrary(DBICON10, DBICON10_MINOR)
+if not lib then return end
 
+lib.disabled = lib.disabled or nil
 lib.objects = lib.objects or {}
 lib.callbackRegistered = lib.callbackRegistered or nil
 lib.notCreated = lib.notCreated or {}
@@ -56,16 +57,17 @@ end
 
 -- Tooltip code ripped from StatBlockCore by Funkydude
 local function getAnchors(frame)
-	local x,y = frame:GetCenter()
-	if not x or not y then return "TOPLEFT", "BOTTOMLEFT" end
+	local x, y = frame:GetCenter()
+	if not x or not y then return "CENTER" end
 	local hhalf = (x > UIParent:GetWidth()*2/3) and "RIGHT" or (x < UIParent:GetWidth()/3) and "LEFT" or ""
 	local vhalf = (y > UIParent:GetHeight()/2) and "TOP" or "BOTTOM"
 	return vhalf..hhalf, frame, (vhalf == "TOP" and "BOTTOM" or "TOP")..hhalf
 end
 
 local function onEnter(self)
+	if self.isMoving then return end
 	local obj = self.dataObject
-	if not self.isMoving and obj.OnTooltipShow then
+	if obj.OnTooltipShow then
 		GameTooltip:SetOwner(self, "ANCHOR_NONE")
 		GameTooltip:SetPoint(getAnchors(self))
 		obj.OnTooltipShow(GameTooltip)
@@ -101,7 +103,7 @@ local minimapShapes = {
 }
 
 local function updatePosition(button)
-	local angle = math.rad(button.db.minimapPos or 225)
+	local angle = math.rad(button.db and button.db.minimapPos or button.minimapPos or 225)
 	local x, y, q = math.cos(angle), math.sin(angle), 1
 	if x < 0 then q = q + 1 end
 	if y > 0 then q = q + 2 end
@@ -126,7 +128,11 @@ local function onUpdate(self)
 	local px, py = GetCursorPosition()
 	local scale = Minimap:GetEffectiveScale()
 	px, py = px / scale, py / scale
-	self.db.minimapPos = math.deg(math.atan2(py - my, px - mx)) % 360
+	if self.db then
+		self.db.minimapPos = math.deg(math.atan2(py - my, px - mx)) % 360
+	else
+		self.minimapPos = math.deg(math.atan2(py - my, px - mx)) % 360
+	end
 	updatePosition(self)
 end
 
@@ -159,14 +165,17 @@ local function createButton(name, object, db)
 	overlay:SetWidth(53); overlay:SetHeight(53)
 	overlay:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
 	overlay:SetPoint("TOPLEFT")
-	local icon = button:CreateTexture(nil, "BACKGROUND")
+	local background = button:CreateTexture(nil, "BACKGROUND")
+	background:SetWidth(20); background:SetHeight(20)
+	background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+	background:SetPoint("TOPLEFT", 7, -5)
+	local icon = button:CreateTexture(nil, "ARTWORK")
 	icon:SetWidth(20); icon:SetHeight(20)
 	icon:SetTexture(object.icon)
 	icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
 	icon:SetPoint("TOPLEFT", 7, -5)
 	button.icon = icon
 
-	button.total = 0
 	button:SetScript("OnEnter", onEnter)
 	button:SetScript("OnLeave", onLeave)
 	button:SetScript("OnClick", onClick)
@@ -179,7 +188,7 @@ local function createButton(name, object, db)
 
 	if lib.loggedIn then
 		updatePosition(button)
-		if not db.hide then button:Show()
+		if not db or not db.hide then button:Show()
 		else button:Hide() end
 	end
 end
@@ -201,7 +210,7 @@ if not lib.loggedIn then
 	f:SetScript("OnEvent", function()
 		for _, object in pairs(lib.objects) do
 			updatePosition(object)
-			if not object.db.hide then object:Show()
+			if not lib.disabled and (not object.db or not object.db.hide) then object:Show()
 			else object:Hide() end
 		end
 		lib.loggedIn = true
@@ -214,7 +223,7 @@ end
 function lib:Register(name, object, db)
 	if not object.icon then error("Can't register LDB objects without icons set!") end
 	if lib.objects[name] or lib.notCreated[name] then error("Already registered, nubcake.") end
-	if not db or not db.hide then
+	if not lib.disabled and (not db or not db.hide) then
 		createButton(name, object, db)
 	else
 		lib.notCreated[name] = {object, db}
@@ -222,10 +231,11 @@ function lib:Register(name, object, db)
 end
 
 function lib:Hide(name)
-	check(name)
+	if not lib.objects[name] then return end
 	lib.objects[name]:Hide()
 end
 function lib:Show(name)
+	if lib.disabled then return end
 	check(name)
 	lib.objects[name]:Show()
 	updatePosition(lib.objects[name])
@@ -234,9 +244,38 @@ function lib:IsRegistered(name)
 	return (lib.objects[name] or lib.notCreated[name]) and true or false
 end
 function lib:Refresh(name, db)
+	if lib.disabled then return end
 	check(name)
 	local button = lib.objects[name]
 	if db then button.db = db end
 	updatePosition(button)
+	if not button.db or not button.db.hide then
+		button:Show()
+	else
+		button:Hide()
+	end
+end
+
+function lib:EnableLibrary()
+	lib.disabled = nil
+	for name, object in pairs(lib.objects) do
+		if not object.db or not object.db.hide then
+			object:Show()
+			updatePosition(object)
+		end
+	end
+	for name, data in pairs(lib.notCreated) do
+		if not data.db or not data.db.hide then
+			createButton(name, data[1], data[2])
+			lib.notCreated[name] = nil
+		end
+	end
+end
+
+function lib:DisableLibrary()
+	lib.disabled = true
+	for name, object in pairs(lib.objects) do
+		object:Hide()
+	end
 end
 
