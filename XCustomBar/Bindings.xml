@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="XCUSTOMBAR_CONFIG" HEADER="XBAR_TITLE">
+		XCustomBarConfig:Show();
+	</Binding>
+</Bindings>
