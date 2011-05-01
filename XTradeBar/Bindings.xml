@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="CLICK XTradeBarButtonToggle:LeftButton" header="XBAR_TITLE">
-		-- Show/hide the bar
-	</Binding>
-</Bindings>
